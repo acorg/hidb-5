@@ -1,0 +1,2 @@
+# hidb-make
+HiDb maker
