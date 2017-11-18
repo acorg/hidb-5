@@ -1,2 +1,3 @@
 # hidb-make
-HiDb maker
+
+A program to make HiDb (v5) from charts (read by acmacs-chart-2)
