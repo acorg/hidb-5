@@ -1,7 +1,11 @@
 {"_":"-*- js-indent-level: 1 -*-",
  "  version": "hidb-v5",
  "a": [                         // antigens
-  "N": "name",
+  "V": "virus type and subtype, e.g. B or A(H3N2) or serotype"
+  "H": "host",                  // empty if HUMAN
+  "L": "location",              // cdc_abbreviation in case of cdc name
+  "i": "isolation",             // name in case of cdc name
+  "y": "year",                  // empty for cdc name
   "L": "lineage",
   "P": "passage",
   "R": "reassortant",
@@ -13,7 +17,11 @@
    ]
  ],
  "s": [                         // sera
-  "N": "name",
+  "V": "virus type and subtype, e.g. B or A(H3N2) or serotype"
+  "H": "host",                  // empty if HUMAN
+  "L": "location",
+  "i": "isolation",
+  "y": "year",
   "L": "lineage",
   "P": "passage",
   "R": "reassortant",
@@ -29,7 +37,13 @@
  ],
  "t": [                         // tables
   {
-   "T": "table_id",
+   "v": "virus, e.g. INFLUENZA (default, if omitted), HPV, generic, DENGE",
+   "V": "virus type and subtype, e.g. B or A(H3N2) or serotype"
+   "A": "assay: HI, FR, PRNT",
+   "D": "table/assay date, e.g. 20160602.002",
+   "l": "lab",
+   "r": "rbc species, e.g. turkey",
+   "s": "subset/lineage, e.g. 2009PDM",
    "a": [                       // antigens, actual antigen data is in antigens table above
     0,                          // index in toplevel "a" (antigens)
    ],
