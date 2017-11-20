@@ -81,6 +81,19 @@ class Virus : public std::string
 
 // ----------------------------------------------------------------------
 
+class Assay : public std::string
+{
+ public:
+    inline Assay(std::string aSource) : std::string{aSource}
+        {
+            if (aSource == "PLAQUE REDUCTION NEUTRALISATION")
+                assign("PRN");
+        }
+
+}; // class Assay
+
+// ----------------------------------------------------------------------
+
 class Lineage : public std::string
 {
  public:
@@ -103,7 +116,7 @@ class Table
     Virus virus;
     std::string virus_type;
     std::string subset;
-    std::string assay;
+    Assay assay;
     std::string date;
     std::string lab;
     std::string rbc_species;

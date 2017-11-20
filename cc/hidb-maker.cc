@@ -58,6 +58,7 @@ void HidbMaker::make_index()
 namespace rjson
 {
     template <> struct content_type<Lineage> { using type = rjson::string; };
+    template <> struct content_type<Assay> { using type = rjson::string; };
     template <> struct content_type<Virus> { using type = rjson::string; };
     // template <> struct content_type<std::vector<std::string>> { using type = rjson::array; };
 
