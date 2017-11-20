@@ -84,6 +84,7 @@ class Virus : public std::string
 class Lineage : public std::string
 {
  public:
+    inline Lineage() = default;
     inline Lineage(std::string aSource) : std::string{aSource == "UNKNOWN" ? std::string{} : aSource.substr(0, 1)} {}
 
 }; // class Lineage
@@ -106,6 +107,7 @@ class Table
     std::string date;
     std::string lab;
     std::string rbc_species;
+    Lineage lineage;
     Indexes antigens;
     Indexes sera;
     Titers titers;

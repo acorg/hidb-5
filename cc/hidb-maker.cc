@@ -107,10 +107,8 @@ void HidbMaker::export_sera(rjson::array& target) const
 
 void HidbMaker::export_tables(rjson::array& target) const
 {
-    std::cerr << "WARNING: table lineage not implemented" << '\n';
     for (auto& table: mTables) {
         rjson::object tb;
-        target.insert(std::move(tb));
         tb.set_field_if_not_empty("v", table->virus);
         tb.set_field_if_not_empty("V", table->virus_type);
         tb.set_field_if_not_empty("A", table->assay);
@@ -118,6 +116,7 @@ void HidbMaker::export_tables(rjson::array& target) const
         tb.set_field_if_not_empty("l", table->lab);
         tb.set_field_if_not_empty("r", table->rbc_species);
         tb.set_field_if_not_empty("s", table->subset);
+        tb.set_field_if_not_empty("L", table->lineage);
         tb.set_array_field_if_not_empty("a", table->antigens.begin(), table->antigens.end());
         tb.set_array_field_if_not_empty("s", table->sera.begin(), table->sera.end());
         rjson::array titers;
@@ -192,6 +191,7 @@ Table* Tables::add(const acmacs::chart::Chart& aChart)
     if (insert_at != end() && **insert_at == *table)
         throw std::runtime_error("Table " + acmacs::to_string(*table) + " is already in hidb");
     std::cerr << "DEBUG: adding " << acmacs::to_string(*table) << '\n';
+    table->lineage = aChart.lineage();
     const auto inserted = insert(insert_at, std::move(table));
     return inserted->get();
 
