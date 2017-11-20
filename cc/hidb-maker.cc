@@ -9,11 +9,23 @@ void HidbMaker::add(const acmacs::chart::Chart& aChart)
 {
     auto* table = mTables.add(aChart);
     table->set_titers(*aChart.titers());
+
     auto source_antigens = aChart.antigens();
     for (auto source_antigen: *source_antigens) {
-        auto target_antigen = mAntigens.add(*source_antigen);
-        target_antigen->add_table(table);
-        table->add_antigen(target_antigen);
+        if (!source_antigen->annotations().distinct()) {
+            auto target_antigen = mAntigens.add(*source_antigen);
+            target_antigen->add_table(table);
+            table->add_antigen(target_antigen);
+        }
+    }
+
+    auto source_sera = aChart.sera();
+    for (auto source_serum: *source_sera) {
+        if (!source_serum->annotations().distinct()) {
+            auto target_serum = mSera.add(*source_serum);
+            target_serum->add_table(table);
+            table->add_serum(target_serum);
+        }
     }
 
 } // HidbMaker::add
@@ -72,12 +84,32 @@ Antigen* Antigens::add(const acmacs::chart::Antigen& aAntigen)
         insert_at = insert(insert_at, std::move(antigen));
         std::cerr << "DEBUG: AG " << (*insert_at)->to_string() << '\n';
     }
+    // else {
+    //     std::cerr << "DEBUG: AG " << antigen->to_string() << " already here as " + (*insert_at)->to_string() << '\n';
+    // }
     (*insert_at)->add_date(aAntigen.date());
     const auto lab_ids{aAntigen.lab_ids()};
     (*insert_at)->add_lab_id(lab_ids.begin(), lab_ids.end());
     return insert_at->get();
 
 } // Antigens::add
+
+// ----------------------------------------------------------------------
+
+Serum* Sera::add(const acmacs::chart::Serum& aSerum)
+{
+    auto serum{std::make_unique<Serum>(aSerum)};
+    auto insert_at = lower_bound(serum);
+    if (insert_at == end() || **insert_at != *serum) {
+        insert_at = insert(insert_at, std::move(serum));
+        std::cerr << "DEBUG: SR " << (*insert_at)->to_string() << '\n';
+    }
+    // else {
+    //     std::cerr << "DEBUG: SR " << serum->to_string() << " already here as " + (*insert_at)->to_string() << '\n';
+    // }
+    return insert_at->get();
+
+} // Sera::add
 
 // ----------------------------------------------------------------------
 
@@ -90,7 +122,7 @@ AntigenSerum::~AntigenSerum()
 void AntigenSerum::add_table(Table *aTable)
 {
     if (auto found = table_ptrs.find(aTable); found != table_ptrs.end())
-        throw std::runtime_error(type_name() + " " + to_string() + " already in the table " + acmacs::to_string(*aTable) + ", duplicate?");
+        throw std::runtime_error(type_name() + " " + to_string() + " already in the table " + acmacs::to_string(*aTable) + ",  duplicate?");
     table_ptrs.insert(aTable);
 
 } // AntigenSerum::add_table
@@ -121,7 +153,17 @@ Antigen::Antigen(const acmacs::chart::Antigen& aAntigen)
 // ----------------------------------------------------------------------
 
 Serum::Serum(const acmacs::chart::Serum& aSerum)
+    : reassortant{aSerum.reassortant()}, passage{aSerum.passage()}, annotations{aSerum.annotations()},
+      serum_id{aSerum.serum_id()}, serum_species{aSerum.serum_species()}, lineage{aSerum.lineage()}
 {
+    const std::string name{aSerum.name()};
+    try {
+        std::string temp_passage;
+        virus_name::split(name, virus_type, host, location, isolation, year, temp_passage);
+    }
+    catch (virus_name::Unrecognized&) {
+        throw std::runtime_error("Unrecognized serum name: " + name);
+    }
 
 } // Serum::Serum
 

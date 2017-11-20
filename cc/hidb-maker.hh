@@ -216,8 +216,8 @@ class Serum : public AntigenSerum
     std::string passage;
     Annotations annotations;
     std::string serum_id;
-    std::string serum_sepcies;
-    std::string lineage;
+    std::string serum_species;
+    Lineage lineage;
 
     Serum(const acmacs::chart::Serum& aSerum);
 
@@ -240,6 +240,7 @@ class Serum : public AntigenSerum
 class Sera : public set_unique_ptr<Serum>
 {
  public:
+    Serum* add(const acmacs::chart::Serum& aSerum);
 
 }; // class Sera
 
