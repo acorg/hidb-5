@@ -3,7 +3,7 @@
  "a": [                         // antigens
   "V": "virus type and subtype, e.g. B or A(H3N2) or serotype"
   "H": "host",                  // empty if HUMAN
-  "L": "location",              // cdc_abbreviation in case of cdc name
+  "O": "location",              // cdc_abbreviation in case of cdc name
   "i": "isolation",             // name in case of cdc name
   "y": "year",                  // empty for cdc name
   "L": "lineage",
@@ -19,7 +19,7 @@
  "s": [                         // sera
   "V": "virus type and subtype, e.g. B or A(H3N2) or serotype"
   "H": "host",                  // empty if HUMAN
-  "L": "location",
+  "O": "location",
   "i": "isolation",
   "y": "year",
   "L": "lineage",

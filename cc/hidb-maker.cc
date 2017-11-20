@@ -1,5 +1,6 @@
-#include "acmacs-base/enumerate.hh"
 #include "acmacs-base/virus-name.hh"
+#include "acmacs-base/rjson.hh"
+#include "acmacs-base/read-file.hh"
 #include "acmacs-chart-2/chart.hh"
 #include "hidb-maker.hh"
 
@@ -32,8 +33,87 @@ void HidbMaker::add(const acmacs::chart::Chart& aChart)
 
 // ----------------------------------------------------------------------
 
+void HidbMaker::make_index()
+{
+    mTables.make_index();
+    mAntigens.make_index();
+    mSera.make_index();
+
+    mTables.make_indexes();
+    mAntigens.make_indexes();
+    mSera.make_indexes();
+
+} // HidbMaker::make_index
+
+// ----------------------------------------------------------------------
+
+namespace rjson
+{
+    template <> struct content_type<Lineage> { using type = rjson::string; };
+
+} // namespace rjson
+
+// ----------------------------------------------------------------------
+
+void HidbMaker::export_antigens(rjson::array& target) const
+{
+    for (auto& antigen: mAntigens) {
+        rjson::object ag;
+        ag.set_field_if_not_empty("V", antigen->virus_type);
+        ag.set_field_if_not_empty("H", antigen->host);
+        ag.set_field_if_not_empty("O", antigen->location);
+        ag.set_field_if_not_empty("i", antigen->isolation);
+        ag.set_field_if_not_empty("y", antigen->year);
+        ag.set_field_if_not_empty("L", antigen->lineage);
+        ag.set_field_if_not_empty("P", antigen->passage);
+        ag.set_field_if_not_empty("R", antigen->reassortant);
+        ag.set_array_field_if_not_empty("a", antigen->annotations.begin(), antigen->annotations.end());
+        ag.set_array_field_if_not_empty("D", antigen->dates.begin(), antigen->dates.end());
+        ag.set_array_field_if_not_empty("l", antigen->lab_ids.begin(), antigen->lab_ids.end());
+        ag.set_array_field_if_not_empty("T", antigen->tables.begin(), antigen->tables.end());
+        target.insert(std::move(ag));
+    }
+
+} // HidbMaker::export_antigens
+
+// ----------------------------------------------------------------------
+
+void HidbMaker::export_sera(rjson::array& target) const
+{
+    for (auto& serum: mSera) {
+        rjson::object sr;
+        sr.set_field_if_not_empty("V", serum->virus_type);
+        sr.set_field_if_not_empty("H", serum->host);
+        sr.set_field_if_not_empty("O", serum->location);
+        sr.set_field_if_not_empty("i", serum->isolation);
+        sr.set_field_if_not_empty("y", serum->year);
+        sr.set_field_if_not_empty("L", serum->lineage);
+        sr.set_field_if_not_empty("P", serum->passage);
+        sr.set_field_if_not_empty("R", serum->reassortant);
+        sr.set_field_if_not_empty("I", serum->serum_id);
+        sr.set_field_if_not_empty("s", serum->serum_species);
+        sr.set_array_field_if_not_empty("a", serum->annotations.begin(), serum->annotations.end());
+        sr.set_array_field_if_not_empty("T", serum->tables.begin(), serum->tables.end());
+        target.insert(std::move(sr));
+    }
+
+} // HidbMaker::export_sera
+
+// ----------------------------------------------------------------------
+
 void HidbMaker::save(std::string aFilename)
 {
+    make_index();
+
+    rjson::object data{{{"  version", rjson::string{"hidb-v5"}}, {"a", rjson::array{}}, {"s", rjson::array{}}, {"t", rjson::array{}}}};
+    export_antigens(data["a"]);
+    export_sera(data["s"]);
+
+    acmacs::file::write(aFilename, data.to_json_pp(1, rjson::json_pp_emacs_indent::yes));
+
+    std::cerr << "INFO: antigens: " << mAntigens.size() << '\n';
+    std::cerr << "INFO: sera:     " << mSera.size() << '\n';
+    std::cerr << "INFO: tables:   " << mTables.size() << '\n';
 
 } // HidbMaker::save
 
@@ -59,6 +139,17 @@ void Table::set_titers(const acmacs::chart::Titers& aTiters)
     }
 
 } // Table::set_titers
+
+// ----------------------------------------------------------------------
+
+void Table::make_indexes()
+{
+    antigens.resize(antigen_ptrs.size());
+    std::transform(antigen_ptrs.begin(), antigen_ptrs.end(), antigens.begin(), [](const auto& ptr) -> size_t { return ptr->index; });
+    sera.resize(serum_ptrs.size());
+    std::transform(serum_ptrs.begin(), serum_ptrs.end(), sera.begin(), [](const auto& ptr) -> size_t { return ptr->index; });
+
+} // Table::make_indexes
 
 // ----------------------------------------------------------------------
 
@@ -126,6 +217,15 @@ void AntigenSerum::add_table(Table *aTable)
     table_ptrs.insert(aTable);
 
 } // AntigenSerum::add_table
+
+// ----------------------------------------------------------------------
+
+void AntigenSerum::make_indexes()
+{
+    tables.resize(table_ptrs.size());
+    std::transform(table_ptrs.begin(), table_ptrs.end(), tables.begin(), [](const auto& ptr) -> size_t { return ptr->index; });
+
+} // AntigenSerum::make_indexes
 
 // ----------------------------------------------------------------------
 

@@ -6,6 +6,7 @@
 #include <memory>
 
 #include "acmacs-base/string.hh"
+#include "acmacs-base/enumerate.hh"
 
 namespace acmacs::chart
 {
@@ -16,6 +17,12 @@ namespace acmacs::chart
     class Serum;
 
 } // namespace acmacs::chart
+
+namespace rjson
+{
+    class array;
+
+} // namespace rjson
 
 // ----------------------------------------------------------------------
 
@@ -43,6 +50,24 @@ template <typename T> class less_unique_ptr
 
 template <typename T> class set_unique_ptr : public std::set<std::unique_ptr<T>, less_unique_ptr<T>>
 {
+ public:
+    inline void make_index()
+        {
+#pragma GCC diagnostic push
+#ifdef __clang__
+#pragma GCC diagnostic ignored "-Wunused-variable" // bug in clang 5.0?
+#endif
+            for (auto [index, entry]: acmacs::enumerate(*this))
+                entry->index = index;
+#pragma GCC diagnostic pop
+        }
+
+    inline void make_indexes()
+        {
+            for (auto& entry: *this)
+                entry->make_indexes();
+        }
+
 }; // class set_unique_ptr <>
 
 // ----------------------------------------------------------------------
@@ -87,6 +112,7 @@ class Table
 
     AntigenPtrs antigen_ptrs;
     SerumPtrs serum_ptrs;
+    size_t index;
 
     Table(const acmacs::chart::Info& aInfo);
 
@@ -101,6 +127,7 @@ class Table
     void set_titers(const acmacs::chart::Titers& aTiters);
     inline void add_antigen(Antigen* aAntigen) { antigen_ptrs.insert(aAntigen); }
     inline void add_serum(Serum* aSerum) { serum_ptrs.insert(aSerum); }
+    void make_indexes();
 
 }; // class Table
 
@@ -143,12 +170,14 @@ class AntigenSerum
  public:
     Indexes tables;
     TablePtrs table_ptrs;
+    size_t index;
 
     virtual ~AntigenSerum();
     virtual std::string to_string() const = 0;
     virtual std::string type_name() const = 0;
 
     void add_table(Table *aTable);
+    void make_indexes();
 
 }; // class AntigenSerum
 
@@ -258,6 +287,10 @@ class HidbMaker
     Antigens mAntigens;
     Sera mSera;
     Tables mTables;
+
+    void make_index();
+    void export_antigens(rjson::array& target) const;
+    void export_sera(rjson::array& target) const;
 
 }; // class HidbMaker
 
