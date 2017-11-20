@@ -177,8 +177,10 @@ void Table::make_indexes()
 {
     antigens.resize(antigen_ptrs.size());
     std::transform(antigen_ptrs.begin(), antigen_ptrs.end(), antigens.begin(), [](const auto& ptr) -> size_t { return ptr->index; });
+    std::sort(antigens.begin(), antigens.end());
     sera.resize(serum_ptrs.size());
     std::transform(serum_ptrs.begin(), serum_ptrs.end(), sera.begin(), [](const auto& ptr) -> size_t { return ptr->index; });
+    std::sort(sera.begin(), sera.end());
 
 } // Table::make_indexes
 
@@ -256,6 +258,7 @@ void AntigenSerum::make_indexes()
 {
     tables.resize(table_ptrs.size());
     std::transform(table_ptrs.begin(), table_ptrs.end(), tables.begin(), [](const auto& ptr) -> size_t { return ptr->index; });
+    std::sort(tables.begin(), tables.end());
 
 } // AntigenSerum::make_indexes
 
