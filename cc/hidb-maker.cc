@@ -12,11 +12,13 @@ void HidbMaker::add(const acmacs::chart::Chart& aChart)
     table->set_titers(*aChart.titers());
 
     auto source_antigens = aChart.antigens();
-    for (auto source_antigen: *source_antigens) {
+    std::vector<Antigen*> antigens_of_table(source_antigens->size(), nullptr);
+    for (auto [ag_no, source_antigen]: acmacs::enumerate(*source_antigens)) {
         if (!source_antigen->annotations().distinct()) {
             auto target_antigen = mAntigens.add(*source_antigen);
             target_antigen->add_table(table);
             table->add_antigen(target_antigen);
+            antigens_of_table[ag_no] = target_antigen;
         }
     }
 
@@ -26,6 +28,10 @@ void HidbMaker::add(const acmacs::chart::Chart& aChart)
             auto target_serum = mSera.add(*source_serum);
             target_serum->add_table(table);
             table->add_serum(target_serum);
+            for (size_t ag_no: source_serum->homologous_antigens()) {
+                if (const Antigen* ag = antigens_of_table[ag_no]; ag != nullptr)
+                    target_serum->homologous_ptrs.insert(ag);
+            }
         }
     }
 
@@ -82,7 +88,6 @@ void HidbMaker::export_antigens(rjson::array& target) const
 
 void HidbMaker::export_sera(rjson::array& target) const
 {
-    std::cerr << "WARNING: serum homologous not implemented" << '\n';
     for (auto& serum: mSera) {
         rjson::object sr;
         sr.set_field_if_not_empty("V", serum->virus_type);
@@ -207,7 +212,7 @@ Antigen* Antigens::add(const acmacs::chart::Antigen& aAntigen)
     auto insert_at = lower_bound(antigen);
     if (insert_at == end() || **insert_at != *antigen) {
         insert_at = insert(insert_at, std::move(antigen));
-        std::cerr << "DEBUG: AG " << (*insert_at)->to_string() << '\n';
+        // std::cerr << "DEBUG: AG " << (*insert_at)->to_string() << '\n';
     }
     // else {
     //     std::cerr << "DEBUG: AG " << antigen->to_string() << " already here as " + (*insert_at)->to_string() << '\n';
@@ -227,7 +232,7 @@ Serum* Sera::add(const acmacs::chart::Serum& aSerum)
     auto insert_at = lower_bound(serum);
     if (insert_at == end() || **insert_at != *serum) {
         insert_at = insert(insert_at, std::move(serum));
-        std::cerr << "DEBUG: SR " << (*insert_at)->to_string() << '\n';
+        // std::cerr << "DEBUG: SR " << (*insert_at)->to_string() << '\n';
     }
     // else {
     //     std::cerr << "DEBUG: SR " << serum->to_string() << " already here as " + (*insert_at)->to_string() << '\n';
@@ -301,6 +306,18 @@ Serum::Serum(const acmacs::chart::Serum& aSerum)
     }
 
 } // Serum::Serum
+
+// ----------------------------------------------------------------------
+
+void Serum::make_indexes()
+{
+    AntigenSerum::make_indexes();
+
+    homologous.resize(homologous_ptrs.size());
+    std::transform(homologous_ptrs.begin(), homologous_ptrs.end(), homologous.begin(), [](const auto& ptr) -> size_t { return ptr->index; });
+    std::sort(homologous.begin(), homologous.end());
+
+} // Serum::make_indexes
 
 // ----------------------------------------------------------------------
 

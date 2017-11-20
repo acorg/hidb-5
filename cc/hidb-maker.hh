@@ -179,7 +179,7 @@ class AntigenSerum
     virtual std::string type_name() const = 0;
 
     void add_table(Table *aTable);
-    void make_indexes();
+    virtual void make_indexes();
 
 }; // class AntigenSerum
 
@@ -265,6 +265,7 @@ class Serum : public AntigenSerum
 
     inline std::string type_name() const override { return "Serum"; }
     std::string to_string() const override;
+    void make_indexes() override;
 
 }; // class Serum
 
