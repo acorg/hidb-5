@@ -50,6 +50,8 @@ void HidbMaker::make_index()
 namespace rjson
 {
     template <> struct content_type<Lineage> { using type = rjson::string; };
+    template <> struct content_type<Virus> { using type = rjson::string; };
+    // template <> struct content_type<std::vector<std::string>> { using type = rjson::array; };
 
 } // namespace rjson
 
@@ -80,6 +82,7 @@ void HidbMaker::export_antigens(rjson::array& target) const
 
 void HidbMaker::export_sera(rjson::array& target) const
 {
+    std::cerr << "WARNING: serum homologous not implemented" << '\n';
     for (auto& serum: mSera) {
         rjson::object sr;
         sr.set_field_if_not_empty("V", serum->virus_type);
@@ -94,10 +97,38 @@ void HidbMaker::export_sera(rjson::array& target) const
         sr.set_field_if_not_empty("s", serum->serum_species);
         sr.set_array_field_if_not_empty("a", serum->annotations.begin(), serum->annotations.end());
         sr.set_array_field_if_not_empty("T", serum->tables.begin(), serum->tables.end());
+        sr.set_array_field_if_not_empty("h", serum->homologous.begin(), serum->homologous.end());
         target.insert(std::move(sr));
     }
 
 } // HidbMaker::export_sera
+
+// ----------------------------------------------------------------------
+
+void HidbMaker::export_tables(rjson::array& target) const
+{
+    std::cerr << "WARNING: table lineage not implemented" << '\n';
+    for (auto& table: mTables) {
+        rjson::object tb;
+        target.insert(std::move(tb));
+        tb.set_field_if_not_empty("v", table->virus);
+        tb.set_field_if_not_empty("V", table->virus_type);
+        tb.set_field_if_not_empty("A", table->assay);
+        tb.set_field_if_not_empty("D", table->date);
+        tb.set_field_if_not_empty("l", table->lab);
+        tb.set_field_if_not_empty("r", table->rbc_species);
+        tb.set_field_if_not_empty("s", table->subset);
+        tb.set_array_field_if_not_empty("a", table->antigens.begin(), table->antigens.end());
+        tb.set_array_field_if_not_empty("s", table->sera.begin(), table->sera.end());
+        rjson::array titers;
+        for (const auto& row: table->titers) {
+            titers.insert(rjson::array{rjson::array::use_iterator, row.begin(), row.end()});
+        }
+        tb.set_field("t", std::move(titers));
+        target.insert(std::move(tb));
+    }
+
+} // HidbMaker::export_tables
 
 // ----------------------------------------------------------------------
 
@@ -108,6 +139,7 @@ void HidbMaker::save(std::string aFilename)
     rjson::object data{{{"  version", rjson::string{"hidb-v5"}}, {"a", rjson::array{}}, {"s", rjson::array{}}, {"t", rjson::array{}}}};
     export_antigens(data["a"]);
     export_sera(data["s"]);
+    export_tables(data["t"]);
 
     acmacs::file::write(aFilename, data.to_json_pp(1, rjson::json_pp_emacs_indent::yes));
 

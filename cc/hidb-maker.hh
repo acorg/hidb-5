@@ -84,7 +84,7 @@ class Virus : public std::string
 class Lineage : public std::string
 {
  public:
-    inline Lineage(std::string aSource) : std::string{aSource == "UNKNOWN" ? std::string{} : aSource} {}
+    inline Lineage(std::string aSource) : std::string{aSource == "UNKNOWN" ? std::string{} : aSource.substr(0, 1)} {}
 
 }; // class Lineage
 
@@ -247,6 +247,8 @@ class Serum : public AntigenSerum
     std::string serum_id;
     std::string serum_species;
     Lineage lineage;
+    Indexes homologous;
+    AntigenPtrs homologous_ptrs;
 
     Serum(const acmacs::chart::Serum& aSerum);
 
@@ -291,6 +293,7 @@ class HidbMaker
     void make_index();
     void export_antigens(rjson::array& target) const;
     void export_sera(rjson::array& target) const;
+    void export_tables(rjson::array& target) const;
 
 }; // class HidbMaker
 
