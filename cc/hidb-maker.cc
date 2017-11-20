@@ -1,3 +1,4 @@
+#include "acmacs-base/stream.hh"
 #include "acmacs-base/virus-name.hh"
 #include "acmacs-base/rjson.hh"
 #include "acmacs-base/read-file.hh"
@@ -29,8 +30,9 @@ void HidbMaker::add(const acmacs::chart::Chart& aChart)
             target_serum->add_table(table);
             table->add_serum(target_serum);
             for (size_t ag_no: source_serum->homologous_antigens()) {
-                if (const Antigen* ag = antigens_of_table[ag_no]; ag != nullptr)
+                if (const Antigen* ag = antigens_of_table[ag_no]; ag != nullptr) {
                     target_serum->homologous_ptrs.insert(ag);
+                }
             }
         }
     }
