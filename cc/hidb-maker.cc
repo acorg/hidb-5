@@ -282,12 +282,16 @@ Antigen::Antigen(const acmacs::chart::Antigen& aAntigen)
     }
     catch (virus_name::Unrecognized&) {
         if (name.size() > 3 && (name[2] == ' ' || name[2] == '-')) {
-              // cdc name
+              // cdc name with location
             location = name.substr(0, 2);
             isolation = name.substr(3);
         }
-        else
-            throw std::runtime_error("Unrecognized antigen name: " + name);
+        else {
+              // cdc name without location (H3 FRA tables sometimes miss location data)
+            std::cerr << "WARNING: cdc name without location: " << name << '\n';
+            location = "cdc-name-without-location";
+            isolation = name;
+        }
     }
 
 } // Antigen::Antigen
