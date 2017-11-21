@@ -279,8 +279,14 @@ Antigen::Antigen(const acmacs::chart::Antigen& aAntigen)
     try {
         std::string temp_passage;
         virus_name::split(name, virus_type, host, location, isolation, year, temp_passage);
+        if (!temp_passage.empty()) {
+            throw virus_name::Unrecognized{name};
+        }
     }
     catch (virus_name::Unrecognized&) {
+        virus_type.clear();
+        host.clear();
+        year.clear();
         if (name.size() > 3 && (name[2] == ' ' || name[2] == '-')) {
               // cdc name with location
             location = name.substr(0, 2);
@@ -306,9 +312,17 @@ Serum::Serum(const acmacs::chart::Serum& aSerum)
     try {
         std::string temp_passage;
         virus_name::split(name, virus_type, host, location, isolation, year, temp_passage);
+        if (!temp_passage.empty()) {
+              // std::cerr << "WARNING: strange serum name: " << name << '\n';
+            throw virus_name::Unrecognized{name};
+        }
     }
     catch (virus_name::Unrecognized&) {
         std::cerr << "WARNING: unrecognized serum name: " << name << '\n';
+        virus_type.clear();
+        host.clear();
+        location.clear();
+        year.clear();
         isolation = name;
     }
 
