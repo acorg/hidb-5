@@ -3,6 +3,7 @@
 
 #include "acmacs-base/string.hh"
 #include "acmacs-base/stream.hh"
+#include "acmacs-base/timeit.hh"
 #include "acmacs-base/rjson.hh"
 #include "hidb-5/hidb-json.hh"
 #include "hidb-5/hidb-bin.hh"
@@ -36,6 +37,10 @@ class Estimations
 
 // ----------------------------------------------------------------------
 
+static size_t make_antigen(const rjson::object& aSource, hidb::bin::Antigen* aTarget);
+
+// ----------------------------------------------------------------------
+
 std::string hidb::json::read(std::string aData)
 {
     using ptr_t = char*;
@@ -48,15 +53,36 @@ std::string hidb::json::read(std::string aData)
 
     auto* header_bin = reinterpret_cast<hidb::bin::Header*>(const_cast<char*>(result.data()));
     auto* antigen_index = reinterpret_cast<hidb::bin::ASTIndex*>(reinterpret_cast<ptr_t>(header_bin) + sizeof(*header_bin));
-    auto* antigen_0 = reinterpret_cast<hidb::bin::ASTIndex*>(reinterpret_cast<ptr_t>(antigen_index) + sizeof(hidb::bin::ast_offset_t) * estimations.number_of_antigens + sizeof(hidb::bin::ast_number_t));
+    auto* antigen_data = reinterpret_cast<ptr_t>(reinterpret_cast<ptr_t>(antigen_index) + sizeof(hidb::bin::ast_offset_t) * estimations.number_of_antigens + sizeof(hidb::bin::ast_number_t));
 
     header_bin->virus_type_size = static_cast<decltype(header_bin->virus_type_size)>(estimations.virus_type.size());
     std::memset(header_bin->virus_type, 0, static_cast<size_t>(header_bin->virus_type_size));
     std::memmove(header_bin->virus_type, estimations.virus_type.data(), static_cast<size_t>(header_bin->virus_type_size));
 
+    Timeit ti_antigens("converting " + acmacs::to_string(estimations.number_of_antigens) + " antigens: ");
+    antigen_index->number_of = static_cast<hidb::bin::ast_number_t>(estimations.number_of_antigens);
+    hidb::bin::ast_offset_t* antigen_offset = &antigen_index->offset;
+    hidb::bin::ast_offset_t previous_antigen_offset = 0;
+    for (const rjson::object& antigen: static_cast<const rjson::array&>(val["a"])) {
+        const auto ag_size = make_antigen(antigen, reinterpret_cast<hidb::bin::Antigen*>(antigen_data));
+        *antigen_offset = static_cast<hidb::bin::ast_offset_t>(ag_size) + previous_antigen_offset;
+        previous_antigen_offset = *antigen_offset;
+        ++antigen_offset;
+        antigen_data += ag_size;
+    }
+    ti_antigens.report();
+
     return result;
 
 } // hidb::json::read
+
+// ----------------------------------------------------------------------
+
+size_t make_antigen(const rjson::object& aSource, hidb::bin::Antigen* aTarget)
+{
+    return sizeof(*aTarget);
+
+} // make_antigen
 
 // ----------------------------------------------------------------------
 
