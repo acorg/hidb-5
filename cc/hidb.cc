@@ -2,6 +2,7 @@
 #include "acmacs-base/read-file.hh"
 #include "acmacs-base/rjson.hh"
 #include "hidb-5/hidb.hh"
+#include "hidb-5/hidb-bin.hh"
 
 // ----------------------------------------------------------------------
 

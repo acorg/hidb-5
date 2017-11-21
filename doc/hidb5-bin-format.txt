@@ -14,7 +14,7 @@ of bytes
                             antigens
 4                           number of antigens
 num-antigens * 4            offset of each antigen record, starting with antigen 1 and ending with num-antigens+1
-                              i.e. theres is no offset of antigen 0
+                              i.e. there is no offset of antigen 0
 
   ----                      one antigen record
 1                           location offset from host beginning, 0 if absent
