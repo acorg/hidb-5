@@ -6,6 +6,12 @@
 
 namespace hidb::bin
 {
+    using ast_number_t = uint32_t;
+    using ast_offset_t = uint32_t;
+    using date_t = uint32_t;
+    using number_of_table_indexes_t = uint32_t;
+    using table_index_t = uint32_t;
+
     struct Header
     {
         char signature[8]{'H', 'I', 'D', 'B', '0', '5', '0', '0'};
@@ -19,8 +25,8 @@ namespace hidb::bin
 
     struct ASTIndex
     {
-        uint32_t number_of;
-        uint32_t offset;
+        ast_number_t number_of;
+        ast_offset_t offset;
     };
 
     struct Antigen
@@ -62,7 +68,6 @@ namespace hidb::bin
 //             <lab_id-5>
 //                             padding, dates must start at 4
 // 4*num-dates <dates>         date is uint32, e.g. 20170101
-//                             padding, table indexes must start at 4
 // 4           <num-indexes>   number of table indexes
 // 4*num-indexes               index of table
     }; // struct Antigen

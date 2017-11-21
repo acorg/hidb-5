@@ -54,7 +54,6 @@ namespace hidb
 
      private:
 
-        void read_json(std::string aData);
 
     }; // class HiDb
 

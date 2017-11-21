@@ -57,7 +57,7 @@ class HiDbSet
 
 // ----------------------------------------------------------------------
 
-void hidb::setup(std::string aHiDbDir, std::optional<std::string> aLocDbFilename, bool aVerbose)
+void hidb::setup(std::string aHiDbDir, std::optional<std::string> /*aLocDbFilename*/, bool aVerbose)
 {
     sVerbose = aVerbose;
     if (!aHiDbDir.empty())
