@@ -19,9 +19,9 @@
  "s": [                         // sera
   "V": "virus type and subtype, e.g. B or A(H3N2) or serotype"
   "H": "host",                  // empty if HUMAN
-  "O": "location",
-  "i": "isolation",
-  "y": "year",
+  "O": "location",              // empty if name was not recognized
+  "i": "isolation",             // name in case full name was not recognized (in old tables)
+  "y": "year",                  // empty if name was not recognized
   "L": "lineage",
   "P": "passage",
   "R": "reassortant",

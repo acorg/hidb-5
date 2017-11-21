@@ -308,7 +308,8 @@ Serum::Serum(const acmacs::chart::Serum& aSerum)
         virus_name::split(name, virus_type, host, location, isolation, year, temp_passage);
     }
     catch (virus_name::Unrecognized&) {
-        throw std::runtime_error("Unrecognized serum name: " + name);
+        std::cerr << "WARNING: unrecognized serum name: " << name << '\n';
+        isolation = name;
     }
 
 } // Serum::Serum
