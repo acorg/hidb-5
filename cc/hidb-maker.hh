@@ -132,12 +132,12 @@ class Table
     Table(const acmacs::chart::Info& aInfo);
 
     inline bool operator==(const Table& rhs) const { return string::compare(
-        {    virus,     virus_type,     subset,     assay,     lab,     rbc_species,     date},
-        {rhs.virus, rhs.virus_type, rhs.subset, rhs.assay, rhs.lab, rhs.rbc_species, rhs.date}) == 0; }
+        {    virus,     virus_type,     subset,     lineage, assay,     lab,     rbc_species,     date},
+        {rhs.virus, rhs.virus_type, rhs.subset, rhs.lineage, rhs.assay, rhs.lab, rhs.rbc_species, rhs.date}) == 0; }
 
     inline bool operator<(const Table& rhs) const { return string::compare(
-        {    virus,     virus_type,     subset,     assay,     lab,     rbc_species,     date},
-        {rhs.virus, rhs.virus_type, rhs.subset, rhs.assay, rhs.lab, rhs.rbc_species, rhs.date}) < 0; }
+        {    virus,     virus_type,     subset,     lineage,     assay,     lab,     rbc_species,     date},
+        {rhs.virus, rhs.virus_type, rhs.subset, rhs.lineage, rhs.assay, rhs.lab, rhs.rbc_species, rhs.date}) < 0; }
 
     void set_titers(const acmacs::chart::Titers& aTiters);
     inline void add_antigen(Antigen* aAntigen) { antigen_ptrs.insert(aAntigen); }

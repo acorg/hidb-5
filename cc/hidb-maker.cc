@@ -200,10 +200,9 @@ Table* Tables::add(const acmacs::chart::Chart& aChart)
     const auto insert_at = lower_bound(table);
     if (insert_at != end() && **insert_at == *table)
         throw std::runtime_error("Table " + acmacs::to_string(*table) + " is already in hidb");
-    std::cerr << "DEBUG: adding " << acmacs::to_string(*table) << '\n';
     table->lineage = aChart.lineage();
-    const auto inserted = insert(insert_at, std::move(table));
-    return inserted->get();
+    std::cerr << "DEBUG: adding " << acmacs::to_string(*table) << '\n';
+    return insert(insert_at, std::move(table))->get();
 
 } // Tables::add
 
@@ -330,7 +329,7 @@ void Serum::make_indexes()
 
 std::string acmacs::to_string(const Table& aTable)
 {
-    return string::join(":", {aTable.virus, aTable.virus_type, aTable.subset, aTable.assay, aTable.lab, aTable.rbc_species, aTable.date});
+    return string::join(":", {aTable.virus, aTable.virus_type, aTable.subset, aTable.lineage, aTable.assay, aTable.lab, aTable.rbc_species, aTable.date});
 
 } // acmacs::to_string
 
