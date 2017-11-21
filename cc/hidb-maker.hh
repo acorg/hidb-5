@@ -88,6 +88,8 @@ class Assay : public std::string
         {
             if (aSource == "PLAQUE REDUCTION NEUTRALISATION")
                 assign("PRN");
+            else if (aSource == "FOCUS REDUCTION")
+                assign("FR");
         }
 
 }; // class Assay
