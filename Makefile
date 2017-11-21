@@ -7,9 +7,17 @@ MAKEFLAGS = -w
 # ----------------------------------------------------------------------
 
 TARGETS = \
-	$(DIST)/hidb-make
+	$(DIST)/hidb-make \
+	$(DIST)/hidb5-find
 
 HIDB_MAKE_SOURCES = hidb-maker.cc hidb-make.cc
+
+HIDB_SOURCES = hidb.cc hidb-set.cc
+
+HIDB_LIB_MAJOR = 5
+HIDB_LIB_MINOR = 0
+HIDB_LIB_NAME = libhidb
+HIDB_LIB = $(DIST)/$(call shared_lib_name,$(HIDB_LIB_NAME),$(HIDB_LIB_MAJOR),$(HIDB_LIB_MINOR))
 
 # ----------------------------------------------------------------------
 
@@ -30,8 +38,9 @@ PKG_INCLUDES = $(shell pkg-config --cflags liblzma)
 
 all: check-acmacsd-root $(TARGETS)
 
-install: check-acmacsd-root $(TARGETS)
-	ln -sf $(abspath dist)/hidb-* $(AD_BIN)
+install: check-acmacsd-root install-headers $(TARGETS)
+	$(call install_lib,$(HIDB_LIB))
+	ln -sf $(abspath dist)/hidb* $(AD_BIN)
 
 test: install
 	test/test
@@ -44,9 +53,17 @@ include $(ACMACSD_ROOT)/share/makefiles/Makefile.rtags
 
 # ----------------------------------------------------------------------
 
+$(HIDB_LIB): $(patsubst %.cc,$(BUILD)/%.o,$(HIDB_SOURCES)) | $(DIST)
+	@printf "%-16s %s\n" "SHARED" $@
+	@$(call make_shared,$(HIDB_LIB_NAME),$(HIDB_LIB_MAJOR),$(HIDB_LIB_MINOR)) $(LDFLAGS) -o $@ $^ $(LDLIBS)
+
 $(DIST)/hidb-make: $(patsubst %.cc,$(BUILD)/%.o,$(HIDB_MAKE_SOURCES)) | $(DIST)
 	@printf "%-16s %s\n" "LINK" $@
 	@$(CXX) $(LDFLAGS) -o $@ $^ $(LDLIBS)
+
+$(DIST)/%: $(BUILD)/%.o | $(HIDB_LIB)
+	@printf "%-16s %s\n" "LINK" $@
+	@$(CXX) $(LDFLAGS) -o $@ $^ $(HIDB_LIB) $(LDLIBS)
 
 # ======================================================================
 ### Local Variables:
