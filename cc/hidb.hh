@@ -51,6 +51,7 @@ namespace hidb
         // void stat_antigens(HiDbStat& aStat, std::string aStart, std::string aEnd) const;
         // void stat_sera(HiDbStat& aStat, HiDbStat* aStatUnique, std::string aStart, std::string aEnd) const;
 
+
      private:
 
         void read_json(std::string aData);

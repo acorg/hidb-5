@@ -8,6 +8,7 @@ MAKEFLAGS = -w
 
 TARGETS = \
 	$(DIST)/hidb-make \
+	$(DIST)/hidb5-stat \
 	$(DIST)/hidb5-find
 
 HIDB_MAKE_SOURCES = hidb-maker.cc hidb-make.cc

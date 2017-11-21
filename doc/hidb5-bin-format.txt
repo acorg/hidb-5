@@ -1,0 +1,38 @@
+Binary format of hidb5
+
+Number      Content         Description
+of bytes
+
+8           HIDB0500        signature (version)
+4                           antigen part offset from beginning of signature
+4                           serum part offset from beginning of signature
+4                           table part offset from beginning of signature
+1                           virus type size in bytes
+7           A(H3N2)         virus type (zero padded)
+
+----------------------------------------------------------------------
+                            antigens
+4                           number of antigens
+num-antigens * 4            offset of each antigen record, starting with antigen 1 and ending with num-antigens+1
+                              i.e. theres is no offset of antigen 0
+
+  ----                      one antigen record
+
+host
+location
+isolation
+year
+lineage
+passage
+reassortant
+annotations[]
+dates[]
+lab_id[]
+table indexes[]
+
+----------------------------------------------------------------------
+                            sera
+4                           number of sera
+----------------------------------------------------------------------
+                            tables
+4                           number of tables
