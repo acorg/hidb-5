@@ -12,7 +12,7 @@ namespace hidb::bin
     using date_t = uint32_t;
     using number_of_table_indexes_t = uint32_t;
     using table_index_t = uint32_t;
-    using number_of_homologous_t = uint32_t;
+      // using number_of_homologous_t = uint32_t;
     using homologous_t = uint32_t;
 
     struct Header
