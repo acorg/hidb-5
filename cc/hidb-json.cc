@@ -289,7 +289,7 @@ void Estimations::serum(const rjson::array& sera)
     size_t sr_max_host = 0, sr_max_location = 0, sr_max_isolation = 0, sr_max_passage = 0,
             sr_max_reassortant = 0, sr_max_annotations = 0, sr_max_serum_id = 0, sr_max_serum_species = 0,
             sr_max_all = 0;
-    size_t sr_max_num_annotations = 0, sr_max_num_table_indexes = 0;
+    size_t sr_max_num_annotations = 0, sr_max_num_table_indexes = 0, sr_max_num_homologous = 0;
     for (const auto& serum: sera) {
         const auto host = serum.get_or_default("H", "").size();
         sr_max_host = std::max(sr_max_host, host);
@@ -311,14 +311,16 @@ void Estimations::serum(const rjson::array& sera)
             annotations += anno.size();
         sr_max_annotations = std::max(sr_max_annotations, annotations);
         sr_max_num_table_indexes = std::max(sr_max_num_table_indexes, serum.get_or_empty_array("T").size());
-        sr_max_all = std::max(sr_max_all, host + location + isolation + passage + reassortant + annotations + serum_id + serum_species);
-
+        size_t num_homologous = serum.get_or_empty_array("h").size();
+        sr_max_num_homologous = std::max(sr_max_num_homologous, num_homologous);
+        sr_max_all = std::max(sr_max_all, host + location + isolation + passage + reassortant + annotations + serum_id + serum_species + num_homologous * sizeof(hidb::bin::homologous_t));
         if (const auto vt = serum.get_or_default("V", ""); !vt.empty())
             ++virus_types.emplace(vt, 0).first->second;
     }
 
     serum_size = sr_max_all + sizeof(hidb::bin::Serum)
-            + (sizeof(hidb::bin::number_of_table_indexes_t) + sr_max_num_table_indexes * sizeof(hidb::bin::table_index_t)) * 2; // table-indexes + homologous per table
+            + sizeof(hidb::bin::number_of_homologous_t) + sr_max_num_homologous * sizeof(hidb::bin::homologous_t)
+            + sizeof(hidb::bin::number_of_table_indexes_t) + sr_max_num_table_indexes * sizeof(hidb::bin::table_index_t);
 
     std::cerr << "Sera:               " << number_of_sera << '\n'
               << "sr_max_host:        " << sr_max_host << '\n'
@@ -331,9 +333,10 @@ void Estimations::serum(const rjson::array& sera)
               << "sr_max_serum_id:    " << sr_max_serum_id << '\n'
               << "sr_max_serum_speci: " << sr_max_serum_species << '\n'
               << "sr_max_num_table_i: " << sr_max_num_table_indexes << '\n'
+              << "sr_max_num_homolog: " << sr_max_num_homologous << '\n'
               << "sr_max_all:         " << sr_max_all << '\n'
               << "serum_size:         " << serum_size << '\n'
-              << "sr_super_max:       " << (sr_max_host + sr_max_location + sr_max_isolation + sr_max_passage + sr_max_reassortant + sr_max_annotations + sr_max_serum_id + sr_max_serum_species) << '\n'
+              << "sr_super_max:       " << (sr_max_host + sr_max_location + sr_max_isolation + sr_max_passage + sr_max_reassortant + sr_max_annotations + sr_max_serum_id + sr_max_serum_species + sr_max_num_homologous * sizeof(hidb::bin::homologous_t)) << '\n'
               << '\n';
 
 } // Estimations::serum

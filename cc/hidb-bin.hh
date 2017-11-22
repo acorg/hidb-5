@@ -12,6 +12,8 @@ namespace hidb::bin
     using date_t = uint32_t;
     using number_of_table_indexes_t = uint32_t;
     using table_index_t = uint32_t;
+    using number_of_homologous_t = uint32_t;
+    using homologous_t = uint32_t;
 
     struct Header
     {
@@ -77,11 +79,11 @@ namespace hidb::bin
 
         uint8_t annotation_offset[3];
         uint8_t serum_id_offset;
+
         uint8_t serum_species_offset;
         uint8_t homologous_antigen_index_offset;
         uint8_t table_index_offset;
         char lineage;
-        uint8_t _padding1;
 
         char year_data[4];
 

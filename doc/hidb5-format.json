@@ -31,7 +31,7 @@
   "T": [                        // for each table this serum found in
    0,                           // index in toplevel "t" (table number)
   ],
-  "h": [                        // homologous antigens, one entry per table that serum is in
+  "h": [                        // homologous antigens
    0,                           // index in toplevel "a" of the homologous antigen in the corresponding table
   ]
  ],
