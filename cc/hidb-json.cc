@@ -1,5 +1,6 @@
 #include <map>
 #include <cstring>
+#include <limits>
 
 #include "acmacs-base/string.hh"
 #include "acmacs-base/stream.hh"
@@ -48,8 +49,7 @@ std::string hidb::json::read(std::string aData)
     const auto val = rjson::parse_string(aData);
     Estimations estimations{val};
 
-    std::string result;
-    result.reserve(estimations.size);
+    std::string result(estimations.size, 0);
 
     auto* header_bin = reinterpret_cast<hidb::bin::Header*>(const_cast<char*>(result.data()));
     auto* antigen_index = reinterpret_cast<hidb::bin::ASTIndex*>(reinterpret_cast<ptr_t>(header_bin) + sizeof(*header_bin));
@@ -80,7 +80,44 @@ std::string hidb::json::read(std::string aData)
 
 size_t make_antigen(const rjson::object& aSource, hidb::bin::Antigen* aTarget)
 {
+    if (std::string year = aSource.get_or_default("y", ""); year.size() == 4)
+        std::memmove(aTarget->year, year.data(), 4);
+    else if (!year.empty())
+        throw std::runtime_error("Invalid year in " + aSource.to_json());
+
+    auto* const target_base = reinterpret_cast<char*>(aTarget) + sizeof(hidb::bin::Antigen);
+    auto set_offset = [target_base,&aSource](uint8_t& offset, char* target) {
+        const auto off = static_cast<size_t>(target - target_base);
+        if (off > std::numeric_limits<std::decay_t<decltype(offset)>>::max())
+            throw std::runtime_error("Overflow when setting offset for a field (antigen): " + acmacs::to_string(off) + " when processing " + aSource.to_json());
+        offset = static_cast<std::decay_t<decltype(offset)>>(off);
+    };
+
+    auto* target = target_base;
+    if (auto host = aSource.get_or_default("H", ""); !host.empty()) {
+        std::memmove(target, host.data(), host.size());
+        target += host.size();
+    }
+    if (auto location = aSource.get_or_default("O", ""); !location.empty()) {
+        std::memmove(target, location.data(), location.size());
+        set_offset(aTarget->location_offset, target);
+        target += location.size();
+    }
+    else {
+        std::cerr << "WARNING: empty location in " << aSource << '\n';
+    }
+
     return sizeof(*aTarget);
+
+  // "O": "location",              // cdc_abbreviation in case of cdc name
+  // "i": "isolation",             // name in case of cdc name
+  // "L": "lineage",
+  // "P": "passage",
+  // "R": "reassortant",
+  // "a": ["annotation"],
+  // "D": ["isolation date"],
+  // "l": ["lab_id"],
+  // "T":
 
 } // make_antigen
 

@@ -16,7 +16,7 @@ of bytes
 num-antigens * 4            offset of each antigen record, starting with antigen 1 and ending with num-antigens+1
                               i.e. there is no offset of antigen 0
 
-  ----                      one antigen record
+  ----                      antigen record
 1                           location offset from host beginning, 0 if absent
 1                           isolation offset from host beginning
 1                           passage offset from host beginning, 0 if absent
@@ -31,8 +31,8 @@ num-antigens * 4            offset of each antigen record, starting with antigen
 1                           lab-id-5  offset from host beginning, 0 if absent       -
 1                           dates offset from host beginning, 0 if absent
 1                           table indexes offset from host beginning
-1           <lineage>
-4           <year>
+1           <lineage>       V, Y, uint8_t(0)
+4           <year>          if year is not known filled with uint32_t(0)
             <host>
             <location>
             <isolation>
