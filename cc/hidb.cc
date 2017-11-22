@@ -121,6 +121,100 @@ std::vector<size_t> hidb::Antigen::tables() const
 
 // ----------------------------------------------------------------------
 
+std::shared_ptr<hidb::Sera> hidb::HiDb::sera() const
+{
+    const auto* sera = mData + reinterpret_cast<const hidb::bin::Header*>(mData)->serum_offset;
+    const auto number_of_sera = *reinterpret_cast<const hidb::bin::ast_number_t*>(sera);
+    return std::make_shared<hidb::Sera>(static_cast<size_t>(number_of_sera),
+                                            sera + sizeof(hidb::bin::ast_number_t),
+                                            sera + sizeof(hidb::bin::ast_number_t) + sizeof(hidb::bin::ast_offset_t) * number_of_sera);
+
+} // hidb::HiDb::sera
+
+// ----------------------------------------------------------------------
+
+std::shared_ptr<acmacs::chart::Serum> hidb::Sera::operator[](size_t aIndex) const
+{
+    if (aIndex == 0) {
+        return std::make_shared<hidb::Serum>(mSerum0);
+    }
+    else {
+        return std::make_shared<hidb::Serum>(mSerum0 + reinterpret_cast<const hidb::bin::ast_offset_t*>(mIndex)[aIndex - 1]);
+    }
+
+} // hidb::Sera::operator[]
+
+// ----------------------------------------------------------------------
+
+acmacs::chart::Name hidb::Serum::name() const
+{
+    return reinterpret_cast<const hidb::bin::Serum*>(mSerum)->name();
+
+} // hidb::Serum::name
+
+// ----------------------------------------------------------------------
+
+acmacs::chart::Passage hidb::Serum::passage() const
+{
+    return reinterpret_cast<const hidb::bin::Serum*>(mSerum)->passage();
+
+} // hidb::Serum::passsre
+
+// ----------------------------------------------------------------------
+
+acmacs::chart::BLineage hidb::Serum::lineage() const
+{
+    return reinterpret_cast<const hidb::bin::Serum*>(mSerum)->lineage;
+
+} // hidb::Serum::lineage
+
+// ----------------------------------------------------------------------
+
+acmacs::chart::Reassortant hidb::Serum::reassortant() const
+{
+    return reinterpret_cast<const hidb::bin::Serum*>(mSerum)->reassortant();
+
+} // hidb::Serum::reassortant
+
+// ----------------------------------------------------------------------
+
+acmacs::chart::Annotations hidb::Serum::annotations() const
+{
+    return reinterpret_cast<const hidb::bin::Serum*>(mSerum)->annotations();
+
+} // hidb::Serum::annotations
+
+// ----------------------------------------------------------------------
+
+acmacs::chart::SerumId hidb::Serum::serum_id() const
+{
+
+} // hidb::Serum::serum_id
+
+// ----------------------------------------------------------------------
+
+acmacs::chart::SerumSpecies hidb::Serum::serum_species() const
+{
+
+} // hidb::Serum::serum_species
+
+// ----------------------------------------------------------------------
+
+acmacs::chart::PointIndexList hidb::Serum::homologous_antigens() const
+{
+
+} // hidb::Serum::homologous_antigens
+
+// ----------------------------------------------------------------------
+
+std::vector<size_t> hidb::Serum::tables() const
+{
+    const auto [size, ptr] = reinterpret_cast<const hidb::bin::Serum*>(mSerum)->tables();
+    std::vector<size_t> result(size);
+    std::transform(ptr, ptr + size, result.begin(), [](const auto& index) -> size_t { return static_cast<size_t>(index); });
+    return result;
+
+} // hidb::Serum::tables
 
 // ----------------------------------------------------------------------
 /// Local Variables:

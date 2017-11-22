@@ -286,7 +286,49 @@ void Estimations::serum(const rjson::array& sera)
 {
     number_of_sera = sera.size();
 
-    serum_size = 0;
+    size_t sr_max_host = 0, sr_max_location = 0, sr_max_isolation = 0, sr_max_passage = 0,
+            sr_max_reassortant = 0, sr_max_annotations = 0,
+            sr_max_all = 0;
+    size_t sr_max_num_annotations = 0, sr_max_num_table_indexes = 0;
+    for (const auto& serum: sera) {
+        const auto host = serum.get_or_default("H", "").size();
+        sr_max_host = std::max(sr_max_host, host);
+        const auto location = serum.get_or_default("O", "").size();
+        sr_max_location = std::max(sr_max_location, location);
+        const auto isolation = serum.get_or_default("i", "").size();
+        sr_max_isolation = std::max(sr_max_isolation, isolation);
+        const auto passage = serum.get_or_default("P", "").size();
+        sr_max_passage = std::max(sr_max_passage, passage);
+        const auto reassortant = serum.get_or_default("R", "").size();
+        sr_max_reassortant = std::max(sr_max_reassortant, reassortant);
+        sr_max_num_annotations = std::max(sr_max_num_annotations, serum.get_or_empty_array("a").size());
+        size_t annotations = 0;
+        for (const rjson::string& anno: serum.get_or_empty_array("a"))
+            annotations += anno.size();
+        sr_max_annotations = std::max(sr_max_annotations, annotations);
+        sr_max_num_table_indexes = std::max(sr_max_num_table_indexes, serum.get_or_empty_array("T").size());
+        sr_max_all = std::max(sr_max_all, host + location + isolation + passage + reassortant + annotations);
+
+        if (const auto vt = serum.get_or_default("V", ""); !vt.empty())
+            ++virus_types.emplace(vt, 0).first->second;
+    }
+
+    serum_size = sr_max_all + sizeof(hidb::bin::Serum)
+            + sizeof(hidb::bin::number_of_table_indexes_t) + sr_max_num_table_indexes * sizeof(hidb::bin::table_index_t);
+
+    std::cerr << "Sera:               " << number_of_sera << '\n'
+              << "sr_max_host:        " << sr_max_host << '\n'
+              << "sr_max_location:    " << sr_max_location << '\n'
+              << "sr_max_isolation:   " << sr_max_isolation << '\n'
+              << "sr_max_passage:     " << sr_max_passage << '\n'
+              << "sr_max_reassortant: " << sr_max_reassortant << '\n'
+              << "sr_max_annotations: " << sr_max_annotations << '\n'
+              << "sr_max_num_annotat: " << sr_max_num_annotations << '\n'
+              << "sr_max_num_table_i: " << sr_max_num_table_indexes << '\n'
+              << "sr_max_all:         " << sr_max_all << '\n'
+              << "serum_size:         " << serum_size << '\n'
+              << "sr_super_max:       " << (sr_max_host + sr_max_location + sr_max_isolation + sr_max_passage + sr_max_reassortant + sr_max_annotations) << '\n'
+              << '\n';
 
 } // Estimations::serum
 

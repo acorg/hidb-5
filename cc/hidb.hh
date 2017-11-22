@@ -48,13 +48,54 @@ namespace hidb
 
     }; // class Antigens
 
+      // ----------------------------------------------------------------------
+
+    class Serum : public acmacs::chart::Serum
+    {
+     public:
+        inline Serum(const char* aSerum) : mSerum(aSerum) {}
+
+        acmacs::chart::Name name() const override;
+        acmacs::chart::Passage passage() const override;
+        acmacs::chart::BLineage lineage() const override;
+        acmacs::chart::Reassortant reassortant() const override;
+        acmacs::chart::Annotations annotations() const override;
+        acmacs::chart::SerumId serum_id() const override;
+        acmacs::chart::SerumSpecies serum_species() const override;
+        acmacs::chart::PointIndexList homologous_antigens() const override;
+
+        std::vector<size_t> tables() const;
+
+     private:
+        const char* mSerum;
+
+    }; // class Serum
+
+    class Sera : public acmacs::chart::Sera
+    {
+     public:
+        inline Sera(size_t aNumberOfSera, const char* aIndex, const char* aSerum0)
+            : mNumberOfSera(aNumberOfSera), mIndex(aIndex), mSerum0(aSerum0) {}
+
+        inline size_t size() const override { return mNumberOfSera; }
+        std::shared_ptr<acmacs::chart::Serum> operator[](size_t aIndex) const override;
+
+     private:
+        size_t mNumberOfSera;
+        const char* mIndex;
+        const char* mSerum0;
+
+    }; // class Antigens
+
+      // ----------------------------------------------------------------------
+
     class HiDb
     {
      public:
         HiDb(std::string aFilename, report_time timer);
 
         std::shared_ptr<Antigens> antigens() const;
-        // inline const Sera& sera() const { return mSera; }
+        std::shared_ptr<Sera> sera() const;
         // inline const Tables& charts() const { return mCharts; }
         // inline Tables& charts() { return mCharts; }
         // inline const ChartData& table(std::string table_id) const { return charts()[table_id]; }

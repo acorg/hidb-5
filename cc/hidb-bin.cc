@@ -54,6 +54,27 @@ std::vector<std::string> hidb::bin::Antigen::annotations() const
 
 // ----------------------------------------------------------------------
 
+std::string hidb::bin::Serum::name() const
+{
+    return string::join("/", {host(), location(), isolation(), year()});
+
+} // hidb::bin::Serum::name
+
+// ----------------------------------------------------------------------
+
+std::vector<std::string> hidb::bin::Serum::annotations() const
+{
+    std::vector<std::string> result;
+    for (size_t no = 0; no < sizeof(annotation_offset); ++no) {
+        if (const auto size = annotation_offset[no+1] - annotation_offset[no]; size > 0)
+            result.emplace_back(_start() + annotation_offset[no], static_cast<size_t>(size));
+    }
+    return result;
+
+} // hidb::bin::Serum::annotations
+
+// ----------------------------------------------------------------------
+
 
 // ----------------------------------------------------------------------
 /// Local Variables:

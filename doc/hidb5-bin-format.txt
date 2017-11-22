@@ -55,6 +55,38 @@ num-antigens * 4            offset of each antigen record from antigen 0 record 
 ----------------------------------------------------------------------
                             sera
 4                           number of sera
+num-sera * 4                offset of each serum record from serum 0 record beginning,
+                              starting with serum 1 and ending with num-sera+1
+                              i.e. there is no offset of serum 0
+
+  ----                      serum record
+1                           location offset from host beginning
+1                           isolation offset from host beginning
+1                           passage offset from host beginning
+1                           reassortant offset from host beginning
+1                           annotation-1 offset from host beginning
+1                           annotation-2 offset from host beginning
+1                           annotation-3 offset from host beginning
+1                           serum-id offset from host beginning
+1                           serum-species offset from host beginning
+1                           homologous antigen indexes offset from host beginning
+1                           table indexes offset from host beginning
+1           <lineage>       V, Y, uint8_t(0)
+4           <year>          if year is not known filled with uint32_t(0)
+            <host>
+            <location>
+            <isolation>
+            <passage>
+            <reassortant>
+            <annotation-1>
+            <annotation-2>
+            <annotation-3>
+            <serum_id>
+            <serum_species>
+                            padding, homologous antigen indexes must start at 4
+4*num-homologous            homologous antigen indexes
+4           <num-indexes>   number of table indexes
+4*num-indexes               index of table
 ----------------------------------------------------------------------
                             tables
 4                           number of tables
