@@ -5,7 +5,11 @@
 
 std::string hidb::bin::Antigen::name() const
 {
-    return string::join("/", {host(), location(), isolation(), year()});
+    const auto y = year();
+    if (y[0])
+        return string::join("/", {host(), location(), isolation(), y});
+    else
+        return string::join(" ", {location(), isolation()}); // cdc name
 
 } // hidb::bin::Antigen::name
 

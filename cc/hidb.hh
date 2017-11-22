@@ -88,6 +88,8 @@ namespace hidb
         // void stat_sera(HiDbStat& aStat, HiDbStat* aStatUnique, std::string aStart, std::string aEnd) const;
 
 
+        void save(std::string aFilename) const;
+
      private:
         const char* mData = nullptr;
         std::string mDataStorage;

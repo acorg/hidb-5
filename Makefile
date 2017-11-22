@@ -8,6 +8,7 @@ MAKEFLAGS = -w
 
 TARGETS = \
 	$(DIST)/hidb-make \
+	$(DIST)/hidb5-convert \
 	$(DIST)/hidb5-stat \
 	$(DIST)/hidb5-find
 

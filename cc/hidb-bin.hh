@@ -15,8 +15,8 @@ namespace hidb::bin
 
     struct Header
     {
-        char signature[8]{'H', 'I', 'D', 'B', '0', '5', '0', '0'};
-        uint32_t antigen_offset = sizeof(Header);
+        char signature[8];
+        uint32_t antigen_offset;
         uint32_t serum_offset;
         uint32_t table_offset;
         uint8_t  virus_type_size;

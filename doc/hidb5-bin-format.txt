@@ -18,18 +18,18 @@ num-antigens * 4            offset of each antigen record from antigen 0 record 
                               i.e. there is no offset of antigen 0
 
   ----                      antigen record
-1                           location offset from host beginning, 0 if absent
-1                           isolation offset from host beginning, the same as location offset if absent
-1                           passage offset from host beginning, the same as isolation offset if absent
-1                           reassortant offset from host beginning, the same as passage offset if absent
-1                           annotation-1 offset from host beginning,
-1                           annotation-2 offset from host beginning,
-1                           annotation-3 offset from host beginning,
-1                           lab-id-1  offset from host beginning,
-1                           lab-id-2  offset from host beginning,
-1                           lab-id-3  offset from host beginning,
-1                           lab-id-4  offset from host beginning,
-1                           lab-id-5  offset from host beginning,
+1                           location offset from host beginning
+1                           isolation offset from host beginning
+1                           passage offset from host beginning
+1                           reassortant offset from host beginning
+1                           annotation-1 offset from host beginning
+1                           annotation-2 offset from host beginning
+1                           annotation-3 offset from host beginning
+1                           lab-id-1  offset from host beginning
+1                           lab-id-2  offset from host beginning
+1                           lab-id-3  offset from host beginning
+1                           lab-id-4  offset from host beginning
+1                           lab-id-5  offset from host beginning
 1                           dates offset from host beginning,
 1                           table indexes offset from host beginning
 1           <lineage>       V, Y, uint8_t(0)

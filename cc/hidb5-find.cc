@@ -3,6 +3,7 @@
 
 #include "acmacs-base/argc-argv.hh"
 #include "acmacs-base/string.hh"
+#include "acmacs-base/enumerate.hh"
 #include "hidb-5/hidb.hh"
 
 using namespace std::string_literals;
@@ -26,6 +27,12 @@ int main(int argc, char* const argv[])
         hidb::setup(args["--db-dir"], {}, verbose);
 
         const auto& hidb = hidb::get(string::upper(args[0]), report_time::Yes);
+
+        auto antigens = hidb.antigens();
+        std::cerr << "Antigens: " << antigens->size() << '\n';
+        for (auto [ag_no, antigen]: acmacs::enumerate(*antigens)) {
+            std::cout << ag_no << ' ' << antigen->name() << '\n';
+        }
 
         // for (auto arg = 2; arg < argc; ++arg) {
         //     Timeit timeit("looking: ");

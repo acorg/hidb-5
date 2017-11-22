@@ -21,6 +21,14 @@ hidb::HiDb::HiDb(std::string aFilename, report_time timer)
 
 // ----------------------------------------------------------------------
 
+void hidb::HiDb::save(std::string aFilename) const
+{
+    acmacs::file::write(aFilename, mDataStorage);
+
+} // hidb::HiDb::save
+
+// ----------------------------------------------------------------------
+
 std::shared_ptr<hidb::Antigens> hidb::HiDb::antigens() const
 {
     const auto* antigens = mData + reinterpret_cast<const hidb::bin::Header*>(mData)->antigen_offset;

@@ -53,6 +53,9 @@ std::string hidb::json::read(std::string aData)
 
     auto* const data_start = const_cast<char*>(result.data());
     auto* const header_bin = reinterpret_cast<hidb::bin::Header*>(data_start);
+    std::memmove(header_bin->signature, "HIDB0500", 8);
+    header_bin->antigen_offset = sizeof(hidb::bin::Header);
+
     auto* antigen_index = reinterpret_cast<hidb::bin::ASTIndex*>(reinterpret_cast<ptr_t>(header_bin) + sizeof(*header_bin));
     auto* antigen_data = reinterpret_cast<ptr_t>(reinterpret_cast<ptr_t>(antigen_index) + sizeof(hidb::bin::ast_offset_t) * estimations.number_of_antigens + sizeof(hidb::bin::ast_number_t));
 
@@ -74,6 +77,8 @@ std::string hidb::json::read(std::string aData)
     ti_antigens.report();
 
     header_bin->serum_offset = static_cast<decltype(header_bin->serum_offset)>(antigen_data - data_start);
+
+    result.resize(header_bin->serum_offset);
 
     return result;
 
