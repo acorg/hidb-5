@@ -85,7 +85,7 @@ std::string hidb::json::read(std::string aData)
     serum_index->number_of = static_cast<hidb::bin::ast_number_t>(estimations.number_of_sera);
     hidb::bin::ast_offset_t* serum_offset = &serum_index->offset;
     hidb::bin::ast_offset_t previous_serum_offset = 0;
-    for (const rjson::object& serum: static_cast<const rjson::array&>(val["a"])) {
+    for (const rjson::object& serum: static_cast<const rjson::array&>(val["s"])) {
         const auto sr_size = make_serum(serum, reinterpret_cast<hidb::bin::Serum*>(serum_data));
         *serum_offset = static_cast<hidb::bin::ast_offset_t>(sr_size) + previous_serum_offset;
         previous_serum_offset = *serum_offset;
