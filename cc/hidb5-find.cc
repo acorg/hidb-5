@@ -31,7 +31,16 @@ int main(int argc, char* const argv[])
         auto antigens = hidb.antigens();
         std::cerr << "Antigens: " << antigens->size() << '\n';
         for (auto [ag_no, antigen]: acmacs::enumerate(*antigens)) {
-            std::cout << ag_no << ' ' << antigen->name() << '\n';
+            std::cout << ag_no << ' ' << antigen->name();
+            if (const auto reassortant = antigen->reassortant(); !reassortant.empty())
+                std::cout << " R:" << reassortant;
+            if (const auto passage = antigen->passage(); !passage.empty())
+                std::cout << " P:" << passage;
+            if (const auto date = antigen->date(); !date.empty())
+                std::cout << " D:" << date;
+            if (const auto lineage = antigen->lineage(); lineage != acmacs::chart::BLineage::Unknown)
+                std::cout << ' ' << static_cast<std::string>(lineage);
+            std::cout << '\n';
         }
 
         // for (auto arg = 2; arg < argc; ++arg) {

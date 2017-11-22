@@ -64,6 +64,7 @@ acmacs::chart::Name hidb::Antigen::name() const
 
 acmacs::chart::Date hidb::Antigen::date() const
 {
+    return reinterpret_cast<const hidb::bin::Antigen*>(mAntigen)->date();
 
 } // hidb::Antigen::date
 
@@ -71,6 +72,7 @@ acmacs::chart::Date hidb::Antigen::date() const
 
 acmacs::chart::Passage hidb::Antigen::passage() const
 {
+    return reinterpret_cast<const hidb::bin::Antigen*>(mAntigen)->passage();
 
 } // hidb::Antigen::passage
 
@@ -78,6 +80,7 @@ acmacs::chart::Passage hidb::Antigen::passage() const
 
 acmacs::chart::BLineage hidb::Antigen::lineage() const
 {
+    return reinterpret_cast<const hidb::bin::Antigen*>(mAntigen)->lineage;
 
 } // hidb::Antigen::lineage
 
@@ -85,6 +88,7 @@ acmacs::chart::BLineage hidb::Antigen::lineage() const
 
 acmacs::chart::Reassortant hidb::Antigen::reassortant() const
 {
+    return reinterpret_cast<const hidb::bin::Antigen*>(mAntigen)->reassortant();
 
 } // hidb::Antigen::reassortant
 

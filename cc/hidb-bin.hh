@@ -48,6 +48,9 @@ namespace hidb::bin
         char year_data[4];
 
         std::string name() const;
+        std::string date() const;
+        inline std::string passage() const { return std::string(_start() + passage_offset, reassortant_offset - passage_offset); }
+        inline std::string reassortant() const { return std::string(_start() + reassortant_offset, annotation_offset[0] - reassortant_offset); }
 
         inline const char* _start() const { return reinterpret_cast<const char*>(this) + sizeof(Antigen); }
         inline std::string host() const { return std::string(_start(), location_offset); }
@@ -55,23 +58,6 @@ namespace hidb::bin
         inline std::string isolation() const { return std::string(_start() + isolation_offset, passage_offset - isolation_offset); }
         inline std::string year() const { return std::string(year_data, sizeof(year_data)); }
 
-//             <host>
-//             <location>
-//             <isolation>
-//             <passage>
-//             <reassortant>
-//             <annotation-1>
-//             <annotation-2>
-//             <annotation-3>
-//             <lab_id-1>
-//             <lab_id-2>
-//             <lab_id-3>
-//             <lab_id-4>
-//             <lab_id-5>
-//                             padding, dates must start at 4
-// 4*num-dates <dates>         date is uint32, e.g. 20170101
-// 4           <num-indexes>   number of table indexes
-// 4*num-indexes               index of table
     }; // struct Antigen
 
 } // namespace hidb::bin

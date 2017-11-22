@@ -141,7 +141,7 @@ size_t make_antigen(const rjson::object& aSource, hidb::bin::Antigen* aTarget)
     }
 
     set_offset(aTarget->reassortant_offset, target);
-    if (auto reassortant = aSource.get_or_default("P", ""); !reassortant.empty()) {
+    if (auto reassortant = aSource.get_or_default("R", ""); !reassortant.empty()) {
         std::memmove(target, reassortant.data(), reassortant.size());
         target += reassortant.size();
     }
