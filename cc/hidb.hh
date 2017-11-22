@@ -24,6 +24,8 @@ namespace hidb
         acmacs::chart::Annotations annotations() const override;
         inline bool reference() const override { return false; }
 
+        std::vector<size_t> tables() const;
+
      private:
         const char* mAntigen;
 

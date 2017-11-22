@@ -32,6 +32,8 @@ int main(int argc, char* const argv[])
         std::cerr << "Antigens: " << antigens->size() << '\n';
         for (auto [ag_no, antigen]: acmacs::enumerate(*antigens)) {
             std::cout << ag_no << ' ' << antigen->name();
+            if (const auto annotations = antigen->annotations(); !annotations.empty())
+                std::cout << " A:" << annotations;
             if (const auto reassortant = antigen->reassortant(); !reassortant.empty())
                 std::cout << " R:" << reassortant;
             if (const auto passage = antigen->passage(); !passage.empty())
@@ -40,6 +42,9 @@ int main(int argc, char* const argv[])
                 std::cout << " D:" << date;
             if (const auto lineage = antigen->lineage(); lineage != acmacs::chart::BLineage::Unknown)
                 std::cout << ' ' << static_cast<std::string>(lineage);
+            if (const auto lab_ids = antigen->lab_ids(); !lab_ids.empty())
+                std::cout << " I:" << lab_ids;
+            std::cout << " T:" << dynamic_cast<const hidb::Antigen&>(*antigen).tables();
             std::cout << '\n';
         }
 

@@ -51,6 +51,14 @@ namespace hidb::bin
         std::string date() const;
         inline std::string passage() const { return std::string(_start() + passage_offset, reassortant_offset - passage_offset); }
         inline std::string reassortant() const { return std::string(_start() + reassortant_offset, annotation_offset[0] - reassortant_offset); }
+        std::vector<std::string> lab_ids() const;
+        std::vector<std::string> annotations() const;
+
+        inline std::pair<number_of_table_indexes_t, const table_index_t*> tables() const
+            {
+                return {*reinterpret_cast<const number_of_table_indexes_t*>(_start() + table_index_offset),
+                        reinterpret_cast<const table_index_t*>(_start() + table_index_offset + sizeof(number_of_table_indexes_t))};
+            }
 
         inline const char* _start() const { return reinterpret_cast<const char*>(this) + sizeof(Antigen); }
         inline std::string host() const { return std::string(_start(), location_offset); }

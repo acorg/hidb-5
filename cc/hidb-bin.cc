@@ -28,6 +28,32 @@ std::string hidb::bin::Antigen::date() const
 
 // ----------------------------------------------------------------------
 
+std::vector<std::string> hidb::bin::Antigen::lab_ids() const
+{
+    std::vector<std::string> result;
+    for (size_t no = 0; no < sizeof(lab_id_offset); ++no) {
+        if (const auto size = lab_id_offset[no+1] - lab_id_offset[no]; size > 0)
+            result.emplace_back(_start() + lab_id_offset[no], static_cast<size_t>(size));
+    }
+    return result;
+
+} // hidb::bin::Antigen::lab_ids
+
+// ----------------------------------------------------------------------
+
+std::vector<std::string> hidb::bin::Antigen::annotations() const
+{
+    std::vector<std::string> result;
+    for (size_t no = 0; no < sizeof(annotation_offset); ++no) {
+        if (const auto size = annotation_offset[no+1] - annotation_offset[no]; size > 0)
+            result.emplace_back(_start() + annotation_offset[no], static_cast<size_t>(size));
+    }
+    return result;
+
+} // hidb::bin::Antigen::annotations
+
+// ----------------------------------------------------------------------
+
 
 // ----------------------------------------------------------------------
 /// Local Variables:

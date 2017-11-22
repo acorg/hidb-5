@@ -96,6 +96,7 @@ acmacs::chart::Reassortant hidb::Antigen::reassortant() const
 
 acmacs::chart::LabIds hidb::Antigen::lab_ids() const
 {
+    return reinterpret_cast<const hidb::bin::Antigen*>(mAntigen)->lab_ids();
 
 } // hidb::Antigen::lab_ids
 
@@ -103,8 +104,20 @@ acmacs::chart::LabIds hidb::Antigen::lab_ids() const
 
 acmacs::chart::Annotations hidb::Antigen::annotations() const
 {
+    return reinterpret_cast<const hidb::bin::Antigen*>(mAntigen)->annotations();
 
 } // hidb::Antigen::annotations
+
+// ----------------------------------------------------------------------
+
+std::vector<size_t> hidb::Antigen::tables() const
+{
+    const auto [size, ptr] = reinterpret_cast<const hidb::bin::Antigen*>(mAntigen)->tables();
+    std::vector<size_t> result(size);
+    std::transform(ptr, ptr + size, result.begin(), [](const auto& index) -> size_t { return static_cast<size_t>(index); });
+    return result;
+
+} // hidb::Antigen::tables
 
 // ----------------------------------------------------------------------
 
