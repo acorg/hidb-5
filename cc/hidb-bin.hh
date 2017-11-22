@@ -36,15 +36,8 @@ namespace hidb::bin
         uint8_t passage_offset;
         uint8_t reassortant_offset;
 
-        uint8_t annotation_1_offset;
-        uint8_t annotation_2_offset;
-        uint8_t annotation_3_offset;
-        uint8_t lab_id_1_offset;
-
-        uint8_t lab_id_2_offset;
-        uint8_t lab_id_3_offset;
-        uint8_t lab_id_4_offset;
-        uint8_t lab_id_5_offset;
+        uint8_t annotation_offset[3];
+        uint8_t lab_id_offset[5];
 
         uint8_t date_offset;
         uint8_t table_index_offset;

@@ -48,7 +48,6 @@ num-antigens * 4            offset of each antigen record, starting with antigen
             <lab_id-5>
                             padding, dates must start at 4
 4*num-dates <dates>         date is uint32, e.g. 20170101
-                            padding, table indexes must start at 4
 4           <num-indexes>   number of table indexes
 4*num-indexes               index of table
 
