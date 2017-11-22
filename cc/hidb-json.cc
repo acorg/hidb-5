@@ -248,9 +248,10 @@ size_t make_serum(const rjson::object& aSource, hidb::bin::Serum* aTarget)
         set_offset(aTarget->location_offset, target);
         target += location.size();
     }
-    else {
-        std::cerr << "WARNING: empty location in " << aSource << '\n';
-    }
+      // location is empty if name was not recognized
+    // else {
+    //     std::cerr << "WARNING: empty location in " << aSource << '\n';
+    // }
 
     set_offset(aTarget->isolation_offset, target);
     if (auto isolation = aSource.get_or_default("i", ""); !isolation.empty()) {

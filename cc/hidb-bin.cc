@@ -56,6 +56,7 @@ std::vector<std::string> hidb::bin::Antigen::annotations() const
 
 std::string hidb::bin::Serum::name() const
 {
+      // host, location, year are empty if name was not recognized
     return string::join("/", {host(), location(), isolation(), year()});
 
 } // hidb::bin::Serum::name
