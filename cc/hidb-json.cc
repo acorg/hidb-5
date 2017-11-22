@@ -164,7 +164,7 @@ size_t make_antigen(const rjson::object& aSource, hidb::bin::Antigen* aTarget)
         target += reassortant.size();
     }
 
-    if (const auto& annotations = aSource.get_or_empty_array("a"); annotations.size() < sizeof(hidb::bin::Antigen::annotation_offset)) {
+    if (const auto& annotations = aSource.get_or_empty_array("a"); annotations.size() <= sizeof(hidb::bin::Antigen::annotation_offset)) {
         for (size_t ann_no = 0; ann_no < sizeof(hidb::bin::Antigen::annotation_offset); ++ann_no) {
             set_offset(aTarget->annotation_offset[ann_no], target);
             if (ann_no < annotations.size()) {
@@ -177,7 +177,7 @@ size_t make_antigen(const rjson::object& aSource, hidb::bin::Antigen* aTarget)
     else
         throw std::runtime_error("Too many annotations in " + aSource.to_json());
 
-    if (const auto& lab_ids = aSource.get_or_empty_array("l"); lab_ids.size() < sizeof(hidb::bin::Antigen::lab_id_offset)) {
+    if (const auto& lab_ids = aSource.get_or_empty_array("l"); lab_ids.size() <= sizeof(hidb::bin::Antigen::lab_id_offset)) {
         for (size_t lab_id_no = 0; lab_id_no < sizeof(hidb::bin::Antigen::lab_id_offset); ++lab_id_no) {
             set_offset(aTarget->lab_id_offset[lab_id_no], target);
             if (lab_id_no < lab_ids.size()) {
@@ -273,7 +273,7 @@ size_t make_serum(const rjson::object& aSource, hidb::bin::Serum* aTarget)
         target += reassortant.size();
     }
 
-    if (const auto& annotations = aSource.get_or_empty_array("a"); annotations.size() < sizeof(hidb::bin::Serum::annotation_offset)) {
+    if (const auto& annotations = aSource.get_or_empty_array("a"); annotations.size() <= sizeof(hidb::bin::Serum::annotation_offset)) {
         for (size_t ann_no = 0; ann_no < sizeof(hidb::bin::Serum::annotation_offset); ++ann_no) {
             set_offset(aTarget->annotation_offset[ann_no], target);
             if (ann_no < annotations.size()) {
@@ -284,7 +284,7 @@ size_t make_serum(const rjson::object& aSource, hidb::bin::Serum* aTarget)
         }
     }
     else
-        throw std::runtime_error("Too many annotations in " + aSource.to_json());
+        throw std::runtime_error("Too many annotations (" + std::to_string(annotations.size()) + ", avail: " + std::to_string(sizeof(hidb::bin::Serum::annotation_offset)) + ") in " + aSource.to_json());
 
     set_offset(aTarget->serum_id_offset, target);
     if (auto serum_id = aSource.get_or_default("I", ""); !serum_id.empty()) {
