@@ -2,21 +2,57 @@
 
 #include <string>
 
+#include "acmacs-chart-2/chart.hh"
 #include "hidb-5/hidb-set.hh"
 
 // ----------------------------------------------------------------------
 
 namespace hidb
 {
+    class Antigen : public acmacs::chart::Antigen
+    {
+     public:
+        inline Antigen(const char* aAntigen) : mAntigen(aAntigen) {}
+
+        acmacs::chart::Name name() const override;
+        acmacs::chart::Date date() const override;
+        acmacs::chart::Passage passage() const override;
+        acmacs::chart::BLineage lineage() const override;
+        acmacs::chart::Reassortant reassortant() const override;
+        acmacs::chart::LabIds lab_ids() const override;
+        inline acmacs::chart::Clades clades() const override { return {}; }
+        acmacs::chart::Annotations annotations() const override;
+        inline bool reference() const override { return false; }
+
+     private:
+        const char* mAntigen;
+
+    }; // class Antigen
+
+    class Antigens : public acmacs::chart::Antigens
+    {
+     public:
+        inline Antigens(size_t aNumberOfAntigens, const char* aIndex, const char* aAntigen0)
+            : mNumberOfAntigens(aNumberOfAntigens), mIndex(aIndex), mAntigen0(aAntigen0) {}
+
+        inline size_t size() const override { return mNumberOfAntigens; }
+        std::shared_ptr<acmacs::chart::Antigen> operator[](size_t aIndex) const override;
+          // acmacs::chart::Indexes find_by_name(std::string aName) const override;
+
+     private:
+        size_t mNumberOfAntigens;
+        const char* mIndex;
+        const char* mAntigen0;
+
+    }; // class Antigens
+
     class HiDb
     {
      public:
         HiDb(std::string aFilename, report_time timer);
 
-        // inline const Antigens& antigens() const { return mAntigens; }
-        // inline Antigens& antigens() { return mAntigens; }
+        std::shared_ptr<Antigens> antigens() const;
         // inline const Sera& sera() const { return mSera; }
-        // inline Sera& sera() { return mSera; }
         // inline const Tables& charts() const { return mCharts; }
         // inline Tables& charts() { return mCharts; }
         // inline const ChartData& table(std::string table_id) const { return charts()[table_id]; }
@@ -53,7 +89,8 @@ namespace hidb
 
 
      private:
-
+        const char* mData = nullptr;
+        std::string mDataStorage;
 
     }; // class HiDb
 

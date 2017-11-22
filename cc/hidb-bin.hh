@@ -1,5 +1,6 @@
 #pragma once
 
+#include <string>
 #include <cinttypes>
 
 // ----------------------------------------------------------------------
@@ -44,7 +45,15 @@ namespace hidb::bin
         char lineage;
         uint8_t _padding1;
 
-        char year[4];
+        char year_data[4];
+
+        std::string name() const;
+
+        inline const char* _start() const { return reinterpret_cast<const char*>(this) + sizeof(Antigen); }
+        inline std::string host() const { return std::string(_start(), location_offset); }
+        inline std::string location() const { return std::string(_start() + location_offset, isolation_offset - location_offset); }
+        inline std::string isolation() const { return std::string(_start() + isolation_offset, passage_offset - isolation_offset); }
+        inline std::string year() const { return std::string(year_data, sizeof(year_data)); }
 
 //             <host>
 //             <location>

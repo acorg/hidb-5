@@ -51,7 +51,8 @@ std::string hidb::json::read(std::string aData)
 
     std::string result(estimations.size, 0);
 
-    auto* header_bin = reinterpret_cast<hidb::bin::Header*>(const_cast<char*>(result.data()));
+    auto* const data_start = const_cast<char*>(result.data());
+    auto* const header_bin = reinterpret_cast<hidb::bin::Header*>(data_start);
     auto* antigen_index = reinterpret_cast<hidb::bin::ASTIndex*>(reinterpret_cast<ptr_t>(header_bin) + sizeof(*header_bin));
     auto* antigen_data = reinterpret_cast<ptr_t>(reinterpret_cast<ptr_t>(antigen_index) + sizeof(hidb::bin::ast_offset_t) * estimations.number_of_antigens + sizeof(hidb::bin::ast_number_t));
 
@@ -72,6 +73,8 @@ std::string hidb::json::read(std::string aData)
     }
     ti_antigens.report();
 
+    header_bin->serum_offset = static_cast<decltype(header_bin->serum_offset)>(antigen_data - data_start);
+
     return result;
 
 } // hidb::json::read
@@ -81,7 +84,7 @@ std::string hidb::json::read(std::string aData)
 size_t make_antigen(const rjson::object& aSource, hidb::bin::Antigen* aTarget)
 {
     if (std::string year = aSource.get_or_default("y", ""); year.size() == 4)
-        std::memmove(aTarget->year, year.data(), 4);
+        std::memmove(aTarget->year_data, year.data(), 4);
     else if (!year.empty())
         throw std::runtime_error("Invalid year in " + aSource.to_json());
     if (std::string lineage = aSource.get_or_default("L", ""); lineage.size() == 1)
@@ -116,46 +119,56 @@ size_t make_antigen(const rjson::object& aSource, hidb::bin::Antigen* aTarget)
     else {
         std::cerr << "WARNING: empty location in " << aSource << '\n';
     }
+
+    set_offset(aTarget->isolation_offset, target);
     if (auto isolation = aSource.get_or_default("i", ""); !isolation.empty()) {
         std::memmove(target, isolation.data(), isolation.size());
-        set_offset(aTarget->isolation_offset, target);
         target += isolation.size();
     }
     else {
         std::cerr << "WARNING: empty isolation in " << aSource << '\n';
     }
+
+    set_offset(aTarget->passage_offset, target);
     if (auto passage = aSource.get_or_default("P", ""); !passage.empty()) {
         std::memmove(target, passage.data(), passage.size());
-        set_offset(aTarget->passage_offset, target);
         target += passage.size();
     }
+
+    set_offset(aTarget->reassortant_offset, target);
     if (auto reassortant = aSource.get_or_default("P", ""); !reassortant.empty()) {
         std::memmove(target, reassortant.data(), reassortant.size());
-        set_offset(aTarget->reassortant_offset, target);
         target += reassortant.size();
     }
+
     if (const auto& annotations = aSource.get_or_empty_array("a"); annotations.size() < sizeof(hidb::bin::Antigen::annotation_offset)) {
-        for (size_t ann_no = 0; ann_no < annotations.size(); ++ann_no) {
-            const std::string ann = annotations[ann_no];
-            std::memmove(target, ann.data(), ann.size());
+        for (size_t ann_no = 0; ann_no < sizeof(hidb::bin::Antigen::annotation_offset); ++ann_no) {
             set_offset(aTarget->annotation_offset[ann_no], target);
-            target += ann.size();
+            if (ann_no < annotations.size()) {
+                const std::string ann = annotations[ann_no];
+                std::memmove(target, ann.data(), ann.size());
+                target += ann.size();
+            }
         }
     }
     else
         throw std::runtime_error("Too many annotations in " + aSource.to_json());
+
     if (const auto& lab_ids = aSource.get_or_empty_array("l"); lab_ids.size() < sizeof(hidb::bin::Antigen::lab_id_offset)) {
-        for (size_t lab_id_no = 0; lab_id_no < lab_ids.size(); ++lab_id_no) {
-            const std::string lab_id = lab_ids[lab_id_no];
-            std::memmove(target, lab_id.data(), lab_id.size());
+        for (size_t lab_id_no = 0; lab_id_no < sizeof(hidb::bin::Antigen::lab_id_offset); ++lab_id_no) {
             set_offset(aTarget->lab_id_offset[lab_id_no], target);
-            target += lab_id.size();
+            if (lab_id_no < lab_ids.size()) {
+                const std::string lab_id = lab_ids[lab_id_no];
+                std::memmove(target, lab_id.data(), lab_id.size());
+                target += lab_id.size();
+            }
         }
     }
     else
         throw std::runtime_error("Too many lab ids in " + aSource.to_json());
+
+    set_offset(aTarget->date_offset, target);
     if (const auto& dates = aSource.get_or_empty_array("D"); !dates.empty()) {
-        set_offset(aTarget->date_offset, target);
         for (size_t date_no = 0; date_no < dates.size(); ++date_no) {
             const auto date = convert_date(dates[date_no]);
             std::memmove(target, &date, sizeof(date));
@@ -163,19 +176,18 @@ size_t make_antigen(const rjson::object& aSource, hidb::bin::Antigen* aTarget)
         }
     }
 
-    if (const auto& tables = aSource.get_or_empty_array("T"); !tables.empty()) {
-        set_offset(aTarget->table_index_offset, target);
-        const auto num_indexes = static_cast<hidb::bin::number_of_table_indexes_t>(tables.size());
-        std::memmove(target, &num_indexes, sizeof(num_indexes));
-        target += sizeof(num_indexes);
-        for (size_t no = 0; no < tables.size(); ++no) {
-            const auto index = static_cast<hidb::bin::table_index_t>(static_cast<size_t>(tables[no]));
-            std::memmove(target, &index, sizeof(index));
-            target += sizeof(index);
-        }
-    }
-    else
+    set_offset(aTarget->table_index_offset, target);
+    const auto& tables = aSource.get_or_empty_array("T");
+    const auto num_indexes = static_cast<hidb::bin::number_of_table_indexes_t>(tables.size());
+    std::memmove(target, &num_indexes, sizeof(num_indexes));
+    target += sizeof(num_indexes);
+    if (tables.empty())
         throw std::runtime_error("No table indexes in " + aSource.to_json());
+    for (size_t no = 0; no < tables.size(); ++no) {
+        const auto index = static_cast<hidb::bin::table_index_t>(static_cast<size_t>(tables[no]));
+        std::memmove(target, &index, sizeof(index));
+        target += sizeof(index);
+    }
 
     return sizeof(*aTarget) + static_cast<size_t>(target - target_base);
 
