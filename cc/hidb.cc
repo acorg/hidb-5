@@ -8,9 +8,9 @@
 
 // ----------------------------------------------------------------------
 
-hidb::HiDb::HiDb(std::string aFilename, report_time timer)
+hidb::HiDb::HiDb(std::string aFilename, report_time /*timer*/)
 {
-    Timeit ti("reading hidb from " + aFilename + ": ", timer);
+    // Timeit ti("reading hidb from " + aFilename + ": ", timer);
     acmacs::file::read_access access(aFilename);
     if (hidb::bin::has_signature(access.data())) {
         mAccess = std::move(access);
@@ -58,35 +58,7 @@ std::shared_ptr<acmacs::chart::Antigen> hidb::Antigens::operator[](size_t aIndex
 
 // ----------------------------------------------------------------------
 
-// template <typename AgSr> inline std::pair<const hidb::bin::ast_offset_t*, const hidb::bin::ast_offset_t*> filter_location(const hidb::bin::ast_offset_t* first, const hidb::bin::ast_offset_t* last, const char* data, std::string_view location)
-// {
-//     const auto found = std::lower_bound(
-//         first, last, location,
-//         [data](hidb::bin::ast_offset_t offset, const std::string_view& look_for) -> bool { return reinterpret_cast<const AgSr*>(data + offset)->location() < look_for; });
-//     for (auto end = found; end != last; ++end) {
-//         if (reinterpret_cast<const hidb::bin::Antigen*>(data + *end)->location() != location)
-//             return {found, end};
-//     }
-//     return {found, last};
-// }
-
-// // ----------------------------------------------------------------------
-
-// template <typename AgSr> inline std::pair<const hidb::bin::ast_offset_t*, const hidb::bin::ast_offset_t*> filter_isolation(const hidb::bin::ast_offset_t* first, const hidb::bin::ast_offset_t* last, const char* data, std::string_view isolation)
-// {
-//     const auto found = std::lower_bound(
-//         first, last, isolation,
-//         [data](hidb::bin::ast_offset_t offset, const std::string_view& look_for) -> bool { return reinterpret_cast<const AgSr*>(data + offset)->isolation() < look_for; });
-//     for (auto end = found; end != last; ++end) {
-//         if (reinterpret_cast<const hidb::bin::Antigen*>(data + *end)->isolation() != isolation)
-//             return {found, end};
-//     }
-//     return {found, last};
-// }
-
-// ----------------------------------------------------------------------
-
-inline std::pair<const hidb::bin::ast_offset_t*, const hidb::bin::ast_offset_t*> filter_by(const hidb::bin::ast_offset_t* first, const hidb::bin::ast_offset_t* last, std::function<std::string_view (hidb::bin::ast_offset_t)> field, std::string_view look_for)
+template <typename F> inline std::pair<const hidb::bin::ast_offset_t*, const hidb::bin::ast_offset_t*> filter_by(const hidb::bin::ast_offset_t* first, const hidb::bin::ast_offset_t* last, F field, std::string_view look_for)
 {
     const auto found = std::lower_bound(
         first, last, look_for,
@@ -97,7 +69,6 @@ inline std::pair<const hidb::bin::ast_offset_t*, const hidb::bin::ast_offset_t*>
     }
     return {found, last};
 }
-
 
 // ----------------------------------------------------------------------
 
@@ -110,6 +81,8 @@ hidb::indexes_t hidb::Antigens::find(std::string aName) const
     auto [first, last] = filter_by(index_begin, index_begin + mNumberOfAntigens, [this](hidb::bin::ast_offset_t offset) { return reinterpret_cast<const hidb::bin::Antigen*>(this->mAntigen0 + offset)->location(); }, location);
     if (!isolation.empty())
         std::tie(first, last) = filter_by(first, last, [this](hidb::bin::ast_offset_t offset) { return reinterpret_cast<const hidb::bin::Antigen*>(this->mAntigen0 + offset)->isolation(); }, isolation);
+    if (!year.empty())
+        std::tie(first, last) = filter_by(first, last, [this](hidb::bin::ast_offset_t offset) { return reinterpret_cast<const hidb::bin::Antigen*>(this->mAntigen0 + offset)->year(); }, year);
 
     indexes_t result(static_cast<size_t>(last - first));
     std::transform(first, last, result.begin(), [index_begin](const hidb::bin::ast_offset_t& offset_ptr) -> size_t { return static_cast<size_t>(&offset_ptr - index_begin); });
