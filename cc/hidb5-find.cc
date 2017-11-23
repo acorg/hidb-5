@@ -15,7 +15,7 @@ static void report_antigen(const hidb::HiDb& hidb, size_t aIndex, const argc_arg
 static void report_antigen(const hidb::HiDb& hidb, const hidb::Antigen& aAntigen, const argc_argv& args, bool aReportTables, std::string aPrefix = {});
 static void list_all_tables(const hidb::HiDb& hidb, const argc_argv& args);
 static void report_tables(const hidb::HiDb& hidb, std::vector<size_t> aTables, const argc_argv& args, std::string aPrefix = {});
-static void report_table(const hidb::Table& aTable, const argc_argv& args, std::string aPrefix = {});
+// static void report_table(const hidb::Table& aTable, const argc_argv& args, std::string aPrefix = {});
 
 // ----------------------------------------------------------------------
 
@@ -73,32 +73,48 @@ int main(int argc, char* const argv[])
 
 // ----------------------------------------------------------------------
 
-void list_all_tables(const hidb::HiDb& hidb, const argc_argv& args)
+void list_all_tables(const hidb::HiDb& hidb, const argc_argv& /*args*/)
 {
     auto tables = hidb.tables();
     std::cout << "Tables: " << tables->size() << '\n';
     for (auto table: *tables)
-        report_table(*table, args);
+        std::cout << table->name() << " A:" << table->number_of_antigens() << " S:" << table->number_of_sera() << '\n';
 
 } // list_all_tables
 
 // ----------------------------------------------------------------------
 
-void report_tables(const hidb::HiDb& hidb, std::vector<size_t> aTables, const argc_argv& args, std::string aPrefix)
+void report_tables(const hidb::HiDb& hidb, std::vector<size_t> aTables, const argc_argv& /*args*/, std::string aPrefix)
 {
-    for (size_t t_no: aTables) {
-        report_table(*(*hidb.tables())[t_no], args, aPrefix);
+    auto hidb_tables = hidb.tables();
+    std::vector<std::shared_ptr<hidb::Table>> tables(aTables.size());
+    std::transform(aTables.begin(), aTables.end(), tables.begin(), [hidb_tables](size_t aIndex) { return (*hidb_tables)[aIndex]; });
+    if (tables.size() > 1) {
+        std::sort(tables.begin(), tables.end(), [](auto a, auto b) -> bool { return a->date() > b->date(); });
+        std::map<std::pair<std::string, std::string>, std::vector<std::shared_ptr<hidb::Table>>> by_lab_assay;
+        for (auto table: tables)
+            by_lab_assay[{table->lab(), table->assay()}].push_back(table);
+        if (by_lab_assay.size() > 1)
+            std::cout << aPrefix << "Tables:" << tables.size() << "  Recent: " << tables[0]->name() << '\n';
+        for (auto entry: by_lab_assay) {
+            std::cout << aPrefix << entry.first.first << ':' << entry.first.second << ' ' << entry.second.size();
+            for (auto table: entry.second)
+                std::cout << ' ' << string::join(":", {table->date(), table->rbc()});
+        }
+        std::cout << '\n';
     }
+    else
+        std::cout << aPrefix << "Tables:" << tables.size() << "  Recent: " << tables[0]->name() << '\n';
 
 } // report_tables
 
 // ----------------------------------------------------------------------
 
-void report_table(const hidb::Table& aTable, const argc_argv& args, std::string aPrefix)
-{
-    std::cout << aPrefix << aTable.name() << " A:" << aTable.number_of_antigens() << " S:" << aTable.number_of_sera() << '\n';
+// void report_table(const hidb::Table& aTable, const argc_argv& /*args*/, std::string aPrefix)
+// {
+//     std::cout << aPrefix << aTable.name() << " A:" << aTable.number_of_antigens() << " S:" << aTable.number_of_sera() << '\n';
 
-} // report_table
+// } // report_table
 
 // ----------------------------------------------------------------------
 
