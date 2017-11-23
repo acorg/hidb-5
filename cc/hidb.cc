@@ -58,7 +58,10 @@ std::shared_ptr<acmacs::chart::Antigen> hidb::Antigens::operator[](size_t aIndex
 
 // ----------------------------------------------------------------------
 
-template <typename F> inline std::pair<const hidb::bin::ast_offset_t*, const hidb::bin::ast_offset_t*> filter_by(const hidb::bin::ast_offset_t* first, const hidb::bin::ast_offset_t* last, F field, std::string_view look_for)
+using offset_t = const hidb::bin::ast_offset_t*;
+using first_last_t = std::pair<offset_t, offset_t>;
+
+template <typename F> inline first_last_t filter_by(offset_t first, offset_t last, F field, std::string_view look_for)
 {
     const auto found = std::lower_bound(
         first, last, look_for,
@@ -72,17 +75,30 @@ template <typename F> inline std::pair<const hidb::bin::ast_offset_t*, const hid
 
 // ----------------------------------------------------------------------
 
+template <typename AgSr, typename S> inline first_last_t find_by(offset_t first, offset_t last, const char* aData, S location, S isolation, S year)
+{
+    std::tie(first, last) = filter_by(first, last, [aData](hidb::bin::ast_offset_t offset) { return reinterpret_cast<const AgSr*>(aData + offset)->location(); }, location);
+    if (!isolation.empty())
+        std::tie(first, last) = filter_by(first, last, [aData](hidb::bin::ast_offset_t offset) { return reinterpret_cast<const AgSr*>(aData + offset)->isolation(); }, isolation);
+    if (!year.empty())
+        std::tie(first, last) = filter_by(first, last, [aData](hidb::bin::ast_offset_t offset) { return reinterpret_cast<const AgSr*>(aData + offset)->year(); }, year);
+    return {first, last};
+}
+
+template <typename AgSr, typename S> inline first_last_t find_by(offset_t first, size_t number, const char* aData, S location, S isolation, S year)
+{
+    return find_by<AgSr, S>(first, first + number, aData, location, isolation, year);
+}
+
+// ----------------------------------------------------------------------
+
 hidb::indexes_t hidb::Antigens::find(std::string aName) const
 {
     std::string virus_type, host, location, isolation, year, passage;
     virus_name::split(aName, virus_type, host, location, isolation, year, passage);
 
     const auto* index_begin = reinterpret_cast<const hidb::bin::ast_offset_t*>(mIndex);
-    auto [first, last] = filter_by(index_begin, index_begin + mNumberOfAntigens, [this](hidb::bin::ast_offset_t offset) { return reinterpret_cast<const hidb::bin::Antigen*>(this->mAntigen0 + offset)->location(); }, location);
-    if (!isolation.empty())
-        std::tie(first, last) = filter_by(first, last, [this](hidb::bin::ast_offset_t offset) { return reinterpret_cast<const hidb::bin::Antigen*>(this->mAntigen0 + offset)->isolation(); }, isolation);
-    if (!year.empty())
-        std::tie(first, last) = filter_by(first, last, [this](hidb::bin::ast_offset_t offset) { return reinterpret_cast<const hidb::bin::Antigen*>(this->mAntigen0 + offset)->year(); }, year);
+    auto [first, last] = find_by<hidb::bin::Antigen>(index_begin, mNumberOfAntigens, mAntigen0, location, isolation, year);
 
     indexes_t result(static_cast<size_t>(last - first));
     std::transform(first, last, result.begin(), [index_begin](const hidb::bin::ast_offset_t& offset_ptr) -> size_t { return static_cast<size_t>(&offset_ptr - index_begin); });
