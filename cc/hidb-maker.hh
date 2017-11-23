@@ -228,8 +228,8 @@ class Antigen : public AntigenSerum
     inline bool operator!=(const Antigen& rhs) const { return !operator==(rhs); }
 
     inline bool operator<(const Antigen& rhs) const { return string::compare(
-        {    virus_type,     host,     location,     isolation,     year, string::join(" ",     annotations),     reassortant,     passage},
-        {rhs.virus_type, rhs.host, rhs.location, rhs.isolation, rhs.year, string::join(" ", rhs.annotations), rhs.reassortant, rhs.passage}) < 0; }
+        {    location,     isolation,     year,     host, string::join(" ",     annotations),     reassortant,     passage},
+        {rhs.location, rhs.isolation, rhs.year, rhs.host, string::join(" ", rhs.annotations), rhs.reassortant, rhs.passage}) < 0; }
 
     template <typename Iter> inline void add_lab_id(Iter first, Iter last) { for (; first != last; ++first) lab_ids.insert(*first); }
     inline void add_date(std::string aSource) { if (!aSource.empty()) dates.insert(aSource); }
@@ -275,8 +275,8 @@ class Serum : public AntigenSerum
     inline bool operator!=(const Serum& rhs) const { return !operator==(rhs); }
 
     inline bool operator<(const Serum& rhs) const { return string::compare(
-        {    virus_type,     host,     location,     isolation,     year, string::join(" ",     annotations),     reassortant,     serum_id},
-        {rhs.virus_type, rhs.host, rhs.location, rhs.isolation, rhs.year, string::join(" ", rhs.annotations), rhs.reassortant, rhs.serum_id}) < 0; }
+        {    location,     isolation,     year,     host, string::join(" ",     annotations),     reassortant,     serum_id},
+        {rhs.location, rhs.isolation, rhs.year, rhs.host, string::join(" ", rhs.annotations), rhs.reassortant, rhs.serum_id}) < 0; }
 
     inline std::string type_name() const override { return "Serum"; }
     std::string to_string() const override;
