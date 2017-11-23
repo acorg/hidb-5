@@ -398,7 +398,7 @@ size_t make_table(const rjson::object& aSource, hidb::bin::Table* aTarget)
     }
 
     set_offset(aTarget->rbc_offset, target);
-    if (auto rbc = aSource.get_or_default("l", ""); !rbc.empty()) {
+    if (auto rbc = aSource.get_or_default("r", ""); !rbc.empty()) {
         std::memmove(target, rbc.data(), rbc.size());
         target += rbc.size();
     }

@@ -9,6 +9,8 @@
 
 namespace hidb
 {
+    namespace bin { struct Table; }
+
     class Antigen : public acmacs::chart::Antigen
     {
      public:
@@ -92,17 +94,18 @@ namespace hidb
     class Table // : public acmacs::chart::Table
     {
      public:
-        inline Table(const char* aTable) : mTable(aTable) {}
+        inline Table(const char* aTable) : mTable(reinterpret_cast<const bin::Table*>(aTable)) {}
 
         std::string name() const;
         std::string assay() const;
         std::string lab() const;
         std::string date() const;
+        std::string rbc() const;
         size_t number_of_antigens() const;
         size_t number_of_sera() const;
 
      private:
-        const char* mTable;
+        const bin::Table* mTable;
 
     }; // class Table
 
