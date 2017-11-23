@@ -103,7 +103,7 @@ std::string hidb::json::read(std::string aData)
     table_index->number_of = static_cast<hidb::bin::ast_number_t>(estimations.number_of_tables);
     hidb::bin::ast_offset_t* table_offset = &table_index->offset;
     hidb::bin::ast_offset_t previous_table_offset = 0;
-    for (const rjson::object& table: static_cast<const rjson::array&>(val["s"])) {
+    for (const rjson::object& table: static_cast<const rjson::array&>(val["t"])) {
         const auto table_size = make_table(table, reinterpret_cast<hidb::bin::Table*>(table_data));
         *table_offset = static_cast<hidb::bin::ast_offset_t>(table_size) + previous_table_offset;
         previous_table_offset = *table_offset;
@@ -410,7 +410,7 @@ size_t make_table(const rjson::object& aSource, hidb::bin::Table* aTarget)
     }
 
     aTarget->serum_index_offset = static_cast<decltype(aTarget->serum_index_offset)>(target - target_base);
-    const auto& sera = aSource.get_or_empty_array("a");
+    const auto& sera = aSource.get_or_empty_array("s");
     if (sera.empty())
         throw std::runtime_error("No serum indexes in " + aSource.to_json());
     for (size_t no = 0; no < sera.size(); ++no) {
@@ -420,22 +420,29 @@ size_t make_table(const rjson::object& aSource, hidb::bin::Table* aTarget)
     }
 
     aTarget->titer_offset = static_cast<decltype(aTarget->titer_offset)>(target - target_base);
+    const auto& titers = aSource.get_or_empty_array("t");
+    size_t max_titer_size = 0;
+    for (size_t ag_no = 0; ag_no < antigens.size(); ++ag_no) {
+        for (size_t sr_no = 0; sr_no < sera.size(); ++sr_no) {
+            const std::string titer = titers[ag_no][sr_no];
+            max_titer_size = std::max(max_titer_size, titer.size());
+        }
+    }
+    *target = static_cast<char>(max_titer_size);
+    ++target;
+    for (size_t ag_no = 0; ag_no < antigens.size(); ++ag_no) {
+        for (size_t sr_no = 0; sr_no < sera.size(); ++sr_no) {
+            std::string titer = titers[ag_no][sr_no];
+            titer.resize(max_titer_size, 0);
+            std::memmove(target, titer.data(), titer.size());
+            target += titer.size();
+        }
+    }
 
     size_t size = sizeof(*aTarget) + static_cast<size_t>(target - target_base);
     if (size % 4)
         size += 4 - size % 4;
     return size;
-
-// 1            <lineage>      V, Y, uint8_t(0)
-// 4                           antigen indexes offset from assay beginning
-// 4                           serum indexes offset from assay beginning
-// 4                           titers offset from assay beginning
-
-//              padding        indexes must start at 4
-// 4*num-antigens              antigen indexes
-// 4*num-sera                  serum indexes
-// 1            max titer length
-// max-titer-length*num-antigens*num-sera   <titers>  titers for the antigen 0, then antigen 1, etc.
 
 } // make_table
 

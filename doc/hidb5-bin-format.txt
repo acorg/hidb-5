@@ -112,5 +112,6 @@ num-tables * 4                offset of each table record from table 0 record be
 4*num-sera                  serum indexes
 1            max titer length
 max-titer-length*num-antigens*num-sera   <titers>  titers for the antigen 0, then antigen 1, etc.
+                                                   if titer length < max titer length, then titer is padded with uint8_t(0)
 
 ----------------------------------------------------------------------
