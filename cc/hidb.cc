@@ -188,6 +188,7 @@ acmacs::chart::Annotations hidb::Serum::annotations() const
 
 acmacs::chart::SerumId hidb::Serum::serum_id() const
 {
+    return reinterpret_cast<const hidb::bin::Serum*>(mSerum)->serum_id();
 
 } // hidb::Serum::serum_id
 
@@ -195,6 +196,7 @@ acmacs::chart::SerumId hidb::Serum::serum_id() const
 
 acmacs::chart::SerumSpecies hidb::Serum::serum_species() const
 {
+    return reinterpret_cast<const hidb::bin::Serum*>(mSerum)->serum_species();
 
 } // hidb::Serum::serum_species
 
@@ -202,6 +204,10 @@ acmacs::chart::SerumSpecies hidb::Serum::serum_species() const
 
 acmacs::chart::PointIndexList hidb::Serum::homologous_antigens() const
 {
+    const auto [size, ptr] = reinterpret_cast<const hidb::bin::Serum*>(mSerum)->homologous_antigens();
+    acmacs::chart::PointIndexList result(size);
+    std::transform(ptr, ptr + size, result.begin(), [](const auto& index) -> size_t { return static_cast<size_t>(index); });
+    return result;
 
 } // hidb::Serum::homologous_antigens
 

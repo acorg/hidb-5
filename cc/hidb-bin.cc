@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include "acmacs-base/string.hh"
 #include "hidb-5/hidb-bin.hh"
 

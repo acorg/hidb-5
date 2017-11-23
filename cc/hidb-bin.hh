@@ -62,11 +62,11 @@ namespace hidb::bin
                         reinterpret_cast<const table_index_t*>(_start() + table_index_offset + sizeof(number_of_table_indexes_t))};
             }
 
-        inline const char* _start() const { return reinterpret_cast<const char*>(this) + sizeof(Antigen); }
+        inline const char* _start() const { return reinterpret_cast<const char*>(this) + sizeof(*this); }
         inline std::string host() const { return std::string(_start(), location_offset); }
         inline std::string location() const { return std::string(_start() + location_offset, isolation_offset - location_offset); }
         inline std::string isolation() const { return std::string(_start() + isolation_offset, passage_offset - isolation_offset); }
-        inline std::string year() const { return std::string(year_data, sizeof(year_data)); }
+        inline std::string year() const { if (*year_data) return std::string(year_data, sizeof(year_data)); else return std::string{}; }
 
     }; // struct Antigen
 
@@ -91,6 +91,14 @@ namespace hidb::bin
         inline std::string passage() const { return std::string(_start() + passage_offset, reassortant_offset - passage_offset); }
         inline std::string reassortant() const { return std::string(_start() + reassortant_offset, annotation_offset[0] - reassortant_offset); }
         std::vector<std::string> annotations() const;
+        inline std::string serum_id() const { return std::string(_start() + serum_id_offset, serum_species_offset - serum_id_offset); }
+        inline std::string serum_species() const { return std::string(_start() + serum_species_offset, homologous_antigen_index_offset - serum_species_offset); }
+
+        inline std::pair<size_t, const homologous_t*> homologous_antigens() const
+            {
+                return {static_cast<size_t>(table_index_offset - homologous_antigen_index_offset) / sizeof(homologous_t),
+                        reinterpret_cast<const table_index_t*>(_start() + homologous_antigen_index_offset)};
+            }
 
         inline std::pair<number_of_table_indexes_t, const table_index_t*> tables() const
             {
@@ -98,13 +106,13 @@ namespace hidb::bin
                         reinterpret_cast<const table_index_t*>(_start() + table_index_offset + sizeof(number_of_table_indexes_t))};
             }
 
-        inline const char* _start() const { return reinterpret_cast<const char*>(this) + sizeof(Antigen); }
+        inline const char* _start() const { return reinterpret_cast<const char*>(this) + sizeof(*this); }
         inline std::string host() const { return std::string(_start(), location_offset); }
         inline std::string location() const { return std::string(_start() + location_offset, isolation_offset - location_offset); }
         inline std::string isolation() const { return std::string(_start() + isolation_offset, passage_offset - isolation_offset); }
-        inline std::string year() const { return std::string(year_data, sizeof(year_data)); }
+        inline std::string year() const { if (*year_data) return std::string(year_data, sizeof(year_data)); else return std::string{}; }
 
-    }; // struct Antigen
+    }; // struct Serum
 
 } // namespace hidb::bin
 

@@ -31,7 +31,7 @@ int main(int argc, char* const argv[])
 
         const auto& hidb = hidb::get(string::upper(args[0]), report_time::Yes);
           // list_all_antigens(hidb);
-        // list_all_sera(hidb);
+        list_all_sera(hidb);
 
         // for (auto arg = 2; arg < argc; ++arg) {
         //     Timeit timeit("looking: ");
@@ -62,18 +62,34 @@ int main(int argc, char* const argv[])
 void list_all_sera(const hidb::HiDb& hidb)
 {
     auto sera = hidb.sera();
-    std::cerr << "Sera: " << sera->size() << '\n';
+    std::cout << "Sera: " << sera->size() << '\n';
+
+    // auto serum = (*sera)[0];
+    // std::cout << "N:" << serum->name() << ":\n";
+    // std::cout << "A:" << serum->annotations() << ":\n";
+    // std::cout << "R:" << serum->reassortant() << ":\n";
+    // std::cout << "P:" << serum->passage() << ":\n";
+    // std::cout << "L:" << serum->lineage() << ":\n";
+    // std::cout << "I:" << serum->serum_id() << ":\n";
+    // std::cout << "s:" << serum->serum_species() << ":\n";
+    // return;
+
     for (auto [sr_no, serum]: acmacs::enumerate(*sera)) {
         std::cout << sr_no << ' ' << serum->name();
-        // if (const auto annotations = serum->annotations(); !annotations.empty())
-        //     std::cout << " A:" << annotations;
-        // if (const auto reassortant = serum->reassortant(); !reassortant.empty())
-        //     std::cout << " R:" << reassortant;
-        // if (const auto passage = serum->passage(); !passage.empty())
-        //     std::cout << " P:" << passage;
-        // if (const auto lineage = serum->lineage(); lineage != acmacs::chart::BLineage::Unknown)
-        //     std::cout << ' ' << static_cast<std::string>(lineage);
-        // std::cout << " T:" << dynamic_cast<const hidb::Serum&>(*serum).tables();
+        if (const auto annotations = serum->annotations(); !annotations.empty())
+            std::cout << " A:" << annotations;
+        if (const auto reassortant = serum->reassortant(); !reassortant.empty())
+            std::cout << " R:" << reassortant;
+        if (const auto passage = serum->passage(); !passage.empty())
+            std::cout << " P:" << passage;
+        if (const auto lineage = serum->lineage(); lineage != acmacs::chart::BLineage::Unknown)
+            std::cout << ' ' << static_cast<std::string>(lineage);
+        if (const auto serum_id = serum->serum_id(); !serum_id.empty())
+            std::cout << " I:" << serum_id;
+        if (const auto serum_species = serum->serum_species(); !serum_species.empty())
+            std::cout << " s:" << serum_species;
+        std::cout << " H:" << dynamic_cast<const hidb::Serum&>(*serum).homologous_antigens();
+        std::cout << " T:" << dynamic_cast<const hidb::Serum&>(*serum).tables();
         std::cout << '\n';
     }
 
@@ -84,7 +100,7 @@ void list_all_sera(const hidb::HiDb& hidb)
 void list_all_antigens(const hidb::HiDb& hidb)
 {
     auto antigens = hidb.antigens();
-    std::cerr << "Antigens: " << antigens->size() << '\n';
+    std::cout << "Antigens: " << antigens->size() << '\n';
     for (auto [ag_no, antigen]: acmacs::enumerate(*antigens)) {
         std::cout << ag_no << ' ' << antigen->name();
         if (const auto annotations = antigen->annotations(); !annotations.empty())
