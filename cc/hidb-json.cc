@@ -97,7 +97,7 @@ std::string hidb::json::read(std::string aData)
 
     header_bin->table_offset = static_cast<decltype(header_bin->table_offset)>(serum_data - data_start);
     auto* table_index = reinterpret_cast<hidb::bin::ASTIndex*>(data_start + header_bin->table_offset);
-    auto* table_data = reinterpret_cast<ptr_t>(reinterpret_cast<ptr_t>(table_index) + sizeof(hidb::bin::ast_offset_t) * estimations.number_of_sera + sizeof(hidb::bin::ast_number_t));
+    auto* table_data = reinterpret_cast<ptr_t>(reinterpret_cast<ptr_t>(table_index) + sizeof(hidb::bin::ast_offset_t) * estimations.number_of_tables + sizeof(hidb::bin::ast_number_t));
 
     Timeit ti_tables("converting " + acmacs::to_string(estimations.number_of_tables) + " tables: ");
     table_index->number_of = static_cast<hidb::bin::ast_number_t>(estimations.number_of_tables);
