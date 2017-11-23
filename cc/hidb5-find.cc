@@ -19,6 +19,7 @@ static void report_tables(const hidb::HiDb& hidb, std::vector<size_t> aTables, c
 static void find_antigens(const hidb::HiDb& hidb, std::string aName, const argc_argv& args);
 static void find_sera(const hidb::HiDb& hidb, std::string aName, const argc_argv& args);
 static void find_tables(const hidb::HiDb& hidb, std::string aName, const argc_argv& args);
+static void find(const hidb::HiDb& hidb, const argc_argv& args);
 
 // ----------------------------------------------------------------------
 
@@ -28,6 +29,7 @@ int main(int argc, char* const argv[])
         argc_argv args(argc, argv, {
                 {"-s", false},  // find sera
                 {"-t", false},  // find table
+                {"--db", ""},
                 {"--db-dir", ""},
                 {"-v", false},
                 {"--verbose", false},
@@ -40,40 +42,10 @@ int main(int argc, char* const argv[])
         const bool verbose = args["-v"] || args["--verbose"];
         hidb::setup(args["--db-dir"], {}, verbose);
 
-        const auto& hidb = hidb::get(string::upper(args[0]), report_time::Yes);
-        if (args[1] == "all"s) {
-            if (args["-s"])
-                list_all_sera(hidb, args);
-            else if (args["-t"])
-                list_all_tables(hidb, args);
-            else
-                list_all_antigens(hidb, args);
-        }
-        else {
-            if (args["-s"])
-                find_sera(hidb, args[1], args);
-            else if (args["-t"])
-                find_tables(hidb, args[1], args);
-            else
-                find_antigens(hidb, args[1], args);
-        }
-
-        // for (auto arg = 2; arg < argc; ++arg) {
-        //     Timeit timeit("looking: ");
-        //     const auto look_for = string::upper(argv[arg]);
-        //     const auto results = hidb.find_antigens_with_score(look_for);
-        //     if (!results.empty()) {
-        //         const auto num_digits = static_cast<int>(std::log10(results.size())) + 1;
-        //         size_t result_no = 1;
-        //         for (const auto& result: results) {
-        //             std::cout << std::setw(num_digits) << result_no << ' ' << result.second << ' ' << result.first->full_name() << '\n';
-        //             ++result_no;
-        //         }
-        //         if ((arg + 1) < argc)
-        //             std::cout << '\n';
-        //     }
-        // }
-
+        if (!args["--db"])
+            find(hidb::get(string::upper(args[0]), report_time::Yes), args);
+        else
+            find(hidb::HiDb(args["--db"], report_time::Yes), args);
         return 0;
     }
     catch (std::exception& err) {
@@ -81,6 +53,29 @@ int main(int argc, char* const argv[])
         return 1;
     }
 }
+
+// ----------------------------------------------------------------------
+
+void find(const hidb::HiDb& hidb, const argc_argv& args)
+{
+    if (args[1] == "all"s) {
+        if (args["-s"])
+            list_all_sera(hidb, args);
+        else if (args["-t"])
+            list_all_tables(hidb, args);
+        else
+            list_all_antigens(hidb, args);
+    }
+    else {
+        if (args["-s"])
+            find_sera(hidb, args[1], args);
+        else if (args["-t"])
+            find_tables(hidb, args[1], args);
+        else
+            find_antigens(hidb, args[1], args);
+    }
+
+} // find
 
 // ----------------------------------------------------------------------
 

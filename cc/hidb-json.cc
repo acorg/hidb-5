@@ -60,7 +60,7 @@ std::string hidb::json::read(std::string aData)
     header_bin->antigen_offset = sizeof(hidb::bin::Header);
 
     auto* antigen_index = reinterpret_cast<hidb::bin::ASTIndex*>(data_start + sizeof(*header_bin));
-    auto* antigen_data = reinterpret_cast<ptr_t>(reinterpret_cast<ptr_t>(antigen_index) + sizeof(hidb::bin::ast_offset_t) * estimations.number_of_antigens + sizeof(hidb::bin::ast_number_t));
+    auto* antigen_data = reinterpret_cast<ptr_t>(reinterpret_cast<ptr_t>(antigen_index) + sizeof(hidb::bin::ast_offset_t) * (estimations.number_of_antigens + 1) + sizeof(hidb::bin::ast_number_t));
 
     header_bin->virus_type_size = static_cast<decltype(header_bin->virus_type_size)>(estimations.virus_type.size());
     std::memset(header_bin->virus_type, 0, static_cast<size_t>(header_bin->virus_type_size));
@@ -69,6 +69,8 @@ std::string hidb::json::read(std::string aData)
     Timeit ti_antigens("converting " + acmacs::to_string(estimations.number_of_antigens) + " antigens: ");
     antigen_index->number_of = static_cast<hidb::bin::ast_number_t>(estimations.number_of_antigens);
     hidb::bin::ast_offset_t* antigen_offset = &antigen_index->offset;
+    *antigen_offset = 0;
+    ++antigen_offset;
     hidb::bin::ast_offset_t previous_antigen_offset = 0;
     for (const rjson::object& antigen: static_cast<const rjson::array&>(val["a"])) {
         const auto ag_size = make_antigen(antigen, reinterpret_cast<hidb::bin::Antigen*>(antigen_data));
@@ -81,11 +83,13 @@ std::string hidb::json::read(std::string aData)
 
     header_bin->serum_offset = static_cast<decltype(header_bin->serum_offset)>(antigen_data - data_start);
     auto* serum_index = reinterpret_cast<hidb::bin::ASTIndex*>(data_start + header_bin->serum_offset);
-    auto* serum_data = reinterpret_cast<ptr_t>(reinterpret_cast<ptr_t>(serum_index) + sizeof(hidb::bin::ast_offset_t) * estimations.number_of_sera + sizeof(hidb::bin::ast_number_t));
+    auto* serum_data = reinterpret_cast<ptr_t>(reinterpret_cast<ptr_t>(serum_index) + sizeof(hidb::bin::ast_offset_t) * (estimations.number_of_sera + 1) + sizeof(hidb::bin::ast_number_t));
 
     Timeit ti_sera("converting " + acmacs::to_string(estimations.number_of_sera) + " sera: ");
     serum_index->number_of = static_cast<hidb::bin::ast_number_t>(estimations.number_of_sera);
     hidb::bin::ast_offset_t* serum_offset = &serum_index->offset;
+    *serum_offset = 0;
+    ++serum_offset;
     hidb::bin::ast_offset_t previous_serum_offset = 0;
     for (const rjson::object& serum: static_cast<const rjson::array&>(val["s"])) {
         const auto sr_size = make_serum(serum, reinterpret_cast<hidb::bin::Serum*>(serum_data));
@@ -98,11 +102,13 @@ std::string hidb::json::read(std::string aData)
 
     header_bin->table_offset = static_cast<decltype(header_bin->table_offset)>(serum_data - data_start);
     auto* table_index = reinterpret_cast<hidb::bin::ASTIndex*>(data_start + header_bin->table_offset);
-    auto* table_data = reinterpret_cast<ptr_t>(reinterpret_cast<ptr_t>(table_index) + sizeof(hidb::bin::ast_offset_t) * estimations.number_of_tables + sizeof(hidb::bin::ast_number_t));
+    auto* table_data = reinterpret_cast<ptr_t>(reinterpret_cast<ptr_t>(table_index) + sizeof(hidb::bin::ast_offset_t) * (estimations.number_of_tables + 1) + sizeof(hidb::bin::ast_number_t));
 
     Timeit ti_tables("converting " + acmacs::to_string(estimations.number_of_tables) + " tables: ");
     table_index->number_of = static_cast<hidb::bin::ast_number_t>(estimations.number_of_tables);
     hidb::bin::ast_offset_t* table_offset = &table_index->offset;
+    *table_offset = 0;
+    ++table_offset;
     hidb::bin::ast_offset_t previous_table_offset = 0;
     for (const rjson::object& table: static_cast<const rjson::array&>(val["t"])) {
         const auto table_size = make_table(table, reinterpret_cast<hidb::bin::Table*>(table_data));

@@ -13,9 +13,9 @@ of bytes
 ----------------------------------------------------------------------
                             antigens
 4                           number of antigens
-num-antigens * 4            offset of each antigen record from antigen 0 record beginning,
-                              starting with antigen 1 and ending with num-antigens+1
-                              i.e. there is no offset of antigen 0
+(num-antigens+1) * 4        offset of each antigen record from antigen 0 record beginning,
+                              starting with antigen 0 and ending with num-antigens
+                              (i.e. the first offset is always 0)
 
   ----                      antigen record
 1                           location offset from host beginning
@@ -55,9 +55,9 @@ num-antigens * 4            offset of each antigen record from antigen 0 record 
 ----------------------------------------------------------------------
                             sera
 4                           number of sera
-num-sera * 4                offset of each serum record from serum 0 record beginning,
-                              starting with serum 1 and ending with num-sera+1
-                              i.e. there is no offset of serum 0
+(num-sera+1) * 4            offset of each serum record from serum 0 record beginning,
+                              starting with serum 0 and ending with num-sera
+                              (i.e. the first offset is always 0)
 
   ----                      serum record
 1                           location offset from host beginning
@@ -91,9 +91,9 @@ num-sera * 4                offset of each serum record from serum 0 record begi
 ----------------------------------------------------------------------
                             tables
 4                           number of tables
-num-tables * 4                offset of each table record from table 0 record beginning,
-                              starting with table 1 and ending with num-sera+1
-                              i.e. there is no offset of table 0
+(num-tables+1) * 4          offset of each table record from table 0 record beginning,
+                              starting with table 0 and ending with num-tables
+                              (i.e. the first offset is always 0)
 
   ----                      table record
 1                           table date offset from assay beginning

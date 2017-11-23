@@ -44,7 +44,7 @@ std::shared_ptr<hidb::Antigens> hidb::HiDb::antigens() const
     const auto number_of_antigens = *reinterpret_cast<const hidb::bin::ast_number_t*>(antigens);
     return std::make_shared<hidb::Antigens>(static_cast<size_t>(number_of_antigens),
                                             antigens + sizeof(hidb::bin::ast_number_t),
-                                            antigens + sizeof(hidb::bin::ast_number_t) + sizeof(hidb::bin::ast_offset_t) * number_of_antigens);
+                                            antigens + sizeof(hidb::bin::ast_number_t) + sizeof(hidb::bin::ast_offset_t) * (number_of_antigens + 1));
 
 } // hidb::HiDb::antigens
 
@@ -52,12 +52,7 @@ std::shared_ptr<hidb::Antigens> hidb::HiDb::antigens() const
 
 std::shared_ptr<acmacs::chart::Antigen> hidb::Antigens::operator[](size_t aIndex) const
 {
-    if (aIndex == 0) {
-        return std::make_shared<hidb::Antigen>(mAntigen0);
-    }
-    else {
-        return std::make_shared<hidb::Antigen>(mAntigen0 + reinterpret_cast<const hidb::bin::ast_offset_t*>(mIndex)[aIndex - 1]);
-    }
+    return std::make_shared<hidb::Antigen>(mAntigen0 + reinterpret_cast<const hidb::bin::ast_offset_t*>(mIndex)[aIndex]);
 
 } // hidb::Antigens::operator[]
 
@@ -158,8 +153,8 @@ std::shared_ptr<hidb::Sera> hidb::HiDb::sera() const
     const auto* sera = mData + reinterpret_cast<const hidb::bin::Header*>(mData)->serum_offset;
     const auto number_of_sera = *reinterpret_cast<const hidb::bin::ast_number_t*>(sera);
     return std::make_shared<hidb::Sera>(static_cast<size_t>(number_of_sera),
-                                            sera + sizeof(hidb::bin::ast_number_t),
-                                            sera + sizeof(hidb::bin::ast_number_t) + sizeof(hidb::bin::ast_offset_t) * number_of_sera);
+                                        sera + sizeof(hidb::bin::ast_number_t),
+                                        sera + sizeof(hidb::bin::ast_number_t) + sizeof(hidb::bin::ast_offset_t) * (number_of_sera + 1));
 
 } // hidb::HiDb::sera
 
@@ -167,12 +162,7 @@ std::shared_ptr<hidb::Sera> hidb::HiDb::sera() const
 
 std::shared_ptr<acmacs::chart::Serum> hidb::Sera::operator[](size_t aIndex) const
 {
-    if (aIndex == 0) {
-        return std::make_shared<hidb::Serum>(mSerum0);
-    }
-    else {
-        return std::make_shared<hidb::Serum>(mSerum0 + reinterpret_cast<const hidb::bin::ast_offset_t*>(mIndex)[aIndex - 1]);
-    }
+    return std::make_shared<hidb::Serum>(mSerum0 + reinterpret_cast<const hidb::bin::ast_offset_t*>(mIndex)[aIndex]);
 
 } // hidb::Sera::operator[]
 
@@ -261,8 +251,8 @@ std::shared_ptr<hidb::Tables> hidb::HiDb::tables() const
     const auto* tables = mData + reinterpret_cast<const hidb::bin::Header*>(mData)->table_offset;
     const auto number_of_tables = *reinterpret_cast<const hidb::bin::ast_number_t*>(tables);
     return std::make_shared<hidb::Tables>(static_cast<size_t>(number_of_tables),
-                                            tables + sizeof(hidb::bin::ast_number_t),
-                                            tables + sizeof(hidb::bin::ast_number_t) + sizeof(hidb::bin::ast_offset_t) * number_of_tables);
+                                          tables + sizeof(hidb::bin::ast_number_t),
+                                          tables + sizeof(hidb::bin::ast_number_t) + sizeof(hidb::bin::ast_offset_t) * (number_of_tables + 1));
 
 } // hidb::HiDb::tables
 
@@ -270,12 +260,7 @@ std::shared_ptr<hidb::Tables> hidb::HiDb::tables() const
 
 std::shared_ptr<hidb::Table> hidb::Tables::operator[](size_t aIndex) const
 {
-    if (aIndex == 0) {
-        return std::make_shared<hidb::Table>(mTable0);
-    }
-    else {
-        return std::make_shared<hidb::Table>(mTable0 + reinterpret_cast<const hidb::bin::ast_offset_t*>(mIndex)[aIndex - 1]);
-    }
+    return std::make_shared<hidb::Table>(mTable0 + reinterpret_cast<const hidb::bin::ast_offset_t*>(mIndex)[aIndex]);
 
 } // hidb::Tables::operator[]
 
