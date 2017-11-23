@@ -55,8 +55,12 @@ namespace hidb::bin
 
         std::string name() const;
         std::string date() const;
-        inline std::string passage() const { return std::string(_start() + passage_offset, reassortant_offset - passage_offset); }
-        inline std::string reassortant() const { return std::string(_start() + reassortant_offset, annotation_offset[0] - reassortant_offset); }
+        inline std::string_view host() const { return {_start(), static_cast<size_t>(location_offset)}; }
+        inline std::string_view location() const { return {_start() + location_offset, static_cast<size_t>(isolation_offset - location_offset)}; }
+        inline std::string_view isolation() const { return {_start() + isolation_offset, static_cast<size_t>(passage_offset - isolation_offset)}; }
+        inline std::string year() const { if (*year_data) return std::string(year_data, sizeof(year_data)); else return std::string{}; }
+        inline std::string_view passage() const { return {_start() + passage_offset, static_cast<size_t>(reassortant_offset - passage_offset)}; }
+        inline std::string_view reassortant() const { return {_start() + reassortant_offset, static_cast<size_t>(annotation_offset[0] - reassortant_offset)}; }
         std::vector<std::string> lab_ids() const;
         std::vector<std::string> annotations() const;
 
@@ -67,10 +71,6 @@ namespace hidb::bin
             }
 
         inline const char* _start() const { return reinterpret_cast<const char*>(this) + sizeof(*this); }
-        inline std::string host() const { return std::string(_start(), location_offset); }
-        inline std::string location() const { return std::string(_start() + location_offset, isolation_offset - location_offset); }
-        inline std::string isolation() const { return std::string(_start() + isolation_offset, passage_offset - isolation_offset); }
-        inline std::string year() const { if (*year_data) return std::string(year_data, sizeof(year_data)); else return std::string{}; }
 
     }; // struct Antigen
 
@@ -94,10 +94,14 @@ namespace hidb::bin
         char year_data[4];
 
         std::string name() const;
-        inline std::string passage() const { return std::string(_start() + passage_offset, reassortant_offset - passage_offset); }
-        inline std::string reassortant() const { return std::string(_start() + reassortant_offset, annotation_offset[0] - reassortant_offset); }
+        inline std::string_view host() const { return {_start(), static_cast<size_t>(location_offset)}; }
+        inline std::string_view location() const { return {_start() + location_offset, static_cast<size_t>(isolation_offset - location_offset)}; }
+        inline std::string_view isolation() const { return {_start() + isolation_offset, static_cast<size_t>(passage_offset - isolation_offset)}; }
+        inline std::string year() const { if (*year_data) return std::string(year_data, sizeof(year_data)); else return std::string{}; }
+        inline std::string_view passage() const { return {_start() + passage_offset, static_cast<size_t>(reassortant_offset - passage_offset)}; }
+        inline std::string_view reassortant() const { return {_start() + reassortant_offset, static_cast<size_t>(annotation_offset[0] - reassortant_offset)}; }
         std::vector<std::string> annotations() const;
-        inline std::string serum_id() const { return std::string(_start() + serum_id_offset, serum_species_offset - serum_id_offset); }
+        inline std::string_view serum_id() const { return {_start() + serum_id_offset, static_cast<size_t>(serum_species_offset - serum_id_offset)}; }
 
         inline std::string serum_species() const
             {
@@ -122,10 +126,6 @@ namespace hidb::bin
             }
 
         inline const char* _start() const { return reinterpret_cast<const char*>(this) + sizeof(*this); }
-        inline std::string host() const { return std::string(_start(), location_offset); }
-        inline std::string location() const { return std::string(_start() + location_offset, isolation_offset - location_offset); }
-        inline std::string isolation() const { return std::string(_start() + isolation_offset, passage_offset - isolation_offset); }
-        inline std::string year() const { if (*year_data) return std::string(year_data, sizeof(year_data)); else return std::string{}; }
 
     }; // struct Serum
 

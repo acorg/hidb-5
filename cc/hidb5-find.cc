@@ -4,6 +4,7 @@
 #include "acmacs-base/argc-argv.hh"
 #include "acmacs-base/string.hh"
 #include "acmacs-base/enumerate.hh"
+#include "acmacs-base/filesystem.hh"
 #include "hidb-5/hidb.hh"
 
 using namespace std::string_literals;
@@ -29,7 +30,6 @@ int main(int argc, char* const argv[])
         argc_argv args(argc, argv, {
                 {"-s", false},  // find sera
                 {"-t", false},  // find table
-                {"--db", ""},
                 {"--db-dir", ""},
                 {"-v", false},
                 {"--verbose", false},
@@ -37,15 +37,15 @@ int main(int argc, char* const argv[])
                 {"--help", false},
             });
         if (args["-h"] || args["--help"] || args.number_of_arguments() < 2) {
-            throw std::runtime_error("Usage: "s + args.program() + " [options] <virus-type: B, H1, H3> <name|all> ...\n" + args.usage_options());
+            throw std::runtime_error("Usage: "s + args.program() + " [options] <virus-type: B, H1, H3|hidb-file> <name|all> ...\n" + args.usage_options());
         }
         const bool verbose = args["-v"] || args["--verbose"];
         hidb::setup(args["--db-dir"], {}, verbose);
 
-        if (!args["--db"])
-            find(hidb::get(string::upper(args[0]), report_time::Yes), args);
+        if (fs::exists(args[0]))
+            find(hidb::HiDb(args[0], report_time::Yes), args);
         else
-            find(hidb::HiDb(args["--db"], report_time::Yes), args);
+            find(hidb::get(string::upper(args[0]), report_time::Yes), args);
         return 0;
     }
     catch (std::exception& err) {

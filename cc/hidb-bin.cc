@@ -26,9 +26,9 @@ std::string hidb::bin::Antigen::name() const
 {
     const auto y = year();
     if (y[0])
-        return string::join("/", {host(), location(), isolation(), y});
+        return string::join("/", {std::string{host()}, std::string{location()}, std::string{isolation()}, y});
     else
-        return string::join(" ", {location(), isolation()}); // cdc name
+        return string::join(" ", {std::string{location()}, std::string{isolation()}}); // cdc name
 
 } // hidb::bin::Antigen::name
 
@@ -81,7 +81,7 @@ std::vector<std::string> hidb::bin::Antigen::annotations() const
 std::string hidb::bin::Serum::name() const
 {
       // host, location, year are empty if name was not recognized
-    return string::join("/", {host(), location(), isolation(), year()});
+    return string::join("/", {std::string{host()}, std::string{location()}, std::string{isolation()}, year()});
 
 } // hidb::bin::Serum::name
 
