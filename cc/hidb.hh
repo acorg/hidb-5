@@ -94,14 +94,12 @@ namespace hidb
      public:
         inline Table(const char* aTable) : mTable(aTable) {}
 
-        // acmacs::chart::Name name() const override;
-        // acmacs::chart::Passage passage() const override;
-        // acmacs::chart::BLineage lineage() const override;
-        // acmacs::chart::Reassortant reassortant() const override;
-        // acmacs::chart::Annotations annotations() const override;
-        // acmacs::chart::SerumId serum_id() const override;
-        // acmacs::chart::SerumSpecies serum_species() const override;
-        // acmacs::chart::PointIndexList homologous_antigens() const override;
+        std::string name() const;
+        std::string assay() const;
+        std::string lab() const;
+        std::string date() const;
+        size_t number_of_antigens() const;
+        size_t number_of_sera() const;
 
      private:
         const char* mTable;
@@ -116,6 +114,10 @@ namespace hidb
 
         inline size_t size() const { return mNumberOfTables; }
         std::shared_ptr<Table> operator[](size_t aIndex) const;
+
+        using iterator = acmacs::chart::internal::iterator<Tables, std::shared_ptr<Table>>;
+        inline iterator begin() const { return {*this, 0}; }
+        inline iterator end() const { return {*this, size()}; }
 
      private:
         size_t mNumberOfTables;

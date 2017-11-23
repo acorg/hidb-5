@@ -98,7 +98,16 @@ namespace hidb::bin
         inline std::string reassortant() const { return std::string(_start() + reassortant_offset, annotation_offset[0] - reassortant_offset); }
         std::vector<std::string> annotations() const;
         inline std::string serum_id() const { return std::string(_start() + serum_id_offset, serum_species_offset - serum_id_offset); }
-        inline std::string serum_species() const { return std::string(_start() + serum_species_offset, homologous_antigen_index_offset - serum_species_offset); }
+
+        inline std::string serum_species() const
+            {
+                  // ignore padding after serum species
+                const auto* start = _start() + serum_species_offset;
+                auto* end = _start() + homologous_antigen_index_offset;
+                while (end > start && !end[-1])
+                    --end;
+                return std::string(start, static_cast<size_t>(end - start));
+            }
 
         inline std::pair<size_t, const homologous_t*> homologous_antigens() const
             {
@@ -131,6 +140,25 @@ namespace hidb::bin
         uint32_t antigen_index_offset;
         uint32_t serum_index_offset;
         uint32_t titer_offset;
+
+        inline std::string assay() const { return std::string(_start(), date_offset); }
+        inline std::string lab() const { return std::string(_start() + lab_offset, rbc_offset - lab_offset); }
+        inline std::string date() const { return std::string(_start() + date_offset, lab_offset - date_offset); }
+
+        inline std::string rbc() const
+            {
+                  // ignore padding after rbc species
+                const auto* start = _start() + rbc_offset;
+                auto* end = _start() + antigen_index_offset;
+                while (end > start && !end[-1])
+                    --end;
+                return std::string(start, static_cast<size_t>(end - start));
+            }
+
+        inline size_t number_of_antigens() const { return static_cast<size_t>(serum_index_offset - antigen_index_offset) / sizeof(antigen_index_t); }
+        inline size_t number_of_sera() const { return static_cast<size_t>(titer_offset - serum_index_offset) / sizeof(serum_index_t); }
+
+        inline const char* _start() const { return reinterpret_cast<const char*>(this) + sizeof(*this); }
 
     }; // struct Table
 

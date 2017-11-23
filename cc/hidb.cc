@@ -249,6 +249,51 @@ std::shared_ptr<hidb::Table> hidb::Tables::operator[](size_t aIndex) const
 
 // ----------------------------------------------------------------------
 
+std::string hidb::Table::name() const
+{
+    return "??NAME";
+
+} // hidb::Table::name
+
+// ----------------------------------------------------------------------
+
+std::string hidb::Table::assay() const
+{
+    return reinterpret_cast<const hidb::bin::Table*>(mTable)->assay();
+
+} // hidb::Table::assay
+
+// ----------------------------------------------------------------------
+
+std::string hidb::Table::lab() const
+{
+    return reinterpret_cast<const hidb::bin::Table*>(mTable)->lab();
+
+} // hidb::Table::lab
+
+// ----------------------------------------------------------------------
+
+std::string hidb::Table::date() const
+{
+    return reinterpret_cast<const hidb::bin::Table*>(mTable)->date();
+
+} // hidb::Table::date
+
+// ----------------------------------------------------------------------
+
+size_t hidb::Table::number_of_antigens() const
+{
+    return reinterpret_cast<const hidb::bin::Table*>(mTable)->number_of_antigens();
+
+} // hidb::Table::number_of_antigens
+
+// ----------------------------------------------------------------------
+
+size_t hidb::Table::number_of_sera() const
+{
+    return reinterpret_cast<const hidb::bin::Table*>(mTable)->number_of_sera();
+
+} // hidb::Table::number_of_sera
 
 // ----------------------------------------------------------------------
 /// Local Variables:

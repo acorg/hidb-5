@@ -206,6 +206,10 @@ size_t make_antigen(const rjson::object& aSource, hidb::bin::Antigen* aTarget)
     else
         throw std::runtime_error("Too many lab ids in " + aSource.to_json());
 
+      // padding
+    if (size_t size = static_cast<size_t>(target - target_base); size % 4)
+        target += 4 - size % 4;
+
     set_offset(aTarget->date_offset, target);
     if (const auto& dates = aSource.get_or_empty_array("D"); !dates.empty()) {
         for (size_t date_no = 0; date_no < dates.size(); ++date_no) {
@@ -318,6 +322,10 @@ size_t make_serum(const rjson::object& aSource, hidb::bin::Serum* aTarget)
         std::memmove(target, serum_species.data(), serum_species.size());
         target += serum_species.size();
     }
+
+      // padding
+    if (size_t size = static_cast<size_t>(target - target_base); size % 4)
+        target += 4 - size % 4;
 
     set_offset(aTarget->homologous_antigen_index_offset, target);
     const auto& homologous = aSource.get_or_empty_array("h");

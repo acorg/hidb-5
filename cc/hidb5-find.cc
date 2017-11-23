@@ -66,9 +66,9 @@ void list_all_tables(const hidb::HiDb& hidb)
     auto tables = hidb.tables();
     std::cout << "Tables: " << tables->size() << '\n';
 
-    // for (auto [t_no, table]: acmacs::enumerate(*tables)) {
-    //     std::cout << t_no << ' ' << table->name();
-    // }
+    for (auto [t_no, table]: acmacs::enumerate(*tables)) {
+        std::cout << t_no << ' ' << table->name() << " A:" << table->number_of_antigens() << " S:" << table->number_of_sera() << '\n';
+    }
 
 } // list_all_tables
 

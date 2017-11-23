@@ -34,8 +34,13 @@ std::vector<std::string> hidb::bin::Antigen::lab_ids() const
 {
     std::vector<std::string> result;
     for (size_t no = 0; no < sizeof(lab_id_offset); ++no) {
-        if (const auto size = lab_id_offset[no+1] - lab_id_offset[no]; size > 0)
-            result.emplace_back(_start() + lab_id_offset[no], static_cast<size_t>(size));
+          // ignore padding after lab id
+        const auto* start = _start() + lab_id_offset[no];
+        auto* end = _start() + lab_id_offset[no+1];
+        while (end > start && !end[-1])
+            --end;
+        if (end > start)
+            result.emplace_back(start, static_cast<size_t>(end - start));
     }
     return result;
 
@@ -75,9 +80,6 @@ std::vector<std::string> hidb::bin::Serum::annotations() const
     return result;
 
 } // hidb::bin::Serum::annotations
-
-// ----------------------------------------------------------------------
-
 
 // ----------------------------------------------------------------------
 /// Local Variables:
