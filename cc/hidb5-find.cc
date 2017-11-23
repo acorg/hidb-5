@@ -8,9 +8,14 @@
 
 using namespace std::string_literals;
 
-static void list_all_antigens(const hidb::HiDb& hidb);
-static void list_all_sera(const hidb::HiDb& hidb);
-static void list_all_tables(const hidb::HiDb& hidb);
+static void list_all_antigens(const hidb::HiDb& hidb, const argc_argv& args);
+static void list_all_sera(const hidb::HiDb& hidb, const argc_argv& args);
+static void report_serum(const hidb::HiDb& hidb, const hidb::Serum& aSerum, const argc_argv& args, bool aReportTables);
+static void report_antigen(const hidb::HiDb& hidb, size_t aIndex, const argc_argv& args, bool aReportTables, std::string aPrefix = {});
+static void report_antigen(const hidb::HiDb& hidb, const hidb::Antigen& aAntigen, const argc_argv& args, bool aReportTables, std::string aPrefix = {});
+static void list_all_tables(const hidb::HiDb& hidb, const argc_argv& args);
+static void report_tables(const hidb::HiDb& hidb, std::vector<size_t> aTables, const argc_argv& args, std::string aPrefix = {});
+static void report_table(const hidb::Table& aTable, const argc_argv& args, std::string aPrefix = {});
 
 // ----------------------------------------------------------------------
 
@@ -18,6 +23,8 @@ int main(int argc, char* const argv[])
 {
     try {
         argc_argv args(argc, argv, {
+                {"-s", false},  // find sera
+                {"-t", false},  // find table
                 {"--db-dir", ""},
                 {"-v", false},
                 {"--verbose", false},
@@ -25,15 +32,20 @@ int main(int argc, char* const argv[])
                 {"--help", false},
             });
         if (args["-h"] || args["--help"] || args.number_of_arguments() < 2) {
-            throw std::runtime_error("Usage: "s + args.program() + " [options] <virus-type: B, H1, H3> <name> ...\n" + args.usage_options());
+            throw std::runtime_error("Usage: "s + args.program() + " [options] <virus-type: B, H1, H3> <name|all> ...\n" + args.usage_options());
         }
         const bool verbose = args["-v"] || args["--verbose"];
         hidb::setup(args["--db-dir"], {}, verbose);
 
         const auto& hidb = hidb::get(string::upper(args[0]), report_time::Yes);
-        // list_all_antigens(hidb);
-        // list_all_sera(hidb);
-        list_all_tables(hidb);
+        if (args[1] == "all"s) {
+            if (args["-s"])
+                list_all_sera(hidb, args);
+            else if (args["-t"])
+                list_all_tables(hidb, args);
+            else
+                list_all_antigens(hidb, args);
+        }
 
         // for (auto arg = 2; arg < argc; ++arg) {
         //     Timeit timeit("looking: ");
@@ -61,80 +73,113 @@ int main(int argc, char* const argv[])
 
 // ----------------------------------------------------------------------
 
-void list_all_tables(const hidb::HiDb& hidb)
+void list_all_tables(const hidb::HiDb& hidb, const argc_argv& args)
 {
     auto tables = hidb.tables();
     std::cout << "Tables: " << tables->size() << '\n';
-
-    for (auto [t_no, table]: acmacs::enumerate(*tables)) {
-        std::cout << t_no << ' ' << table->name() << " A:" << table->number_of_antigens() << " S:" << table->number_of_sera() << '\n';
-    }
+    for (auto table: *tables)
+        report_table(*table, args);
 
 } // list_all_tables
 
 // ----------------------------------------------------------------------
 
-void list_all_sera(const hidb::HiDb& hidb)
+void report_tables(const hidb::HiDb& hidb, std::vector<size_t> aTables, const argc_argv& args, std::string aPrefix)
+{
+    for (size_t t_no: aTables) {
+        report_table(*(*hidb.tables())[t_no], args, aPrefix);
+    }
+
+} // report_tables
+
+// ----------------------------------------------------------------------
+
+void report_table(const hidb::Table& aTable, const argc_argv& args, std::string aPrefix)
+{
+    std::cout << aPrefix << aTable.name() << " A:" << aTable.number_of_antigens() << " S:" << aTable.number_of_sera() << '\n';
+
+} // report_table
+
+// ----------------------------------------------------------------------
+
+void list_all_antigens(const hidb::HiDb& hidb, const argc_argv& args)
+{
+    auto antigens = hidb.antigens();
+    std::cout << "Antigens: " << antigens->size() << '\n';
+    for (auto antigen: *antigens)
+        report_antigen(hidb, dynamic_cast<const hidb::Antigen&>(*antigen), args, true);
+
+} // list_all_antigens
+
+// ----------------------------------------------------------------------
+
+void report_antigen(const hidb::HiDb& hidb, size_t aIndex, const argc_argv& args, bool aReportTables, std::string aPrefix)
+{
+    report_antigen(hidb, dynamic_cast<const hidb::Antigen&>(*(*hidb.antigens())[aIndex]), args, aReportTables, aPrefix);
+
+} // report_antigen
+
+// ----------------------------------------------------------------------
+
+void report_antigen(const hidb::HiDb& hidb, const hidb::Antigen& aAntigen, const argc_argv& args, bool aReportTables, std::string aPrefix)
+{
+        std::cout << aPrefix << aAntigen.name();
+        if (const auto annotations = aAntigen.annotations(); !annotations.empty())
+            std::cout << ' ' << annotations;
+        if (const auto reassortant = aAntigen.reassortant(); !reassortant.empty())
+            std::cout << ' ' << reassortant;
+        if (const auto passage = aAntigen.passage(); !passage.empty())
+            std::cout << ' ' << passage;
+        if (const auto date = aAntigen.date(); !date.empty())
+            std::cout << " [" << date << ']';
+        if (const auto lab_ids = aAntigen.lab_ids(); !lab_ids.empty())
+            std::cout << ' ' << lab_ids;
+        if (const auto lineage = aAntigen.lineage(); lineage != acmacs::chart::BLineage::Unknown)
+            std::cout << ' ' << static_cast<std::string>(lineage);
+        if (aReportTables) {
+            std::cout << '\n';
+            report_tables(hidb, aAntigen.tables(), args, aPrefix + "    ");
+        }
+        else
+            std::cout << '\n';
+
+} // report_antigen
+
+// ----------------------------------------------------------------------
+
+void list_all_sera(const hidb::HiDb& hidb, const argc_argv& args)
 {
     auto sera = hidb.sera();
     std::cout << "Sera: " << sera->size() << '\n';
-
-    // auto serum = (*sera)[0];
-    // std::cout << "N:" << serum->name() << ":\n";
-    // std::cout << "A:" << serum->annotations() << ":\n";
-    // std::cout << "R:" << serum->reassortant() << ":\n";
-    // std::cout << "P:" << serum->passage() << ":\n";
-    // std::cout << "L:" << serum->lineage() << ":\n";
-    // std::cout << "I:" << serum->serum_id() << ":\n";
-    // std::cout << "s:" << serum->serum_species() << ":\n";
-    // return;
-
-    for (auto [sr_no, serum]: acmacs::enumerate(*sera)) {
-        std::cout << sr_no << ' ' << serum->name();
-        if (const auto annotations = serum->annotations(); !annotations.empty())
-            std::cout << " A:" << annotations;
-        if (const auto reassortant = serum->reassortant(); !reassortant.empty())
-            std::cout << " R:" << reassortant;
-        if (const auto passage = serum->passage(); !passage.empty())
-            std::cout << " P:" << passage;
-        if (const auto lineage = serum->lineage(); lineage != acmacs::chart::BLineage::Unknown)
-            std::cout << ' ' << static_cast<std::string>(lineage);
-        if (const auto serum_id = serum->serum_id(); !serum_id.empty())
-            std::cout << " I:" << serum_id;
-        if (const auto serum_species = serum->serum_species(); !serum_species.empty())
-            std::cout << " s:" << serum_species;
-        std::cout << " H:" << dynamic_cast<const hidb::Serum&>(*serum).homologous_antigens();
-        std::cout << " T:" << dynamic_cast<const hidb::Serum&>(*serum).tables();
-        std::cout << '\n';
-    }
+    for (auto serum: *sera)
+        report_serum(hidb, dynamic_cast<const hidb::Serum&>(*serum), args, true);
 
 } // list_all_sera
 
 // ----------------------------------------------------------------------
 
-void list_all_antigens(const hidb::HiDb& hidb)
+void report_serum(const hidb::HiDb& hidb, const hidb::Serum& aSerum, const argc_argv& args, bool aReportTables)
 {
-    auto antigens = hidb.antigens();
-    std::cout << "Antigens: " << antigens->size() << '\n';
-    for (auto [ag_no, antigen]: acmacs::enumerate(*antigens)) {
-        std::cout << ag_no << ' ' << antigen->name();
-        if (const auto annotations = antigen->annotations(); !annotations.empty())
-            std::cout << " A:" << annotations;
-        if (const auto reassortant = antigen->reassortant(); !reassortant.empty())
-            std::cout << " R:" << reassortant;
-        if (const auto passage = antigen->passage(); !passage.empty())
-            std::cout << " P:" << passage;
-        if (const auto date = antigen->date(); !date.empty())
-            std::cout << " D:" << date;
-        if (const auto lineage = antigen->lineage(); lineage != acmacs::chart::BLineage::Unknown)
-            std::cout << ' ' << static_cast<std::string>(lineage);
-        if (const auto lab_ids = antigen->lab_ids(); !lab_ids.empty())
-            std::cout << " I:" << lab_ids;
-        std::cout << " T:" << dynamic_cast<const hidb::Antigen&>(*antigen).tables();
-        std::cout << '\n';
-    }
+    std::cout << aSerum.name();
+    if (const auto annotations = aSerum.annotations(); !annotations.empty())
+        std::cout << ' ' << annotations;
+    if (const auto reassortant = aSerum.reassortant(); !reassortant.empty())
+        std::cout << ' ' << reassortant;
+    if (const auto serum_id = aSerum.serum_id(); !serum_id.empty())
+        std::cout << ' ' << serum_id;
+    if (const auto serum_species = aSerum.serum_species(); !serum_species.empty())
+        std::cout << ' ' << serum_species;
+    if (const auto passage = aSerum.passage(); !passage.empty())
+        std::cout << ' ' << passage;
+    if (const auto lineage = aSerum.lineage(); lineage != acmacs::chart::BLineage::Unknown)
+        std::cout << ' ' << static_cast<std::string>(lineage);
+    std::cout << '\n';
+    for (size_t ag_no: aSerum.homologous_antigens())
+        report_antigen(hidb, ag_no, args, false, "    ");
+    if (aReportTables)
+        report_tables(hidb, aSerum.tables(), args, "    ");
 
-} // list_all_antigens
+} // report_serum
 
 // ----------------------------------------------------------------------
 /// Local Variables:
