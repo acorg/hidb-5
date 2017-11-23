@@ -1,4 +1,7 @@
+#include <algorithm>
+
 #include "acmacs-base/string.hh"
+#include "acmacs-base/virus-name.hh"
 #include "hidb-5/hidb.hh"
 #include "hidb-5/hidb-bin.hh"
 #include "hidb-5/hidb-json.hh"
@@ -60,6 +63,29 @@ std::shared_ptr<acmacs::chart::Antigen> hidb::Antigens::operator[](size_t aIndex
 
 // ----------------------------------------------------------------------
 
+hidb::indexes_t hidb::Antigens::find(std::string aName) const
+{
+    std::string virus_type, host, location, isolation, year, passage;
+    virus_name::split(aName, virus_type, host, location, isolation, year, passage);
+
+    const auto first = reinterpret_cast<const hidb::bin::ast_offset_t*>(mIndex);
+    const auto last = first + mNumberOfAntigens;
+    auto found = std::lower_bound(
+        first, last, location,
+        [this](const hidb::bin::ast_offset_t offset, const std::string& look_for) -> bool { return reinterpret_cast<const hidb::bin::Antigen*>(this->mAntigen0 + offset)->location() < look_for; });
+    indexes_t result;
+    for ( ; found != last; ++found) {
+        const auto* antigen = reinterpret_cast<const hidb::bin::Antigen*>(this->mAntigen0 + *found);
+        if (antigen->location() != location)
+            break;
+        result.push_back(static_cast<size_t>(found - first));
+    }
+    return result;
+
+} // hidb::Antigens::find
+
+// ----------------------------------------------------------------------
+
 acmacs::chart::Name hidb::Antigen::name() const
 {
     return reinterpret_cast<const hidb::bin::Antigen*>(mAntigen)->name();
@@ -116,10 +142,10 @@ acmacs::chart::Annotations hidb::Antigen::annotations() const
 
 // ----------------------------------------------------------------------
 
-std::vector<size_t> hidb::Antigen::tables() const
+hidb::indexes_t hidb::Antigen::tables() const
 {
     const auto [size, ptr] = reinterpret_cast<const hidb::bin::Antigen*>(mAntigen)->tables();
-    std::vector<size_t> result(size);
+    indexes_t result(size);
     std::transform(ptr, ptr + size, result.begin(), [](const auto& index) -> size_t { return static_cast<size_t>(index); });
     return result;
 
@@ -219,10 +245,10 @@ acmacs::chart::PointIndexList hidb::Serum::homologous_antigens() const
 
 // ----------------------------------------------------------------------
 
-std::vector<size_t> hidb::Serum::tables() const
+hidb::indexes_t hidb::Serum::tables() const
 {
     const auto [size, ptr] = reinterpret_cast<const hidb::bin::Serum*>(mSerum)->tables();
-    std::vector<size_t> result(size);
+    indexes_t result(size);
     std::transform(ptr, ptr + size, result.begin(), [](const auto& index) -> size_t { return static_cast<size_t>(index); });
     return result;
 

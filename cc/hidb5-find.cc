@@ -16,6 +16,9 @@ static void report_antigen(const hidb::HiDb& hidb, const hidb::Antigen& aAntigen
 static void list_all_tables(const hidb::HiDb& hidb, const argc_argv& args);
 static void report_tables(const hidb::HiDb& hidb, std::vector<size_t> aTables, const argc_argv& args, std::string aPrefix = {});
 // static void report_table(const hidb::Table& aTable, const argc_argv& args, std::string aPrefix = {});
+static void find_antigens(const hidb::HiDb& hidb, std::string aName, const argc_argv& args);
+static void find_sera(const hidb::HiDb& hidb, std::string aName, const argc_argv& args);
+static void find_tables(const hidb::HiDb& hidb, std::string aName, const argc_argv& args);
 
 // ----------------------------------------------------------------------
 
@@ -46,6 +49,14 @@ int main(int argc, char* const argv[])
             else
                 list_all_antigens(hidb, args);
         }
+        else {
+            if (args["-s"])
+                find_sera(hidb, args[1], args);
+            else if (args["-t"])
+                find_tables(hidb, args[1], args);
+            else
+                find_antigens(hidb, args[1], args);
+        }
 
         // for (auto arg = 2; arg < argc; ++arg) {
         //     Timeit timeit("looking: ");
@@ -70,6 +81,30 @@ int main(int argc, char* const argv[])
         return 1;
     }
 }
+
+// ----------------------------------------------------------------------
+
+void find_antigens(const hidb::HiDb& hidb, std::string aName, const argc_argv& args)
+{
+    const auto indexes = hidb.antigens()->find(string::upper(aName));
+    for (auto index: indexes)
+        report_antigen(hidb, index, args, true);
+
+} // find_antigens
+
+// ----------------------------------------------------------------------
+
+void find_sera(const hidb::HiDb& hidb, std::string aName, const argc_argv& args)
+{
+
+} // find_sera
+
+// ----------------------------------------------------------------------
+
+void find_tables(const hidb::HiDb& hidb, std::string aName, const argc_argv& args)
+{
+
+} // find_tables
 
 // ----------------------------------------------------------------------
 

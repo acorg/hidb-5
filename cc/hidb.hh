@@ -12,6 +12,8 @@ namespace hidb
 {
     namespace bin { struct Table; }
 
+    using indexes_t = std::vector<size_t>;
+
     class Antigen : public acmacs::chart::Antigen
     {
      public:
@@ -27,7 +29,7 @@ namespace hidb
         acmacs::chart::Annotations annotations() const override;
         inline bool reference() const override { return false; }
 
-        std::vector<size_t> tables() const;
+        indexes_t tables() const;
 
      private:
         const char* mAntigen;
@@ -42,7 +44,7 @@ namespace hidb
 
         inline size_t size() const override { return mNumberOfAntigens; }
         std::shared_ptr<acmacs::chart::Antigen> operator[](size_t aIndex) const override;
-          // acmacs::chart::Indexes find_by_name(std::string aName) const override;
+        indexes_t find(std::string aName) const;
 
      private:
         size_t mNumberOfAntigens;
@@ -67,7 +69,7 @@ namespace hidb
         acmacs::chart::SerumSpecies serum_species() const override;
         acmacs::chart::PointIndexList homologous_antigens() const override;
 
-        std::vector<size_t> tables() const;
+        indexes_t tables() const;
 
      private:
         const char* mSerum;
@@ -88,7 +90,7 @@ namespace hidb
         const char* mIndex;
         const char* mSerum0;
 
-    }; // class Antigens
+    }; // class Sera
 
       // ----------------------------------------------------------------------
 
@@ -128,7 +130,7 @@ namespace hidb
         const char* mIndex;
         const char* mTable0;
 
-    }; // class Antigens
+    }; // class Tables
 
       // ----------------------------------------------------------------------
 
@@ -140,6 +142,7 @@ namespace hidb
         std::shared_ptr<Antigens> antigens() const;
         std::shared_ptr<Sera> sera() const;
         std::shared_ptr<Tables> tables() const;
+
 
         // std::vector<const AntigenData*> find_antigens(std::string name_reassortant_annotations_passage) const;
         // const AntigenData& find_antigen_exactly(std::string name_reassortant_annotations_passage) const; // throws NotFound if antigen with this very set of data not found
