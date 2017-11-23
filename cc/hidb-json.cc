@@ -55,7 +55,8 @@ std::string hidb::json::read(std::string aData)
 
     auto* const data_start = const_cast<char*>(result.data());
     auto* const header_bin = reinterpret_cast<hidb::bin::Header*>(data_start);
-    std::memmove(header_bin->signature, "HIDB0500", 8);
+    std::string sig = hidb::bin::signature();
+    std::memmove(header_bin->signature, sig.data(), sig.size());
     header_bin->antigen_offset = sizeof(hidb::bin::Header);
 
     auto* antigen_index = reinterpret_cast<hidb::bin::ASTIndex*>(data_start + sizeof(*header_bin));

@@ -162,6 +162,11 @@ namespace hidb::bin
 
     }; // struct Table
 
+      // ----------------------------------------------------------------------
+
+    std::string signature();
+    bool has_signature(const char* data);
+
 } // namespace hidb::bin
 
 // ----------------------------------------------------------------------

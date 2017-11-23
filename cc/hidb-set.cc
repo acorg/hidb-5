@@ -1,6 +1,7 @@
 #include <map>
 #include <memory>
 
+#include "acmacs-base/filesystem.hh"
 #include "hidb-5/hidb-set.hh"
 #include "hidb-5/hidb.hh"
 
@@ -31,16 +32,21 @@ class HiDbSet
         {
             auto h = mPtrs.find(aVirusType);
             if (h == mPtrs.end()) {
-                std::string filename;
+                std::string prefix;
                 if (aVirusType == "A(H1N1)" || aVirusType == "H1")
-                    filename = sHiDbDir + "/hidb5.h1.json.xz";
+                    prefix = "hidb5.h1";
                 else if (aVirusType == "A(H3N2)" || aVirusType == "H3")
-                    filename = sHiDbDir + "/hidb5.h3.json.xz";
+                    prefix = "hidb5.h3";
                 else if (aVirusType == "B")
-                    filename = sHiDbDir + "/hidb5.b.json.xz";
+                    prefix = "hidb5.b";
                 else
-                      //throw NoHiDb{};
-                    throw std::runtime_error("No HiDb for " + aVirusType);
+                    throw std::runtime_error("Unrecognized virus type: " + aVirusType);
+
+                fs::path filename = fs::path(sHiDbDir) / (prefix + ".hidb5b");
+                if (!fs::exists(filename))
+                    filename = fs::path(sHiDbDir) / (prefix + ".json.xz");
+                if (!fs::exists(filename))
+                    throw std::runtime_error("Cannot find hidb for " + aVirusType + " in " + sHiDbDir);
 
                 h = mPtrs.emplace(aVirusType, std::make_unique<hidb::HiDb>(filename, sVerbose ? report_time::Yes : timer)).first;
             }

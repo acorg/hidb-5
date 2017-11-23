@@ -14,6 +14,8 @@ hidb::HiDb::HiDb(std::string aFilename, report_time timer)
         mDataStorage = hidb::json::read(data);
         mData = mDataStorage.data();
     }
+    else if (hidb::bin::has_signature(data.data())) {
+    }
     else
         throw std::runtime_error("[hidb] unrecognized file: " + aFilename);
 

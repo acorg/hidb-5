@@ -5,6 +5,23 @@
 
 // ----------------------------------------------------------------------
 
+std::string hidb::bin::signature()
+{
+    return {"HIDB0500", 8};
+
+} // hidb::bin::signature
+
+// ----------------------------------------------------------------------
+
+bool hidb::bin::has_signature(const char* data)
+{
+    const std::string sig = signature();
+    return !std::memcmp(data, sig.data(), sig.size());
+
+} // hidb::bin::has_signature
+
+// ----------------------------------------------------------------------
+
 std::string hidb::bin::Antigen::name() const
 {
     const auto y = year();
