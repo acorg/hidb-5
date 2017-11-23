@@ -1,5 +1,4 @@
 #include "acmacs-base/string.hh"
-#include "acmacs-base/read-file.hh"
 #include "hidb-5/hidb.hh"
 #include "hidb-5/hidb-bin.hh"
 #include "hidb-5/hidb-json.hh"
@@ -9,12 +8,14 @@
 hidb::HiDb::HiDb(std::string aFilename, report_time timer)
 {
     Timeit ti("reading hidb from " + aFilename + ": ", timer);
-    const std::string data = acmacs::file::read(aFilename);
-    if (data.find("\"  version\": \"hidb-v5\"") != std::string::npos) {
+    acmacs::file::read_access access(aFilename);
+    if (hidb::bin::has_signature(access.data())) {
+        mAccess = std::move(access);
+        mData = mAccess.data();
+    }
+    else if (std::string data = access; data.find("\"  version\": \"hidb-v5\"") != std::string::npos) {
         mDataStorage = hidb::json::read(data);
         mData = mDataStorage.data();
-    }
-    else if (hidb::bin::has_signature(data.data())) {
     }
     else
         throw std::runtime_error("[hidb] unrecognized file: " + aFilename);
@@ -25,7 +26,10 @@ hidb::HiDb::HiDb(std::string aFilename, report_time timer)
 
 void hidb::HiDb::save(std::string aFilename) const
 {
-    acmacs::file::write(aFilename, mDataStorage);
+    if (!mDataStorage.empty())
+        acmacs::file::write(aFilename, mDataStorage);
+    else if (mAccess)
+        acmacs::file::write(aFilename, {mAccess.data(), mAccess.size()});
 
 } // hidb::HiDb::save
 

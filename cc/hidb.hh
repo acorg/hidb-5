@@ -2,6 +2,7 @@
 
 #include <string>
 
+#include "acmacs-base/read-file.hh"
 #include "acmacs-chart-2/chart.hh"
 #include "hidb-5/hidb-set.hh"
 
@@ -176,6 +177,7 @@ namespace hidb
      private:
         const char* mData = nullptr;
         std::string mDataStorage;
+        acmacs::file::read_access mAccess;
 
     }; // class HiDb
 
