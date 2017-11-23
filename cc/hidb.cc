@@ -223,6 +223,34 @@ std::vector<size_t> hidb::Serum::tables() const
 } // hidb::Serum::tables
 
 // ----------------------------------------------------------------------
+
+std::shared_ptr<hidb::Tables> hidb::HiDb::tables() const
+{
+    const auto* tables = mData + reinterpret_cast<const hidb::bin::Header*>(mData)->table_offset;
+    const auto number_of_tables = *reinterpret_cast<const hidb::bin::ast_number_t*>(tables);
+    return std::make_shared<hidb::Tables>(static_cast<size_t>(number_of_tables),
+                                            tables + sizeof(hidb::bin::ast_number_t),
+                                            tables + sizeof(hidb::bin::ast_number_t) + sizeof(hidb::bin::ast_offset_t) * number_of_tables);
+
+} // hidb::HiDb::tables
+
+// ----------------------------------------------------------------------
+
+std::shared_ptr<hidb::Table> hidb::Tables::operator[](size_t aIndex) const
+{
+    if (aIndex == 0) {
+        return std::make_shared<hidb::Table>(mTable0);
+    }
+    else {
+        return std::make_shared<hidb::Table>(mTable0 + reinterpret_cast<const hidb::bin::ast_offset_t*>(mIndex)[aIndex - 1]);
+    }
+
+} // hidb::Tables::operator[]
+
+// ----------------------------------------------------------------------
+
+
+// ----------------------------------------------------------------------
 /// Local Variables:
 /// eval: (if (fboundp 'eu-rename-buffer) (eu-rename-buffer))
 /// End:

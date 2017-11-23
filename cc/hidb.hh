@@ -89,6 +89,43 @@ namespace hidb
 
       // ----------------------------------------------------------------------
 
+    class Table // : public acmacs::chart::Table
+    {
+     public:
+        inline Table(const char* aTable) : mTable(aTable) {}
+
+        // acmacs::chart::Name name() const override;
+        // acmacs::chart::Passage passage() const override;
+        // acmacs::chart::BLineage lineage() const override;
+        // acmacs::chart::Reassortant reassortant() const override;
+        // acmacs::chart::Annotations annotations() const override;
+        // acmacs::chart::SerumId serum_id() const override;
+        // acmacs::chart::SerumSpecies serum_species() const override;
+        // acmacs::chart::PointIndexList homologous_antigens() const override;
+
+     private:
+        const char* mTable;
+
+    }; // class Table
+
+    class Tables // : public acmacs::chart::Tables
+    {
+     public:
+        inline Tables(size_t aNumberOfTables, const char* aIndex, const char* aTable0)
+            : mNumberOfTables(aNumberOfTables), mIndex(aIndex), mTable0(aTable0) {}
+
+        inline size_t size() const { return mNumberOfTables; }
+        std::shared_ptr<Table> operator[](size_t aIndex) const;
+
+     private:
+        size_t mNumberOfTables;
+        const char* mIndex;
+        const char* mTable0;
+
+    }; // class Antigens
+
+      // ----------------------------------------------------------------------
+
     class HiDb
     {
      public:
@@ -96,9 +133,7 @@ namespace hidb
 
         std::shared_ptr<Antigens> antigens() const;
         std::shared_ptr<Sera> sera() const;
-        // inline const Tables& charts() const { return mCharts; }
-        // inline Tables& charts() { return mCharts; }
-        // inline const ChartData& table(std::string table_id) const { return charts()[table_id]; }
+        std::shared_ptr<Tables> tables() const;
 
         // std::vector<const AntigenData*> find_antigens(std::string name_reassortant_annotations_passage) const;
         // const AntigenData& find_antigen_exactly(std::string name_reassortant_annotations_passage) const; // throws NotFound if antigen with this very set of data not found

@@ -41,6 +41,7 @@
    "V": "virus type and subtype, e.g. B or A(H3N2) or serotype"
    "A": "assay: HI, FR, PRNT",
    "D": "table/assay date, e.g. 20160602.002",
+   "L": "lineage",
    "l": "lab",
    "r": "rbc species, e.g. turkey",
    "s": "subset/lineage, e.g. 2009PDM",

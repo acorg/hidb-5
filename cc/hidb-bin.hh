@@ -14,6 +14,8 @@ namespace hidb::bin
     using table_index_t = uint32_t;
       // using number_of_homologous_t = uint32_t;
     using homologous_t = uint32_t;
+    using antigen_index_t = uint32_t;
+    using serum_index_t = uint32_t;
 
     struct Header
     {
@@ -31,6 +33,8 @@ namespace hidb::bin
         ast_number_t number_of;
         ast_offset_t offset;
     };
+
+      // ----------------------------------------------------------------------
 
     struct Antigen
     {
@@ -69,6 +73,8 @@ namespace hidb::bin
         inline std::string year() const { if (*year_data) return std::string(year_data, sizeof(year_data)); else return std::string{}; }
 
     }; // struct Antigen
+
+      // ----------------------------------------------------------------------
 
     struct Serum
     {
@@ -113,6 +119,20 @@ namespace hidb::bin
         inline std::string year() const { if (*year_data) return std::string(year_data, sizeof(year_data)); else return std::string{}; }
 
     }; // struct Serum
+
+      // ----------------------------------------------------------------------
+
+    struct Table
+    {
+        uint8_t date_offset;
+        uint8_t lab_offset;
+        uint8_t rbc_offset;
+        char lineage;
+        uint32_t antigen_index_offset;
+        uint32_t serum_index_offset;
+        uint32_t titer_offset;
+
+    }; // struct Table
 
 } // namespace hidb::bin
 

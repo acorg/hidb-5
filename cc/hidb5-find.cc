@@ -10,6 +10,7 @@ using namespace std::string_literals;
 
 static void list_all_antigens(const hidb::HiDb& hidb);
 static void list_all_sera(const hidb::HiDb& hidb);
+static void list_all_tables(const hidb::HiDb& hidb);
 
 // ----------------------------------------------------------------------
 
@@ -30,8 +31,9 @@ int main(int argc, char* const argv[])
         hidb::setup(args["--db-dir"], {}, verbose);
 
         const auto& hidb = hidb::get(string::upper(args[0]), report_time::Yes);
-          // list_all_antigens(hidb);
-        list_all_sera(hidb);
+        // list_all_antigens(hidb);
+        // list_all_sera(hidb);
+        list_all_tables(hidb);
 
         // for (auto arg = 2; arg < argc; ++arg) {
         //     Timeit timeit("looking: ");
@@ -56,6 +58,19 @@ int main(int argc, char* const argv[])
         return 1;
     }
 }
+
+// ----------------------------------------------------------------------
+
+void list_all_tables(const hidb::HiDb& hidb)
+{
+    auto tables = hidb.tables();
+    std::cout << "Tables: " << tables->size() << '\n';
+
+    // for (auto [t_no, table]: acmacs::enumerate(*tables)) {
+    //     std::cout << t_no << ' ' << table->name();
+    // }
+
+} // list_all_tables
 
 // ----------------------------------------------------------------------
 

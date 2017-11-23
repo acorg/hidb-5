@@ -91,3 +91,26 @@ num-sera * 4                offset of each serum record from serum 0 record begi
 ----------------------------------------------------------------------
                             tables
 4                           number of tables
+num-tables * 4                offset of each table record from table 0 record beginning,
+                              starting with table 1 and ending with num-sera+1
+                              i.e. there is no offset of table 0
+
+  ----                      table record
+1                           table date offset from assay beginning
+1                           lab offset from assay beginning
+1                           rbc species offset from assay beginning
+1            <lineage>      V, Y, uint8_t(0)
+4                           antigen indexes offset from assay beginning
+4                           serum indexes offset from assay beginning
+4                           titers offset from assay beginning
+             <assay>        HI, FR, PRNT
+             <table-date>   20160602.002
+             <lab>
+             <rbc species>
+             padding        indexes must start at 4
+4*num-antigens              antigen indexes
+4*num-sera                  serum indexes
+1            max titer length
+max-titer-length*num-antigens*num-sera   <titers>  titers for the antigen 0, then antigen 1, etc.
+
+----------------------------------------------------------------------

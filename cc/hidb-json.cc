@@ -40,6 +40,7 @@ class Estimations
 
 static size_t make_antigen(const rjson::object& aSource, hidb::bin::Antigen* aTarget);
 static size_t make_serum(const rjson::object& aSource, hidb::bin::Serum* aTarget);
+static size_t make_table(const rjson::object& aSource, hidb::bin::Table* aTarget);
 
 // ----------------------------------------------------------------------
 
@@ -95,9 +96,24 @@ std::string hidb::json::read(std::string aData)
     ti_sera.report();
 
     header_bin->table_offset = static_cast<decltype(header_bin->table_offset)>(serum_data - data_start);
+    auto* table_index = reinterpret_cast<hidb::bin::ASTIndex*>(data_start + header_bin->table_offset);
+    auto* table_data = reinterpret_cast<ptr_t>(reinterpret_cast<ptr_t>(table_index) + sizeof(hidb::bin::ast_offset_t) * estimations.number_of_sera + sizeof(hidb::bin::ast_number_t));
 
-    result.resize(header_bin->table_offset);
+    Timeit ti_tables("converting " + acmacs::to_string(estimations.number_of_tables) + " tables: ");
+    table_index->number_of = static_cast<hidb::bin::ast_number_t>(estimations.number_of_tables);
+    hidb::bin::ast_offset_t* table_offset = &table_index->offset;
+    hidb::bin::ast_offset_t previous_table_offset = 0;
+    for (const rjson::object& table: static_cast<const rjson::array&>(val["s"])) {
+        const auto table_size = make_table(table, reinterpret_cast<hidb::bin::Table*>(table_data));
+        *table_offset = static_cast<hidb::bin::ast_offset_t>(table_size) + previous_table_offset;
+        previous_table_offset = *table_offset;
+        ++table_offset;
+        table_data += table_size;
+    }
+    ti_tables.report();
 
+    result.resize(static_cast<size_t>(table_data - data_start));
+    std::cerr << "INFO: hidb bin size: " << result.size() << '\n';
     return result;
 
 } // hidb::json::read
@@ -212,7 +228,10 @@ size_t make_antigen(const rjson::object& aSource, hidb::bin::Antigen* aTarget)
         target += sizeof(index);
     }
 
-    return sizeof(*aTarget) + static_cast<size_t>(target - target_base);
+    size_t size = sizeof(*aTarget) + static_cast<size_t>(target - target_base);
+    if (size % 4)
+        size += 4 - size % 4;
+    return size;
 
 } // make_antigen
 
@@ -238,14 +257,15 @@ size_t make_serum(const rjson::object& aSource, hidb::bin::Serum* aTarget)
     };
 
     auto* target = target_base;
+
     if (auto host = aSource.get_or_default("H", ""); !host.empty()) {
         std::memmove(target, host.data(), host.size());
         target += host.size();
     }
 
+    set_offset(aTarget->location_offset, target);
     if (auto location = aSource.get_or_default("O", ""); !location.empty()) {
         std::memmove(target, location.data(), location.size());
-        set_offset(aTarget->location_offset, target);
         target += location.size();
     }
       // location is empty if name was not recognized
@@ -320,9 +340,104 @@ size_t make_serum(const rjson::object& aSource, hidb::bin::Serum* aTarget)
         target += sizeof(index);
     }
 
-    return sizeof(*aTarget) + static_cast<size_t>(target - target_base);
+    size_t size = sizeof(*aTarget) + static_cast<size_t>(target - target_base);
+    if (size % 4)
+        size += 4 - size % 4;
+    return size;
 
 } // make_serum
+
+// ----------------------------------------------------------------------
+
+size_t make_table(const rjson::object& aSource, hidb::bin::Table* aTarget)
+{
+    if (std::string lineage = aSource.get_or_default("L", ""); lineage.size() == 1)
+        aTarget->lineage = lineage[0];
+    else if (!lineage.empty())
+        throw std::runtime_error("Invalid lineage in " + aSource.to_json());
+
+    auto* const target_base = reinterpret_cast<char*>(aTarget) + sizeof(hidb::bin::Table);
+    auto set_offset = [target_base,&aSource](uint8_t& offset, char* target) -> void {
+        const auto off = static_cast<size_t>(target - target_base);
+        if (off > std::numeric_limits<std::decay_t<decltype(offset)>>::max())
+            throw std::runtime_error("Overflow when setting offset for a field (table): " + acmacs::to_string(off) + " when processing " + aSource.to_json());
+        offset = static_cast<std::decay_t<decltype(offset)>>(off);
+    };
+
+    auto* target = target_base;
+
+    if (auto assay = aSource.get_or_default("A", ""); !assay.empty()) {
+        std::memmove(target, assay.data(), assay.size());
+        target += assay.size();
+    }
+
+    set_offset(aTarget->date_offset, target);
+    if (auto date = aSource.get_or_default("D", ""); !date.empty()) {
+        std::memmove(target, date.data(), date.size());
+        target += date.size();
+    }
+    else {
+        std::cerr << "WARNING: table has no date: " << aSource.to_json() << '\n';
+    }
+
+    set_offset(aTarget->lab_offset, target);
+    if (auto lab = aSource.get_or_default("l", ""); !lab.empty()) {
+        std::memmove(target, lab.data(), lab.size());
+        target += lab.size();
+    }
+    else {
+        std::cerr << "WARNING: table has no lab: " << aSource.to_json() << '\n';
+    }
+
+    set_offset(aTarget->rbc_offset, target);
+    if (auto rbc = aSource.get_or_default("l", ""); !rbc.empty()) {
+        std::memmove(target, rbc.data(), rbc.size());
+        target += rbc.size();
+    }
+
+      // padding
+    if (size_t size = static_cast<size_t>(target - target_base); size % 4)
+        target += 4 - size % 4;
+
+    aTarget->antigen_index_offset = static_cast<decltype(aTarget->antigen_index_offset)>(target - target_base);
+    const auto& antigens = aSource.get_or_empty_array("a");
+    if (antigens.empty())
+        throw std::runtime_error("No antigen indexes in " + aSource.to_json());
+    for (size_t no = 0; no < antigens.size(); ++no) {
+        const auto index = static_cast<hidb::bin::antigen_index_t>(static_cast<size_t>(antigens[no]));
+        std::memmove(target, &index, sizeof(index));
+        target += sizeof(index);
+    }
+
+    aTarget->serum_index_offset = static_cast<decltype(aTarget->serum_index_offset)>(target - target_base);
+    const auto& sera = aSource.get_or_empty_array("a");
+    if (sera.empty())
+        throw std::runtime_error("No serum indexes in " + aSource.to_json());
+    for (size_t no = 0; no < sera.size(); ++no) {
+        const auto index = static_cast<hidb::bin::serum_index_t>(static_cast<size_t>(sera[no]));
+        std::memmove(target, &index, sizeof(index));
+        target += sizeof(index);
+    }
+
+    aTarget->titer_offset = static_cast<decltype(aTarget->titer_offset)>(target - target_base);
+
+    size_t size = sizeof(*aTarget) + static_cast<size_t>(target - target_base);
+    if (size % 4)
+        size += 4 - size % 4;
+    return size;
+
+// 1            <lineage>      V, Y, uint8_t(0)
+// 4                           antigen indexes offset from assay beginning
+// 4                           serum indexes offset from assay beginning
+// 4                           titers offset from assay beginning
+
+//              padding        indexes must start at 4
+// 4*num-antigens              antigen indexes
+// 4*num-sera                  serum indexes
+// 1            max titer length
+// max-titer-length*num-antigens*num-sera   <titers>  titers for the antigen 0, then antigen 1, etc.
+
+} // make_table
 
 // ----------------------------------------------------------------------
 
