@@ -28,7 +28,7 @@ void hidb::HiDb::save(std::string aFilename) const
 {
     if (!mDataStorage.empty())
         acmacs::file::write(aFilename, mDataStorage);
-    else if (mAccess)
+    else if (mAccess.valid())
         acmacs::file::write(aFilename, {mAccess.data(), mAccess.size()});
 
 } // hidb::HiDb::save
