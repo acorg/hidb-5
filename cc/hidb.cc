@@ -58,14 +58,27 @@ std::shared_ptr<acmacs::chart::Antigen> hidb::Antigens::operator[](size_t aIndex
 
 // ----------------------------------------------------------------------
 
-template <typename AgSr> inline std::pair<const hidb::bin::ast_offset_t*, const hidb::bin::ast_offset_t*> find_location(const hidb::bin::ast_offset_t* first, size_t number, const char* data, std::string location)
+template <typename AgSr> inline std::pair<const hidb::bin::ast_offset_t*, const hidb::bin::ast_offset_t*> filter_location(const hidb::bin::ast_offset_t* first, const hidb::bin::ast_offset_t* last, const char* data, std::string_view location)
 {
-    const auto last = first + number;
     const auto found = std::lower_bound(
         first, last, location,
-        [data](hidb::bin::ast_offset_t offset, const std::string& look_for) -> bool { return reinterpret_cast<const AgSr*>(data + offset)->location() < look_for; });
+        [data](hidb::bin::ast_offset_t offset, const std::string_view& look_for) -> bool { return reinterpret_cast<const AgSr*>(data + offset)->location() < look_for; });
     for (auto end = found; end != last; ++end) {
         if (reinterpret_cast<const hidb::bin::Antigen*>(data + *end)->location() != location)
+            return {found, end};
+    }
+    return {found, last};
+}
+
+// ----------------------------------------------------------------------
+
+template <typename AgSr> inline std::pair<const hidb::bin::ast_offset_t*, const hidb::bin::ast_offset_t*> filter_isolation(const hidb::bin::ast_offset_t* first, const hidb::bin::ast_offset_t* last, const char* data, std::string_view isolation)
+{
+    const auto found = std::lower_bound(
+        first, last, isolation,
+        [data](hidb::bin::ast_offset_t offset, const std::string_view& look_for) -> bool { return reinterpret_cast<const AgSr*>(data + offset)->isolation() < look_for; });
+    for (auto end = found; end != last; ++end) {
+        if (reinterpret_cast<const hidb::bin::Antigen*>(data + *end)->isolation() != isolation)
             return {found, end};
     }
     return {found, last};
@@ -79,7 +92,9 @@ hidb::indexes_t hidb::Antigens::find(std::string aName) const
     virus_name::split(aName, virus_type, host, location, isolation, year, passage);
 
     const auto* index_begin = reinterpret_cast<const hidb::bin::ast_offset_t*>(mIndex);
-    const auto [first, last] = find_location<hidb::bin::Antigen>(index_begin, mNumberOfAntigens, mAntigen0, location);
+    auto [first, last] = filter_location<hidb::bin::Antigen>(index_begin, index_begin + mNumberOfAntigens, mAntigen0, location);
+    if (!isolation.empty())
+        std::tie(first, last) = filter_isolation<hidb::bin::Antigen>(first, last, mAntigen0, isolation);
     indexes_t result(static_cast<size_t>(last - first));
     std::transform(first, last, result.begin(), [index_begin](const hidb::bin::ast_offset_t& offset_ptr) -> size_t { return static_cast<size_t>(&offset_ptr - index_begin); });
     return result;
