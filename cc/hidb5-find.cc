@@ -12,6 +12,7 @@ using namespace std::string_literals;
 static void list_all_antigens(const hidb::HiDb& hidb, const argc_argv& args);
 static void list_all_sera(const hidb::HiDb& hidb, const argc_argv& args);
 static void report_serum(const hidb::HiDb& hidb, const hidb::Serum& aSerum, const argc_argv& args, bool aReportTables);
+static void report_serum(const hidb::HiDb& hidb, size_t aIndex, const argc_argv& args, bool aReportTables);
 static void report_antigen(const hidb::HiDb& hidb, size_t aIndex, const argc_argv& args, bool aReportTables, std::string aPrefix = {});
 static void report_antigen(const hidb::HiDb& hidb, const hidb::Antigen& aAntigen, const argc_argv& args, bool aReportTables, std::string aPrefix = {});
 static void list_all_tables(const hidb::HiDb& hidb, const argc_argv& args);
@@ -91,6 +92,9 @@ void find_antigens(const hidb::HiDb& hidb, std::string aName, const argc_argv& a
 
 void find_sera(const hidb::HiDb& hidb, std::string aName, const argc_argv& args)
 {
+    const auto indexes = hidb.sera()->find(string::upper(aName));
+    for (auto index: indexes)
+        report_serum(hidb, index, args, true);
 
 } // find_sera
 
@@ -201,6 +205,14 @@ void list_all_sera(const hidb::HiDb& hidb, const argc_argv& args)
         report_serum(hidb, dynamic_cast<const hidb::Serum&>(*serum), args, true);
 
 } // list_all_sera
+
+// ----------------------------------------------------------------------
+
+void report_serum(const hidb::HiDb& hidb, size_t aIndex, const argc_argv& args, bool aReportTables)
+{
+    report_serum(hidb, dynamic_cast<const hidb::Serum&>(*(*hidb.sera())[aIndex]), args, aReportTables);
+
+} // report_serum
 
 // ----------------------------------------------------------------------
 

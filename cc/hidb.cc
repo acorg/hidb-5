@@ -86,57 +86,6 @@ template <typename F> inline first_last_t filter_by(first_last_t first_last, F f
 
 // ----------------------------------------------------------------------
 
-template <typename AgSr, typename S> inline first_last_t find_by(first_last_t first_last, const char* aData, S location, S isolation, S year)
-{
-    first_last = filter_by(first_last, [aData](hidb::bin::ast_offset_t offset) { return reinterpret_cast<const AgSr*>(aData + offset)->location(); }, location);
-    if (!isolation.empty())
-        first_last = filter_by(first_last, [aData](hidb::bin::ast_offset_t offset) { return reinterpret_cast<const AgSr*>(aData + offset)->isolation(); }, isolation);
-    if (!year.empty())
-        first_last = filter_by(first_last, [aData](hidb::bin::ast_offset_t offset) { return reinterpret_cast<const AgSr*>(aData + offset)->year(); }, year);
-    return first_last;
-}
-
-// ----------------------------------------------------------------------
-
-hidb::indexes_t hidb::Antigens::find(std::string aName) const
-{
-    first_last_t all_antigens(reinterpret_cast<const hidb::bin::ast_offset_t*>(mIndex), mNumberOfAntigens);
-    first_last_t first_last;
-    try {
-        std::string virus_type, host, location, isolation, year, passage;
-        virus_name::split(aName, virus_type, host, location, isolation, year, passage);
-        first_last = find_by<hidb::bin::Antigen>(all_antigens, mAntigen0, location, isolation, year);
-    }
-    catch (virus_name::Unrecognized&) {
-        if (aName.size() > 3 && aName[2] == ' ') // cdc name?
-            first_last = find_by<hidb::bin::Antigen>(all_antigens, mAntigen0, std::string_view(aName.data(), 2), std::string_view(aName.data() + 3), std::string_view{});
-        if (first_last.empty()) {
-            const auto parts = string::split(aName, "/");
-            switch (parts.size()) {
-              case 1:           // just location?
-                  first_last = find_by<hidb::bin::Antigen>(all_antigens, mAntigen0, parts[0], std::string_view{}, std::string_view{});
-                  break;
-              case 2:           // location/isolation
-                  first_last = find_by<hidb::bin::Antigen>(all_antigens, mAntigen0, parts[0], parts[1], std::string_view{});
-                  break;
-              case 3:          // host/location/isolation?
-                  first_last = find_by<hidb::bin::Antigen>(all_antigens, mAntigen0, parts[1], parts[2], std::string_view{});
-                  break;
-              default:          // ?
-                  std::cerr << "WARNING: don't know how to split: " << aName << '\n';
-                  break;
-            }
-        }
-    }
-
-    indexes_t result(first_last.size());
-    std::transform(first_last.first, first_last.last, result.begin(), [index_begin=all_antigens.first](const hidb::bin::ast_offset_t& offset_ptr) -> size_t { return static_cast<size_t>(&offset_ptr - index_begin); });
-    return result;
-
-} // hidb::Antigens::find
-
-// ----------------------------------------------------------------------
-
 acmacs::chart::Name hidb::Antigen::name() const
 {
     return reinterpret_cast<const hidb::bin::Antigen*>(mAntigen)->name();
@@ -375,6 +324,92 @@ size_t hidb::Table::number_of_sera() const
     return mTable->number_of_sera();
 
 } // hidb::Table::number_of_sera
+
+// ----------------------------------------------------------------------
+
+template <typename AgSr, typename S> inline first_last_t find_by(first_last_t first_last, const char* aData, S location, S isolation, S year)
+{
+    first_last = filter_by(first_last, [aData](hidb::bin::ast_offset_t offset) { return reinterpret_cast<const AgSr*>(aData + offset)->location(); }, location);
+    if (!isolation.empty())
+        first_last = filter_by(first_last, [aData](hidb::bin::ast_offset_t offset) { return reinterpret_cast<const AgSr*>(aData + offset)->isolation(); }, isolation);
+    if (!year.empty())
+        first_last = filter_by(first_last, [aData](hidb::bin::ast_offset_t offset) { return reinterpret_cast<const AgSr*>(aData + offset)->year(); }, year);
+    return first_last;
+}
+
+// ----------------------------------------------------------------------
+
+hidb::indexes_t hidb::Antigens::find(std::string aName) const
+{
+    first_last_t all_antigens(reinterpret_cast<const hidb::bin::ast_offset_t*>(mIndex), mNumberOfAntigens);
+    first_last_t first_last;
+    try {
+        std::string virus_type, host, location, isolation, year, passage;
+        virus_name::split(aName, virus_type, host, location, isolation, year, passage);
+        first_last = find_by<hidb::bin::Antigen>(all_antigens, mAntigen0, location, isolation, year);
+    }
+    catch (virus_name::Unrecognized&) {
+        if (aName.size() > 3 && aName[2] == ' ') // cdc name?
+            first_last = find_by<hidb::bin::Antigen>(all_antigens, mAntigen0, std::string_view(aName.data(), 2), std::string_view(aName.data() + 3), std::string_view{});
+        if (first_last.empty()) {
+            const auto parts = string::split(aName, "/");
+            switch (parts.size()) {
+              case 1:           // just location?
+                  first_last = find_by<hidb::bin::Antigen>(all_antigens, mAntigen0, parts[0], std::string_view{}, std::string_view{});
+                  break;
+              case 2:           // location/isolation
+                  first_last = find_by<hidb::bin::Antigen>(all_antigens, mAntigen0, parts[0], parts[1], std::string_view{});
+                  break;
+              case 3:          // host/location/isolation?
+                  first_last = find_by<hidb::bin::Antigen>(all_antigens, mAntigen0, parts[1], parts[2], std::string_view{});
+                  break;
+              default:          // ?
+                  std::cerr << "WARNING: don't know how to split: " << aName << '\n';
+                  break;
+            }
+        }
+    }
+
+    indexes_t result(first_last.size());
+    std::transform(first_last.first, first_last.last, result.begin(), [index_begin=all_antigens.first](const hidb::bin::ast_offset_t& offset_ptr) -> size_t { return static_cast<size_t>(&offset_ptr - index_begin); });
+    return result;
+
+} // hidb::Antigens::find
+
+// ----------------------------------------------------------------------
+
+hidb::indexes_t hidb::Sera::find(std::string aName) const
+{
+    first_last_t all_sera(reinterpret_cast<const hidb::bin::ast_offset_t*>(mIndex), mNumberOfSera);
+    first_last_t first_last;
+    try {
+        std::string virus_type, host, location, isolation, year, passage;
+        virus_name::split(aName, virus_type, host, location, isolation, year, passage);
+        first_last = find_by<hidb::bin::Serum>(all_sera, mSerum0, location, isolation, year);
+    }
+    catch (virus_name::Unrecognized&) {
+        const auto parts = string::split(aName, "/");
+        switch (parts.size()) {
+          case 1:           // just location?
+              first_last = find_by<hidb::bin::Serum>(all_sera, mSerum0, parts[0], std::string_view{}, std::string_view{});
+              break;
+          case 2:           // location/isolation
+              first_last = find_by<hidb::bin::Serum>(all_sera, mSerum0, parts[0], parts[1], std::string_view{});
+              break;
+          case 3:          // host/location/isolation?
+              first_last = find_by<hidb::bin::Serum>(all_sera, mSerum0, parts[1], parts[2], std::string_view{});
+              break;
+          default:          // ?
+              std::cerr << "WARNING: don't know how to split: " << aName << '\n';
+              break;
+        }
+    }
+
+    indexes_t result(first_last.size());
+    std::transform(first_last.first, first_last.last, result.begin(), [index_begin=all_sera.first](const hidb::bin::ast_offset_t& offset_ptr) -> size_t { return static_cast<size_t>(&offset_ptr - index_begin); });
+    return result;
+
+} // hidb::Sera::find
 
 // ----------------------------------------------------------------------
 /// Local Variables:

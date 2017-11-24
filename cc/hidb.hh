@@ -84,6 +84,7 @@ namespace hidb
 
         inline size_t size() const override { return mNumberOfSera; }
         std::shared_ptr<acmacs::chart::Serum> operator[](size_t aIndex) const override;
+        indexes_t find(std::string aName) const;
 
      private:
         size_t mNumberOfSera;
