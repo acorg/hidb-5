@@ -490,6 +490,8 @@ std::shared_ptr<hidb::Serum> hidb::Sera::find(const acmacs::chart::Serum& aSerum
         auto serum = at(index);
         if (serum->annotations() == aSerum.annotations() && serum->reassortant() == aSerum.reassortant() && serum->serum_id() == aSerum.serum_id())
             return serum;
+        // std::cerr << aSerum.full_name() << " A:" << aSerum.annotations() << " R:" << aSerum.reassortant() << " I:" << aSerum.serum_id() << '\n';
+        // std::cerr << serum->full_name() << " A:" << serum->annotations() << " R:" << serum->reassortant() << " I:" << serum->serum_id() << '\n';
     }
     std::cerr << "WARNING: not in hidb: " << aSerum.full_name() << '\n';
     throw not_found(aSerum.full_name());
