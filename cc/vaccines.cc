@@ -62,7 +62,7 @@ hidb::VaccinesOfChart hidb::vaccines(const acmacs::chart::Chart& aChart, bool aV
 
 void hidb::vaccines_for_name(Vaccines& aVaccines, std::string aName, const acmacs::chart::Chart& aChart, bool aVerbose)
 {
-    const auto virus_type = aChart.info()->virus_type();
+    const auto virus_type = aChart.info()->virus_type(acmacs::chart::Info::Compute::Yes);
     const auto& hidb = hidb::get(virus_type, aVerbose ? report_time::Yes : report_time::No);
     auto hidb_antigens = hidb.antigens();
     auto hidb_sera = hidb.sera();
