@@ -141,18 +141,18 @@ namespace hidb::bin
         uint32_t serum_index_offset;
         uint32_t titer_offset;
 
-        inline std::string assay() const { return std::string(_start(), date_offset); }
-        inline std::string lab() const { return std::string(_start() + lab_offset, rbc_offset - lab_offset); }
-        inline std::string date() const { return std::string(_start() + date_offset, lab_offset - date_offset); }
+        inline std::string_view assay() const { return std::string_view(_start(), date_offset); }
+        inline std::string_view lab() const { return std::string_view(_start() + lab_offset, rbc_offset - lab_offset); }
+        inline std::string_view date() const { return std::string_view(_start() + date_offset, lab_offset - date_offset); }
 
-        inline std::string rbc() const
+        inline std::string_view rbc() const
             {
                   // ignore padding after rbc species
                 const auto* start = _start() + rbc_offset;
                 auto* end = _start() + antigen_index_offset;
                 while (end > start && !end[-1])
                     --end;
-                return std::string(start, static_cast<size_t>(end - start));
+                return std::string_view(start, static_cast<size_t>(end - start));
             }
 
         inline size_t number_of_antigens() const { return static_cast<size_t>(serum_index_offset - antigen_index_offset) / sizeof(antigen_index_t); }

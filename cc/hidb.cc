@@ -269,13 +269,14 @@ std::shared_ptr<hidb::Table> hidb::Tables::operator[](size_t aIndex) const
 
 std::string hidb::Table::name() const
 {
-    return string::join(":", {lab(), assay(), acmacs::chart::BLineage(mTable->lineage), rbc(), date()});
+    const std::string lineage = acmacs::chart::BLineage(mTable->lineage);
+    return string::join(":", {lab(), assay(), lineage, rbc(), date()});
 
 } // hidb::Table::name
 
 // ----------------------------------------------------------------------
 
-std::string hidb::Table::assay() const
+std::string_view hidb::Table::assay() const
 {
     return mTable->assay();
 
@@ -283,7 +284,7 @@ std::string hidb::Table::assay() const
 
 // ----------------------------------------------------------------------
 
-std::string hidb::Table::lab() const
+std::string_view hidb::Table::lab() const
 {
     return mTable->lab();
 
@@ -291,7 +292,7 @@ std::string hidb::Table::lab() const
 
 // ----------------------------------------------------------------------
 
-std::string hidb::Table::date() const
+std::string_view hidb::Table::date() const
 {
     return mTable->date();
 
@@ -299,7 +300,7 @@ std::string hidb::Table::date() const
 
 // ----------------------------------------------------------------------
 
-std::string hidb::Table::rbc() const
+std::string_view hidb::Table::rbc() const
 {
     return mTable->rbc();
 
@@ -320,6 +321,19 @@ size_t hidb::Table::number_of_sera() const
     return mTable->number_of_sera();
 
 } // hidb::Table::number_of_sera
+
+// ----------------------------------------------------------------------
+
+std::shared_ptr<hidb::Table> hidb::Tables::most_recent(const indexes_t& aTables) const
+{
+    const auto* index = reinterpret_cast<const hidb::bin::ast_offset_t*>(mIndex);
+    auto table_date_compare = [this,index] (size_t i1, size_t i2) -> bool {
+                                  const auto t1{reinterpret_cast<const bin::Table*>(this->mTable0 + index[i1])}, t2{reinterpret_cast<const bin::Table*>(this->mTable0 + index[i2])};
+                                  return t1->date() < t2->date();
+                              };
+    return operator[](*std::max_element(aTables.begin(), aTables.end(), table_date_compare));
+
+} // hidb::Tables::most_recent
 
 // ----------------------------------------------------------------------
 

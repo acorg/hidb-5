@@ -55,7 +55,7 @@ namespace hidb
                 {
                       // std::sort(homologous_sera.begin(), homologous_sera.end());
                 }
-            // bool operator < (const Entry& a) const;
+            bool operator < (const Entry& a) const;
 
             std::shared_ptr<acmacs::chart::Antigen> chart_antigen;
             size_t chart_antigen_index;
@@ -69,17 +69,17 @@ namespace hidb
 
         inline Vaccines(const Vaccine& aNameType) : mNameType(aNameType) {}
 
-        // inline size_t number_of(PassageType pt) const { return mEntries[pt].size(); }
-        // inline size_t number_of_eggs() const { return number_of(Egg); }
-        // inline size_t number_of_cells() const { return number_of(Cell); }
-        // inline size_t number_of_reassortants() const { return number_of(Reassortant); }
+        inline size_t number_of(PassageType pt) const { return mEntries[pt].size(); }
+        inline size_t number_of_eggs() const { return number_of(Egg); }
+        inline size_t number_of_cells() const { return number_of(Cell); }
+        inline size_t number_of_reassortants() const { return number_of(Reassortant); }
         inline bool empty(PassageType pt) const { return mEntries[pt].empty(); }
         inline bool empty() const { return std::all_of(std::begin(mEntries), std::end(mEntries), [](const auto& e) { return e.empty(); }); }
 
-        // inline const Entry* for_passage_type(PassageType pt, size_t aNo = 0) const { return mEntries[pt].size() > aNo ? &mEntries[pt][aNo] : nullptr; }
-        // inline const Entry* egg(size_t aNo = 0) const { return for_passage_type(Egg, aNo); }
-        // inline const Entry* cell(size_t aNo = 0) const { return for_passage_type(Cell, aNo); }
-        // inline const Entry* reassortant(size_t aNo = 0) const { return for_passage_type(Reassortant, aNo); }
+        inline const Entry* for_passage_type(PassageType pt, size_t aNo = 0) const { return mEntries[pt].size() > aNo ? &mEntries[pt][aNo] : nullptr; }
+        inline const Entry* egg(size_t aNo = 0) const { return for_passage_type(Egg, aNo); }
+        inline const Entry* cell(size_t aNo = 0) const { return for_passage_type(Cell, aNo); }
+        inline const Entry* reassortant(size_t aNo = 0) const { return for_passage_type(Reassortant, aNo); }
 
         inline std::string type_as_string() const { return mNameType.type_as_string(); }
         std::string report(size_t aIndent = 0) const;
@@ -138,11 +138,11 @@ namespace hidb
                 mEntries[passage_type(*aChartAntigen)].emplace_back(aAntigenIndex, aChartAntigen, aHidbAntigen, aMostRecentTable); //, std::move(aSera)
             }
 
-        // inline void sort()
-        //     {
-        //         for (auto& entry: mEntries)
-        //             std::sort(entry.begin(), entry.end());
-        //     }
+        inline void sort()
+            {
+                for (auto& entry: mEntries)
+                    std::sort(entry.begin(), entry.end());
+            }
 
     }; // class Vaccines
 

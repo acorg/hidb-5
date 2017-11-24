@@ -78,7 +78,7 @@ void hidb::report_tables(const hidb::HiDb& hidb, const indexes_t& aTables, std::
     std::transform(aTables.begin(), aTables.end(), tables.begin(), [hidb_tables](size_t aIndex) { return (*hidb_tables)[aIndex]; });
     if (tables.size() > 1) {
         std::sort(tables.begin(), tables.end(), [](auto a, auto b) -> bool { return a->date() > b->date(); });
-        std::map<std::pair<std::string, std::string>, std::vector<std::shared_ptr<hidb::Table>>> by_lab_assay;
+        std::map<std::pair<std::string_view, std::string_view>, std::vector<std::shared_ptr<hidb::Table>>> by_lab_assay;
         for (auto table: tables)
             by_lab_assay[{table->lab(), table->assay()}].push_back(table);
         if (by_lab_assay.size() > 1)

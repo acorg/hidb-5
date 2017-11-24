@@ -111,10 +111,10 @@ namespace hidb
         inline Table(const char* aTable) : mTable(reinterpret_cast<const bin::Table*>(aTable)) {}
 
         std::string name() const;
-        std::string assay() const;
-        std::string lab() const;
-        std::string date() const;
-        std::string rbc() const;
+        std::string_view assay() const;
+        std::string_view lab() const;
+        std::string_view date() const;
+        std::string_view rbc() const;
         size_t number_of_antigens() const;
         size_t number_of_sera() const;
 
@@ -131,6 +131,7 @@ namespace hidb
 
         inline size_t size() const { return mNumberOfTables; }
         std::shared_ptr<Table> operator[](size_t aIndex) const;
+        std::shared_ptr<Table> most_recent(const indexes_t& aTables) const;
 
         using iterator = acmacs::chart::internal::iterator<Tables, std::shared_ptr<Table>>;
         inline iterator begin() const { return {*this, 0}; }
