@@ -1,7 +1,7 @@
 #include "acmacs-base/argc-argv.hh"
 #include "acmacs-chart-2/factory-import.hh"
 #include "hidb-5/hidb.hh"
-#include "hidb-5/report.hh"
+#include "hidb-5/vaccines.hh"
 
 using namespace std::string_literals;
 
@@ -24,19 +24,8 @@ int main(int argc, char* const argv[])
         hidb::setup(args["--db-dir"], {}, verbose);
 
         auto chart = acmacs::chart::import_factory(args[0], acmacs::chart::Verify::None);
-        auto& hidb = hidb::get(chart->info()->virus_type());
-        auto antigens = hidb.antigens()->find(*chart->antigens());
-        for (auto ag: antigens) {
-            if (ag)
-                hidb::report_antigen(hidb, *ag, true);
-        }
-        std::cout << '\n';
-        auto sera = hidb.sera()->find(*chart->sera());
-        for (auto sr: sera) {
-            if (sr)
-                hidb::report_serum(hidb, *sr, true);
-        }
-
+        auto vaccines = hidb::vaccines(*chart, verbose);
+        vaccines.report();
         return 0;
     }
     catch (std::exception& err) {
