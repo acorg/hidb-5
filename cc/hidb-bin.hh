@@ -61,8 +61,8 @@ namespace hidb::bin
         inline std::string year() const { if (*year_data) return std::string(year_data, sizeof(year_data)); else return std::string{}; }
         inline std::string_view passage() const { return {_start() + passage_offset, static_cast<size_t>(reassortant_offset - passage_offset)}; }
         inline std::string_view reassortant() const { return {_start() + reassortant_offset, static_cast<size_t>(annotation_offset[0] - reassortant_offset)}; }
-        std::vector<std::string> lab_ids() const;
-        std::vector<std::string> annotations() const;
+        std::vector<std::string_view> lab_ids() const;
+        std::vector<std::string_view> annotations() const;
 
         inline std::pair<number_of_table_indexes_t, const table_index_t*> tables() const
             {
@@ -100,7 +100,7 @@ namespace hidb::bin
         inline std::string year() const { if (*year_data) return std::string(year_data, sizeof(year_data)); else return std::string{}; }
         inline std::string_view passage() const { return {_start() + passage_offset, static_cast<size_t>(reassortant_offset - passage_offset)}; }
         inline std::string_view reassortant() const { return {_start() + reassortant_offset, static_cast<size_t>(annotation_offset[0] - reassortant_offset)}; }
-        std::vector<std::string> annotations() const;
+        std::vector<std::string_view> annotations() const;
         inline std::string_view serum_id() const { return {_start() + serum_id_offset, static_cast<size_t>(serum_species_offset - serum_id_offset)}; }
 
         inline std::string serum_species() const

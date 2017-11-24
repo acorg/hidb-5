@@ -45,6 +45,7 @@ namespace hidb
         inline size_t size() const override { return mNumberOfAntigens; }
         std::shared_ptr<acmacs::chart::Antigen> operator[](size_t aIndex) const override;
         indexes_t find(std::string aName) const;
+        indexes_t find_labid(std::string labid) const;
 
      private:
         size_t mNumberOfAntigens;
@@ -145,12 +146,7 @@ namespace hidb
         std::shared_ptr<Tables> tables() const;
 
 
-        // std::vector<const AntigenData*> find_antigens(std::string name_reassortant_annotations_passage) const;
-        // const AntigenData& find_antigen_exactly(std::string name_reassortant_annotations_passage) const; // throws NotFound if antigen with this very set of data not found
-        // std::vector<const AntigenData*> find_antigens_fuzzy(std::string name_reassortant_annotations_passage) const;
-        // std::vector<const AntigenData*> find_antigens_extra_fuzzy(std::string name_reassortant_annotations_passage) const;
         // inline std::vector<const AntigenData*> find_antigens_by_name(std::string name, std::string* aNotFoundLocation = nullptr) const { return mAntigens.find_by_index(name, aNotFoundLocation); }
-        // inline std::vector<const AntigenData*> find_antigens_by_cdcid(std::string cdcid) const  { return mAntigens.find_by_cdcid(cdcid); }
         // const AntigenData& find_antigen_of_chart(const Antigen& aAntigen) const; // throws if not found
 
         // std::vector<std::pair<const AntigenData*, size_t>> find_antigens_with_score(std::string name) const;

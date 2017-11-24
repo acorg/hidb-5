@@ -58,34 +58,6 @@ std::shared_ptr<acmacs::chart::Antigen> hidb::Antigens::operator[](size_t aIndex
 
 // ----------------------------------------------------------------------
 
-using offset_t = const hidb::bin::ast_offset_t*;
-
-struct first_last_t
-{
-    inline first_last_t() : first{nullptr}, last{nullptr} {}
-    inline first_last_t(offset_t a, offset_t b) : first(a), last(b) {}
-    inline first_last_t(offset_t aFirst, size_t aNumber) : first(aFirst), last(aFirst + aNumber) {}
-    inline size_t size() const { return static_cast<size_t>(last - first); }
-    inline bool empty() const { return first == last; }
-    offset_t first;
-    offset_t last;
-
-}; // struct first_last_t
-
-template <typename F> inline first_last_t filter_by(first_last_t first_last, F field, std::string_view look_for)
-{
-    const auto found = std::lower_bound(
-        first_last.first, first_last.last, look_for,
-        [field](hidb::bin::ast_offset_t offset, const std::string_view& look_for_2) -> bool { return field(offset) < look_for_2; });
-    for (auto end = found; end != first_last.last; ++end) {
-        if (field(*end) != look_for)
-            return {found, end};
-    }
-    return {found, first_last.last};
-}
-
-// ----------------------------------------------------------------------
-
 acmacs::chart::Name hidb::Antigen::name() const
 {
     return reinterpret_cast<const hidb::bin::Antigen*>(mAntigen)->name();
@@ -128,7 +100,10 @@ acmacs::chart::Reassortant hidb::Antigen::reassortant() const
 
 acmacs::chart::LabIds hidb::Antigen::lab_ids() const
 {
-    return reinterpret_cast<const hidb::bin::Antigen*>(mAntigen)->lab_ids();
+    const auto lab_ids = reinterpret_cast<const hidb::bin::Antigen*>(mAntigen)->lab_ids();
+    acmacs::chart::LabIds result(lab_ids.size());
+    std::transform(lab_ids.begin(), lab_ids.end(), result.begin(), [](const auto& li) { return std::string(li); });
+    return result;
 
 } // hidb::Antigen::lab_ids
 
@@ -136,7 +111,10 @@ acmacs::chart::LabIds hidb::Antigen::lab_ids() const
 
 acmacs::chart::Annotations hidb::Antigen::annotations() const
 {
-    return reinterpret_cast<const hidb::bin::Antigen*>(mAntigen)->annotations();
+    const auto annotations = reinterpret_cast<const hidb::bin::Antigen*>(mAntigen)->annotations();
+    acmacs::chart::Annotations result(annotations.size());
+    std::transform(annotations.begin(), annotations.end(), result.begin(), [](const auto& anno) { return std::string(anno); });
+    return result;
 
 } // hidb::Antigen::annotations
 
@@ -207,7 +185,10 @@ acmacs::chart::Reassortant hidb::Serum::reassortant() const
 
 acmacs::chart::Annotations hidb::Serum::annotations() const
 {
-    return reinterpret_cast<const hidb::bin::Serum*>(mSerum)->annotations();
+    const auto annotations = reinterpret_cast<const hidb::bin::Serum*>(mSerum)->annotations();
+    acmacs::chart::Annotations result(annotations.size());
+    std::transform(annotations.begin(), annotations.end(), result.begin(), [](const auto& anno) { return std::string(anno); });
+    return result;
 
 } // hidb::Serum::annotations
 
@@ -327,6 +308,32 @@ size_t hidb::Table::number_of_sera() const
 
 // ----------------------------------------------------------------------
 
+using offset_t = const hidb::bin::ast_offset_t*;
+
+struct first_last_t
+{
+    inline first_last_t() : first{nullptr}, last{nullptr} {}
+    inline first_last_t(offset_t a, offset_t b) : first(a), last(b) {}
+    inline first_last_t(offset_t aFirst, size_t aNumber) : first(aFirst), last(aFirst + aNumber) {}
+    inline size_t size() const { return static_cast<size_t>(last - first); }
+    inline bool empty() const { return first == last; }
+    offset_t first;
+    offset_t last;
+
+}; // struct first_last_t
+
+template <typename F> inline first_last_t filter_by(first_last_t first_last, F field, std::string_view look_for)
+{
+    const auto found = std::lower_bound(
+        first_last.first, first_last.last, look_for,
+        [field](hidb::bin::ast_offset_t offset, const std::string_view& look_for_2) -> bool { return field(offset) < look_for_2; });
+    for (auto end = found; end != first_last.last; ++end) {
+        if (field(*end) != look_for)
+            return {found, end};
+    }
+    return {found, first_last.last};
+}
+
 template <typename AgSr, typename S> inline first_last_t find_by(first_last_t first_last, const char* aData, S location, S isolation, S year)
 {
     first_last = filter_by(first_last, [aData](hidb::bin::ast_offset_t offset) { return reinterpret_cast<const AgSr*>(aData + offset)->location(); }, location);
@@ -341,7 +348,7 @@ template <typename AgSr, typename S> inline first_last_t find_by(first_last_t fi
 
 hidb::indexes_t hidb::Antigens::find(std::string aName) const
 {
-    first_last_t all_antigens(reinterpret_cast<const hidb::bin::ast_offset_t*>(mIndex), mNumberOfAntigens);
+    const first_last_t all_antigens(reinterpret_cast<const hidb::bin::ast_offset_t*>(mIndex), mNumberOfAntigens);
     first_last_t first_last;
     try {
         std::string virus_type, host, location, isolation, year, passage;
@@ -380,7 +387,7 @@ hidb::indexes_t hidb::Antigens::find(std::string aName) const
 
 hidb::indexes_t hidb::Sera::find(std::string aName) const
 {
-    first_last_t all_sera(reinterpret_cast<const hidb::bin::ast_offset_t*>(mIndex), mNumberOfSera);
+    const first_last_t all_sera(reinterpret_cast<const hidb::bin::ast_offset_t*>(mIndex), mNumberOfSera);
     first_last_t first_last;
     try {
         std::string virus_type, host, location, isolation, year, passage;
@@ -410,6 +417,38 @@ hidb::indexes_t hidb::Sera::find(std::string aName) const
     return result;
 
 } // hidb::Sera::find
+
+// ----------------------------------------------------------------------
+
+hidb::indexes_t hidb::Antigens::find_labid(std::string labid) const
+{
+    indexes_t result;
+
+    auto find = [&result,this](std::string look_for) -> void {
+        const first_last_t all_antigens(reinterpret_cast<const hidb::bin::ast_offset_t*>(this->mIndex), this->mNumberOfAntigens);
+        for (auto ag = all_antigens.first; ag != all_antigens.last; ++ag) {
+            const auto lab_ids = reinterpret_cast<const hidb::bin::Antigen*>(this->mAntigen0 + *ag)->lab_ids();
+            if (const auto found = std::find(lab_ids.begin(), lab_ids.end(), look_for); found != lab_ids.end())
+                result.push_back(static_cast<size_t>(ag - all_antigens.first));
+        }
+    };
+
+    if (labid.find('#') == std::string::npos) {
+        find("CDC#" + labid);
+        if (result.empty())
+            find("MELB#" + labid);
+        if (result.empty())
+            find("NIID#" + labid);
+        if (result.empty())
+            find(labid);
+    }
+    else {
+        find(labid);
+    }
+
+    return result;
+
+} // hidb::Antigens::find_labid
 
 // ----------------------------------------------------------------------
 /// Local Variables:

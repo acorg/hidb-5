@@ -19,6 +19,7 @@ static void list_all_tables(const hidb::HiDb& hidb, const argc_argv& args);
 static void report_tables(const hidb::HiDb& hidb, std::vector<size_t> aTables, const argc_argv& args, std::string aPrefix = {});
 // static void report_table(const hidb::Table& aTable, const argc_argv& args, std::string aPrefix = {});
 static void find_antigens(const hidb::HiDb& hidb, std::string aName, const argc_argv& args);
+static void find_antigens_by_labid(const hidb::HiDb& hidb, std::string aLabId, const argc_argv& args);
 static void find_sera(const hidb::HiDb& hidb, std::string aName, const argc_argv& args);
 static void find_tables(const hidb::HiDb& hidb, std::string aName, const argc_argv& args);
 static void find(const hidb::HiDb& hidb, const argc_argv& args);
@@ -31,6 +32,7 @@ int main(int argc, char* const argv[])
         argc_argv args(argc, argv, {
                 {"-s", false},  // find sera
                 {"-t", false},  // find table
+                {"--labid", false},  // find by lab id
                 {"--db-dir", ""},
                 {"-v", false},
                 {"--verbose", false},
@@ -72,6 +74,8 @@ void find(const hidb::HiDb& hidb, const argc_argv& args)
             find_sera(hidb, args[1], args);
         else if (args["-t"])
             find_tables(hidb, args[1], args);
+        else if (args["--labid"])
+            find_antigens_by_labid(hidb, args[1], args);
         else
             find_antigens(hidb, args[1], args);
     }
@@ -90,6 +94,16 @@ void find_antigens(const hidb::HiDb& hidb, std::string aName, const argc_argv& a
 
 // ----------------------------------------------------------------------
 
+void find_antigens_by_labid(const hidb::HiDb& hidb, std::string aLabId, const argc_argv& args)
+{
+    const auto indexes = hidb.antigens()->find_labid(string::upper(aLabId));
+    for (auto index: indexes)
+        report_antigen(hidb, index, args, true);
+
+} // find_antigens_by_labid
+
+// ----------------------------------------------------------------------
+
 void find_sera(const hidb::HiDb& hidb, std::string aName, const argc_argv& args)
 {
     const auto indexes = hidb.sera()->find(string::upper(aName));
@@ -100,8 +114,9 @@ void find_sera(const hidb::HiDb& hidb, std::string aName, const argc_argv& args)
 
 // ----------------------------------------------------------------------
 
-void find_tables(const hidb::HiDb& hidb, std::string aName, const argc_argv& args)
+void find_tables(const hidb::HiDb& /*hidb*/, std::string /*aName*/, const argc_argv& /*args*/)
 {
+    throw std::runtime_error("Not implemented");
 
 } // find_tables
 
