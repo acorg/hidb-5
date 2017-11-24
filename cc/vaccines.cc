@@ -68,14 +68,13 @@ void hidb::vaccines_for_name(Vaccines& aVaccines, std::string aName, const acmac
     for (size_t ag_no: aChart.antigens()->find_by_name(virus_type + "/" + aName)) {
         try {
             auto chart_antigen = aChart.antigen(ag_no);
-            std::cerr << ag_no << ' ' << chart_antigen->full_name() << std::endl;
             auto hidb_antigen = hidb_antigens->find(*chart_antigen);
             // std::vector<hidb::Vaccines::HomologousSerum> homologous_sera;
             // for (const auto* sd: hidb.find_homologous_sera(hidb_antigen)) {
             //     if (const auto sr_no = aChart.sera().find_by_full_name(hidb::name_for_exact_matching(sd->data())))
             //         homologous_sera.emplace_back(*sr_no, static_cast<const Serum*>(&aChart.serum(*sr_no)), sd, hidb.charts()[sd->most_recent_table().table_id()].chart_info().date());
             // }
-            // aVaccines.add(ag_no, chart_antigen, hidb_antigen, std::move(homologous_sera), hidb.charts()[hidb_antigen.most_recent_table().table_id()].chart_info().date());
+            aVaccines.add(ag_no, chart_antigen, hidb_antigen); // , std::move(homologous_sera), hidb.charts()[hidb_antigen.most_recent_table().table_id()].chart_info().date());
         }
         catch (hidb::not_found&) {
         }
@@ -167,10 +166,10 @@ std::string hidb::Vaccine::type_as_string() const
 std::string hidb::Vaccines::report(size_t aIndent) const
 {
     std::ostringstream out;
-    // if (!empty()) {
-    //     out << std::string(aIndent, ' ') << "Vaccine " << type_as_string() << ' ' << mNameType.name << std::endl;
-    //     for_each_passage_type([&](PassageType pt) { out << this->report(pt, aIndent + 2); });
-    // }
+    if (!empty()) {
+        out << std::string(aIndent, ' ') << "Vaccine " << type_as_string() << ' ' << mNameType.name << std::endl;
+        for_each_passage_type([this,aIndent,&out](PassageType pt) { out << this->report(pt, aIndent + 2); });
+    }
     return out.str();
 
 } // hidb::Vaccines::report
@@ -182,17 +181,19 @@ std::string hidb::Vaccines::report(PassageType aPassageType, size_t aIndent, siz
     std::ostringstream out;
     const std::string indent(aIndent, ' ');
     auto entry_report = [&](size_t aNo, const auto& entry, bool aMarkIt) {
-        out << indent << (aMarkIt ? ">>" : "  ") << std::setw(2) << aNo << ' ' << entry.antigen_index << ' ' << entry.antigen->full_name() << " tables:" << entry.antigen_data->number_of_tables() << " recent:" << entry.antigen_data->most_recent_table().table_id() << std::endl;
-        for (const auto& hs: entry.homologous_sera)
-            out << indent << "      " << hs.serum->serum_id() << ' ' << hs.serum->annotations().join() << " tables:" << hs.serum_data->number_of_tables() << " recent:" << hs.serum_data->most_recent_table().table_id() << std::endl;
+                            out << indent << (aMarkIt ? ">>" : "  ") << std::setw(2) << aNo << ' ' << entry.chart_antigen_index << ' ' << entry.chart_antigen->full_name()
+                                << " tables:" << entry.hidb_antigen->number_of_tables()
+                                << '\n'; // " recent:" << entry.hidb_antigen->most_recent_table().table_id() << std::endl;
+        // for (const auto& hs: entry.homologous_sera)
+        //     out << indent << "      " << hs.serum->serum_id() << ' ' << hs.serum->annotations().join() << " tables:" << hs.serum_data->number_of_tables() << " recent:" << hs.serum_data->most_recent_table().table_id() << std::endl;
     };
 
-    // const auto& entry = mEntries[aPassageType];
-    // if (!entry.empty()) {
-    //     out << indent << passage_type_name(aPassageType) << " (" << entry.size() << ')' << std::endl;
-    //     for (size_t no = 0; no < entry.size(); ++no)
-    //         entry_report(no, entry[no], aMark == no);
-    // }
+    const auto& entry = mEntries[aPassageType];
+    if (!entry.empty()) {
+        out << indent << passage_type_name(aPassageType) << " (" << entry.size() << ')' << std::endl;
+        for (size_t no = 0; no < entry.size(); ++no)
+            entry_report(no, entry[no], aMark == no);
+    }
     return out.str();
 
 } // hidb::Vaccines::report

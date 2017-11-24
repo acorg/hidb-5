@@ -130,6 +130,14 @@ hidb::indexes_t hidb::Antigen::tables() const
 
 // ----------------------------------------------------------------------
 
+size_t hidb::Antigen::number_of_tables() const
+{
+    return reinterpret_cast<const hidb::bin::Antigen*>(mAntigen)->tables().first;
+
+} // hidb::Antigen::number_of_tables
+
+// ----------------------------------------------------------------------
+
 std::shared_ptr<hidb::Sera> hidb::HiDb::sera() const
 {
     const auto* sera = mData + reinterpret_cast<const hidb::bin::Header*>(mData)->serum_offset;
@@ -228,6 +236,14 @@ hidb::indexes_t hidb::Serum::tables() const
     return result;
 
 } // hidb::Serum::tables
+
+// ----------------------------------------------------------------------
+
+size_t hidb::Serum::number_of_tables() const
+{
+    return reinterpret_cast<const hidb::bin::Serum*>(mSerum)->tables().first;
+
+} // hidb::Serum::number_of_tables
 
 // ----------------------------------------------------------------------
 

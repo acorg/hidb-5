@@ -31,6 +31,7 @@ namespace hidb
         inline bool reference() const override { return false; }
 
         indexes_t tables() const;
+        size_t number_of_tables() const;
 
      private:
         const char* mAntigen;
@@ -75,6 +76,7 @@ namespace hidb
         acmacs::chart::PointIndexList homologous_antigens() const override;
 
         indexes_t tables() const;
+        size_t number_of_tables() const;
 
      private:
         const char* mSerum;

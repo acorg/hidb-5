@@ -46,20 +46,22 @@ namespace hidb
         //     std::string most_recent_table_date;
         // };
 
-        // class Entry
-        // {
-        //  public:
-        //     inline Entry(size_t aAntigenIndex, const Antigen* aAntigen, const hidb::AntigenSerumData<Antigen>* aAntigenData, std::vector<HomologousSerum>&& aSera, std::string aMostRecentTableDate)
-        //         : antigen(aAntigen), antigen_index(aAntigenIndex), antigen_data(aAntigenData), homologous_sera(aSera), most_recent_table_date(aMostRecentTableDate)
-        //         { std::sort(homologous_sera.begin(), homologous_sera.end()); }
-        //     bool operator < (const Entry& a) const;
+        class Entry
+        {
+         public:
+            inline Entry(size_t aAntigenIndex, std::shared_ptr<acmacs::chart::Antigen> aChartAntigen, std::shared_ptr<hidb::Antigen> aHidbAntigen) // , std::vector<HomologousSerum>&& aSera, std::string aMostRecentTableDate)
+                : chart_antigen(aChartAntigen), chart_antigen_index(aAntigenIndex), hidb_antigen(aHidbAntigen) // , homologous_sera(aSera), most_recent_table_date(aMostRecentTableDate)
+                {
+                      // std::sort(homologous_sera.begin(), homologous_sera.end());
+                }
+            // bool operator < (const Entry& a) const;
 
-        //     const Antigen* antigen;
-        //     size_t antigen_index;
-        //     const hidb::AntigenSerumData<Antigen>* antigen_data;
-        //     std::vector<HomologousSerum> homologous_sera; // sorted by number of tables and the most recent table
-        //     std::string most_recent_table_date;
-        // };
+            std::shared_ptr<acmacs::chart::Antigen> chart_antigen;
+            size_t chart_antigen_index;
+            std::shared_ptr<hidb::Antigen> hidb_antigen;
+            // std::vector<HomologousSerum> homologous_sera; // sorted by number of tables and the most recent table
+            // std::string most_recent_table_date;
+        };
 
         enum PassageType : int { Cell, Egg, Reassortant, PassageTypeSize };
         template <typename UnaryFunction> static void for_each_passage_type(UnaryFunction f) { f(Cell); f(Egg); f(Reassortant); }
@@ -70,8 +72,8 @@ namespace hidb
         // inline size_t number_of_eggs() const { return number_of(Egg); }
         // inline size_t number_of_cells() const { return number_of(Cell); }
         // inline size_t number_of_reassortants() const { return number_of(Reassortant); }
-        // inline bool empty(PassageType pt) const { return mEntries[pt].empty(); }
-        // inline bool empty() const { return std::all_of(std::begin(mEntries), std::end(mEntries), [](const auto& e) { return e.empty(); }); }
+        inline bool empty(PassageType pt) const { return mEntries[pt].empty(); }
+        inline bool empty() const { return std::all_of(std::begin(mEntries), std::end(mEntries), [](const auto& e) { return e.empty(); }); }
 
         // inline const Entry* for_passage_type(PassageType pt, size_t aNo = 0) const { return mEntries[pt].size() > aNo ? &mEntries[pt][aNo] : nullptr; }
         // inline const Entry* egg(size_t aNo = 0) const { return for_passage_type(Egg, aNo); }
@@ -106,11 +108,11 @@ namespace hidb
 
      private:
         Vaccine mNameType;
-        // std::vector<Entry> mEntries[PassageTypeSize];
+        std::vector<Entry> mEntries[PassageTypeSize];
 
         friend void vaccines_for_name(Vaccines& aVaccines, std::string aName, const acmacs::chart::Chart& aChart, bool aVerbose);
 
-        static inline PassageType passage_type(const Antigen& aAntigen)
+        static inline PassageType passage_type(const acmacs::chart::Antigen& aAntigen)
             {
                 if (!aAntigen.reassortant().empty())
                     return Reassortant;
@@ -130,10 +132,10 @@ namespace hidb
                 return "?";
             }
 
-        // inline void add(size_t aAntigenIndex, const Antigen& aAntigen, const hidb::AntigenSerumData<Antigen>* aAntigenData, std::vector<HomologousSerum>&& aSera, std::string aMostRecentTableDate)
-        //     {
-        //         mEntries[passage_type(aAntigen)].emplace_back(aAntigenIndex, &aAntigen, aAntigenData, std::move(aSera), aMostRecentTableDate);
-        //     }
+        inline void add(size_t aAntigenIndex, std::shared_ptr<acmacs::chart::Antigen> aChartAntigen, std::shared_ptr<hidb::Antigen> aHidbAntigen) //, std::vector<HomologousSerum>&& aSera, std::string aMostRecentTableDate)
+            {
+                mEntries[passage_type(*aChartAntigen)].emplace_back(aAntigenIndex, aChartAntigen, aHidbAntigen); //, std::move(aSera), aMostRecentTableDate);
+            }
 
         // inline void sort()
         //     {
@@ -150,10 +152,9 @@ namespace hidb
      public:
         using std::vector<Vaccines>::vector;
 
-        // void remove(std::string aName, std::string aType, std::string aPassageType);
         std::string report(size_t aIndent = 0) const;
 
-    };
+    }; // class VaccinesOfChart
 
 // ----------------------------------------------------------------------
 
