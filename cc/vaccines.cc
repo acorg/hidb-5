@@ -69,12 +69,12 @@ void hidb::vaccines_for_name(Vaccines& aVaccines, std::string aName, const acmac
         try {
             auto chart_antigen = aChart.antigen(ag_no);
             auto hidb_antigen = hidb_antigens->find(*chart_antigen);
-            // std::vector<hidb::Vaccines::HomologousSerum> homologous_sera;
+            std::vector<hidb::Vaccines::HomologousSerum> homologous_sera;
             // for (const auto* sd: hidb.find_homologous_sera(hidb_antigen)) {
             //     if (const auto sr_no = aChart.sera().find_by_full_name(hidb::name_for_exact_matching(sd->data())))
             //         homologous_sera.emplace_back(*sr_no, static_cast<const Serum*>(&aChart.serum(*sr_no)), sd, hidb.charts()[sd->most_recent_table().table_id()].chart_info().date());
             // }
-            aVaccines.add(ag_no, chart_antigen, hidb_antigen, hidb.tables()->most_recent(hidb_antigen->tables())); // , std::move(homologous_sera), hidb.charts()[hidb_antigen.most_recent_table().table_id()].chart_info().date());
+            aVaccines.add(ag_no, chart_antigen, hidb_antigen, hidb.tables()->most_recent(hidb_antigen->tables()), std::move(homologous_sera));
         }
         catch (hidb::not_found&) {
         }
@@ -139,27 +139,27 @@ inline bool hidb::Vaccines::Entry::operator < (const hidb::Vaccines::Entry& a) c
 
 // ----------------------------------------------------------------------
 
-// bool hidb::Vaccines::HomologousSerum::operator < (const hidb::Vaccines::HomologousSerum& a) const
-// {
-//     bool result = true;
-//     if (serum->serum_species() == "SHEEP") { // avoid using sheep serum as homologous (NIMR)
-//         result = false;
-//     }
-//     else {
-//         const auto s_nt = a.serum_data->number_of_tables(), t_nt = serum_data->number_of_tables();
-//         result = t_nt == s_nt ? most_recent_table_date > a.most_recent_table_date : t_nt > s_nt;
-//     }
-//     return result;
+bool hidb::Vaccines::HomologousSerum::operator < (const hidb::Vaccines::HomologousSerum& a) const
+{
+    bool result = true;
+    if (chart_serum->serum_species() == "SHEEP") { // avoid using sheep serum as homologous (NIMR)
+        result = false;
+    }
+    else {
+        const auto s_nt = a.hidb_serum->number_of_tables(), t_nt = hidb_serum->number_of_tables();
+        result = t_nt == s_nt ? most_recent_table->date() > a.most_recent_table->date() : t_nt > s_nt;
+    }
+    return result;
 
-// } // hidb::Vaccines::HomologousSerum::operator <
+} // hidb::Vaccines::HomologousSerum::operator <
 
-// // ----------------------------------------------------------------------
+// ----------------------------------------------------------------------
 
-// size_t hidb::Vaccines::HomologousSerum::number_of_tables() const
-// {
-//     return serum_data->number_of_tables();
+size_t hidb::Vaccines::HomologousSerum::number_of_tables() const
+{
+    return hidb_serum->number_of_tables();
 
-// } // hidb::Vaccines::HomologousSerum::number_of_tables
+} // hidb::Vaccines::HomologousSerum::number_of_tables
 
 // ----------------------------------------------------------------------
 
