@@ -66,14 +66,16 @@ void hidb::vaccines_for_name(Vaccines& aVaccines, std::string aName, const acmac
     const auto& hidb = hidb::get(virus_type, aVerbose ? report_time::Yes : report_time::No);
     auto hidb_antigens = hidb.antigens();
     auto hidb_sera = hidb.sera();
-    for (size_t ag_no: aChart.antigens()->find_by_name(virus_type + "/" + aName)) {
+    auto chart_antigens = aChart.antigens();
+    auto chart_sera = aChart.sera();
+    for (size_t ag_no: chart_antigens->find_by_name(virus_type + "/" + aName)) {
         try {
             auto chart_antigen = aChart.antigen(ag_no);
             auto [hidb_antigen, hidb_antigen_index] = hidb_antigens->find(*chart_antigen);
             std::vector<hidb::Vaccines::HomologousSerum> homologous_sera;
             for (auto sd: hidb_sera->find_homologous(hidb_antigen_index, *hidb_antigen)) {
-                // if (const auto sr_no = aChart.sera().find_by_full_name(hidb::name_for_exact_matching(sd->data())))
-                //     homologous_sera.emplace_back(*sr_no, static_cast<const Serum*>(&aChart.serum(*sr_no)), sd, hidb.charts()[sd->most_recent_table().table_id()].chart_info().date());
+                if (const auto sr_no = chart_sera->find_by_full_name(sd->full_name()))
+                    homologous_sera.emplace_back(*sr_no, (*chart_sera)[*sr_no], sd, hidb.tables()->most_recent(sd->tables()));
             }
             aVaccines.add(ag_no, chart_antigen, hidb_antigen, hidb.tables()->most_recent(hidb_antigen->tables()), std::move(homologous_sera));
         }
@@ -182,11 +184,11 @@ std::string hidb::Vaccines::report(PassageType aPassageType, size_t aIndent, siz
     std::ostringstream out;
     const std::string indent(aIndent, ' ');
     auto entry_report = [&](size_t aNo, const auto& entry, bool aMarkIt) {
-                            out << indent << (aMarkIt ? ">>" : "  ") << std::setw(2) << aNo << ' ' << entry.chart_antigen_index << ' ' << entry.chart_antigen->full_name()
-                                << " tables:" << entry.hidb_antigen->number_of_tables()
-                                << " recent:" << entry.most_recent_table->name() << '\n';
-        // for (const auto& hs: entry.homologous_sera)
-        //     out << indent << "      " << hs.serum->serum_id() << ' ' << hs.serum->annotations().join() << " tables:" << hs.serum_data->number_of_tables() << " recent:" << hs.serum_data->most_recent_table().table_id() << std::endl;
+        out << indent << (aMarkIt ? ">>" : "  ") << std::setw(2) << aNo << ' ' << entry.chart_antigen_index << ' ' << entry.chart_antigen->full_name()
+            << " tables:" << entry.hidb_antigen->number_of_tables()
+            << " recent:" << entry.most_recent_table->name() << '\n';
+        for (const auto& hs: entry.homologous_sera)
+            out << indent << "      " << hs.chart_serum->serum_id() << ' ' << hs.chart_serum->annotations().join() << " tables:" << hs.hidb_serum->number_of_tables() << " recent:" << hs.most_recent_table->name() << std::endl;
     };
 
     const auto& entry = mEntries[aPassageType];
