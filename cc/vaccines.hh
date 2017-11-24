@@ -160,7 +160,7 @@ namespace hidb
 // ----------------------------------------------------------------------
 
     const std::vector<Vaccine>& vaccine_names(std::string aSubtype, std::string aLineage);
-    inline const std::vector<Vaccine>& vaccine_names(const acmacs::chart::Chart& aChart) { return vaccine_names(aChart.info()->virus_type(), aChart.lineage()); }
+    inline const std::vector<Vaccine>& vaccine_names(const acmacs::chart::Chart& aChart) { return vaccine_names(aChart.info()->virus_type(acmacs::chart::Info::Compute::Yes), aChart.lineage()); }
     // Vaccines* find_vaccines_in_chart(std::string aName, const Chart& aChart);
     void vaccines_for_name(Vaccines& aVaccines, std::string aName, const acmacs::chart::Chart& aChart, bool aVerbose = false);
     VaccinesOfChart vaccines(const acmacs::chart::Chart& aChart, bool aVerbose = false);

@@ -40,7 +40,7 @@ class HiDbSet
                 else if (aVirusType == "B")
                     prefix = "hidb5.b";
                 else
-                    throw std::runtime_error("Unrecognized virus type: " + aVirusType);
+                    throw std::runtime_error("Unrecognized virus type: \"" + aVirusType + '"');
 
                 fs::path filename = fs::path(sHiDbDir) / (prefix + ".hidb5b");
                 if (!fs::exists(filename))
