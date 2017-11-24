@@ -74,7 +74,7 @@ void hidb::vaccines_for_name(Vaccines& aVaccines, std::string aName, const acmac
             //     if (const auto sr_no = aChart.sera().find_by_full_name(hidb::name_for_exact_matching(sd->data())))
             //         homologous_sera.emplace_back(*sr_no, static_cast<const Serum*>(&aChart.serum(*sr_no)), sd, hidb.charts()[sd->most_recent_table().table_id()].chart_info().date());
             // }
-            aVaccines.add(ag_no, chart_antigen, hidb_antigen); // , std::move(homologous_sera), hidb.charts()[hidb_antigen.most_recent_table().table_id()].chart_info().date());
+            aVaccines.add(ag_no, chart_antigen, hidb_antigen, nullptr); // , std::move(homologous_sera), hidb.charts()[hidb_antigen.most_recent_table().table_id()].chart_info().date());
         }
         catch (hidb::not_found&) {
         }
