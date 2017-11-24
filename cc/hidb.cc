@@ -50,11 +50,10 @@ std::shared_ptr<hidb::Antigens> hidb::HiDb::antigens() const
 
 // ----------------------------------------------------------------------
 
-std::shared_ptr<acmacs::chart::Antigen> hidb::Antigens::operator[](size_t aIndex) const
+std::shared_ptr<hidb::Antigen> hidb::Antigens::at(size_t aIndex) const
 {
     return std::make_shared<hidb::Antigen>(mAntigen0 + reinterpret_cast<const hidb::bin::ast_offset_t*>(mIndex)[aIndex]);
-
-} // hidb::Antigens::operator[]
+}
 
 // ----------------------------------------------------------------------
 
@@ -143,7 +142,7 @@ std::shared_ptr<hidb::Sera> hidb::HiDb::sera() const
 
 // ----------------------------------------------------------------------
 
-std::shared_ptr<acmacs::chart::Serum> hidb::Sera::operator[](size_t aIndex) const
+std::shared_ptr<hidb::Serum> hidb::Sera::at(size_t aIndex) const
 {
     return std::make_shared<hidb::Serum>(mSerum0 + reinterpret_cast<const hidb::bin::ast_offset_t*>(mIndex)[aIndex]);
 
@@ -454,7 +453,25 @@ hidb::indexes_t hidb::Antigens::find_labid(std::string labid) const
 
 size_t hidb::Antigens::find(const acmacs::chart::Antigen& aAntigen) const
 {
+    const auto indexes = find(aAntigen.name());
     throw std::runtime_error("hidb::Antigens::find(const acmacs::chart::Antigen& aAntigen): not implemented");
+
+} // hidb::Antigens::find
+
+// ----------------------------------------------------------------------
+
+std::vector<std::shared_ptr<hidb::Antigen>> hidb::Antigens::find(const acmacs::chart::Antigens& aAntigens) const
+{
+    std::vector<std::shared_ptr<hidb::Antigen>> result;
+    for (auto antigen: aAntigens) {
+        try {
+            result.push_back(at(find(*antigen)));
+        }
+        catch (not_found&) {
+            result.emplace_back(nullptr);
+        }
+    }
+    return result;
 
 } // hidb::Antigens::find
 
@@ -463,6 +480,23 @@ size_t hidb::Antigens::find(const acmacs::chart::Antigen& aAntigen) const
 size_t hidb::Sera::find(const acmacs::chart::Serum& aSerum) const
 {
     throw std::runtime_error("hidb::Sera::find(const acmacs::chart::Serum& aSerum): not implemented");
+
+} // hidb::Sera::find
+
+// ----------------------------------------------------------------------
+
+std::vector<std::shared_ptr<hidb::Serum>> hidb::Sera::find(const acmacs::chart::Sera& aSera) const
+{
+    std::vector<std::shared_ptr<hidb::Serum>> result;
+    for (auto serum: aSera) {
+        try {
+            result.push_back(at(find(*serum)));
+        }
+        catch (not_found&) {
+            result.emplace_back(nullptr);
+        }
+    }
+    return result;
 
 } // hidb::Sera::find
 

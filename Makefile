@@ -14,7 +14,7 @@ TARGETS = \
 
 HIDB_MAKE_SOURCES = hidb-maker.cc hidb-make.cc
 
-HIDB_SOURCES = hidb.cc hidb-set.cc hidb-json.cc hidb-bin.cc
+HIDB_SOURCES = hidb.cc hidb-set.cc hidb-json.cc hidb-bin.cc report.cc
 
 HIDB_LIB_MAJOR = 5
 HIDB_LIB_MINOR = 0

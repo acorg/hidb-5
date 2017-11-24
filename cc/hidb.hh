@@ -13,6 +13,7 @@ namespace hidb
     namespace bin { struct Table; }
 
     using indexes_t = std::vector<size_t>;
+    class not_found : public std::runtime_error { public: using std::runtime_error::runtime_error; };
 
     class Antigen : public acmacs::chart::Antigen
     {
@@ -43,10 +44,12 @@ namespace hidb
             : mNumberOfAntigens(aNumberOfAntigens), mIndex(aIndex), mAntigen0(aAntigen0) {}
 
         inline size_t size() const override { return mNumberOfAntigens; }
-        std::shared_ptr<acmacs::chart::Antigen> operator[](size_t aIndex) const override;
+        inline std::shared_ptr<acmacs::chart::Antigen> operator[](size_t aIndex) const override { return at(aIndex); }
+        std::shared_ptr<Antigen> at(size_t aIndex) const;
         indexes_t find(std::string aName) const;
         indexes_t find_labid(std::string labid) const;
         size_t find(const acmacs::chart::Antigen& aAntigen) const; // find_antigen_of_chart
+        std::vector<std::shared_ptr<Antigen>> find(const acmacs::chart::Antigens& aAntigens) const;
 
      private:
         size_t mNumberOfAntigens;
@@ -85,9 +88,11 @@ namespace hidb
             : mNumberOfSera(aNumberOfSera), mIndex(aIndex), mSerum0(aSerum0) {}
 
         inline size_t size() const override { return mNumberOfSera; }
-        std::shared_ptr<acmacs::chart::Serum> operator[](size_t aIndex) const override;
+        inline std::shared_ptr<acmacs::chart::Serum> operator[](size_t aIndex) const override { return at(aIndex); }
+        std::shared_ptr<Serum> at(size_t aIndex) const;
         indexes_t find(std::string aName) const;
         size_t find(const acmacs::chart::Serum& aSerum) const; // find_serum_of_chart
+        std::vector<std::shared_ptr<Serum>> find(const acmacs::chart::Sera& aSera) const;
 
      private:
         size_t mNumberOfSera;
