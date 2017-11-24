@@ -35,21 +35,21 @@ namespace hidb
         class HomologousSerum
         {
          public:
-            inline HomologousSerum(size_t aSerumIndex, std::shared_ptr<acmacs::chart::Serum> aChartSerum, std::shared_ptr<hidb::Serum> aHidbSerum, std::shared_ptr<hidb::Table> aMostRecentTable)
+            inline HomologousSerum(size_t aSerumIndex, std::shared_ptr<acmacs::chart::Serum> aChartSerum, hidb::SerumP aHidbSerum, std::shared_ptr<hidb::Table> aMostRecentTable)
                 : chart_serum(aChartSerum), chart_serum_index(aSerumIndex), hidb_serum(aHidbSerum), most_recent_table(aMostRecentTable) {}
             bool operator < (const HomologousSerum& a) const;
             size_t number_of_tables() const;
 
             std::shared_ptr<acmacs::chart::Serum> chart_serum;
             size_t chart_serum_index;
-            std::shared_ptr<hidb::Serum> hidb_serum;
+            hidb::SerumP hidb_serum;
             std::shared_ptr<hidb::Table> most_recent_table;
         };
 
         class Entry
         {
          public:
-            inline Entry(size_t aAntigenIndex, std::shared_ptr<acmacs::chart::Antigen> aChartAntigen, std::shared_ptr<hidb::Antigen> aHidbAntigen, std::shared_ptr<hidb::Table> aMostRecentTable, std::vector<HomologousSerum>&& aSera)
+            inline Entry(size_t aAntigenIndex, std::shared_ptr<acmacs::chart::Antigen> aChartAntigen, AntigenP aHidbAntigen, std::shared_ptr<hidb::Table> aMostRecentTable, std::vector<HomologousSerum>&& aSera)
                 : chart_antigen(aChartAntigen), chart_antigen_index(aAntigenIndex), hidb_antigen(aHidbAntigen),
                   most_recent_table(aMostRecentTable), homologous_sera(std::move(aSera))
                 {
@@ -59,7 +59,7 @@ namespace hidb
 
             std::shared_ptr<acmacs::chart::Antigen> chart_antigen;
             size_t chart_antigen_index;
-            std::shared_ptr<hidb::Antigen> hidb_antigen;
+            AntigenP hidb_antigen;
             std::shared_ptr<hidb::Table> most_recent_table;
             std::vector<HomologousSerum> homologous_sera; // sorted by number of tables and the most recent table
         };
@@ -133,7 +133,7 @@ namespace hidb
                 return "?";
             }
 
-        inline void add(size_t aAntigenIndex, std::shared_ptr<acmacs::chart::Antigen> aChartAntigen, std::shared_ptr<hidb::Antigen> aHidbAntigen, std::shared_ptr<hidb::Table> aMostRecentTable, std::vector<HomologousSerum>&& aSera)
+        inline void add(size_t aAntigenIndex, std::shared_ptr<acmacs::chart::Antigen> aChartAntigen, AntigenP aHidbAntigen, std::shared_ptr<hidb::Table> aMostRecentTable, std::vector<HomologousSerum>&& aSera)
             {
                 mEntries[passage_type(*aChartAntigen)].emplace_back(aAntigenIndex, aChartAntigen, aHidbAntigen, aMostRecentTable, std::move(aSera));
             }

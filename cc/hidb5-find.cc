@@ -5,6 +5,7 @@
 #include "acmacs-base/string.hh"
 #include "acmacs-base/enumerate.hh"
 #include "acmacs-base/filesystem.hh"
+#include "locationdb/locdb.hh"
 #include "hidb-5/hidb.hh"
 #include "hidb-5/report.hh"
 
@@ -81,9 +82,14 @@ void find(const hidb::HiDb& hidb, const argc_argv& args)
 
 void find_antigens(const hidb::HiDb& hidb, std::string aName, const argc_argv& /*args*/)
 {
-    const auto indexes = hidb.antigens()->find(string::upper(aName));
-    for (auto index: indexes)
-        report_antigen(hidb, index, true);
+    try {
+        const auto antigen_index_list = hidb.antigens()->find(string::upper(aName), true);
+        for (auto antigen_index: antigen_index_list)
+            report_antigen(hidb, *antigen_index.first, true);
+    }
+    catch (LocationNotFound& err) {
+        throw std::runtime_error("location not found: "s + err.what());
+    }
 
 } // find_antigens
 
@@ -91,9 +97,9 @@ void find_antigens(const hidb::HiDb& hidb, std::string aName, const argc_argv& /
 
 void find_antigens_by_labid(const hidb::HiDb& hidb, std::string aLabId, const argc_argv& /*args*/)
 {
-    const auto indexes = hidb.antigens()->find_labid(string::upper(aLabId));
-    for (auto index: indexes)
-        report_antigen(hidb, index, true);
+    const auto antigens = hidb.antigens()->find_labid(string::upper(aLabId));
+    for (auto antigen: antigens)
+        report_antigen(hidb, *antigen, true);
 
 } // find_antigens_by_labid
 
@@ -101,9 +107,14 @@ void find_antigens_by_labid(const hidb::HiDb& hidb, std::string aLabId, const ar
 
 void find_sera(const hidb::HiDb& hidb, std::string aName, const argc_argv& /*args*/)
 {
-    const auto indexes = hidb.sera()->find(string::upper(aName));
-    for (auto index: indexes)
-        report_serum(hidb, index, true);
+    try {
+        const auto serum_index_list = hidb.sera()->find(string::upper(aName), true);
+        for (auto serum_index: serum_index_list)
+            report_serum(hidb, *serum_index.first, true);
+    }
+    catch (LocationNotFound& err) {
+        throw std::runtime_error("location not found: "s + err.what());
+    }
 
 } // find_sera
 
