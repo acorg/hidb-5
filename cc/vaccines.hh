@@ -49,8 +49,9 @@ namespace hidb
         class Entry
         {
          public:
-            inline Entry(size_t aAntigenIndex, std::shared_ptr<acmacs::chart::Antigen> aChartAntigen, std::shared_ptr<hidb::Antigen> aHidbAntigen) // , std::vector<HomologousSerum>&& aSera, std::string aMostRecentTableDate)
-                : chart_antigen(aChartAntigen), chart_antigen_index(aAntigenIndex), hidb_antigen(aHidbAntigen) // , homologous_sera(aSera), most_recent_table_date(aMostRecentTableDate)
+            inline Entry(size_t aAntigenIndex, std::shared_ptr<acmacs::chart::Antigen> aChartAntigen, std::shared_ptr<hidb::Antigen> aHidbAntigen, std::shared_ptr<hidb::Table> aMostRecentTable) // , std::vector<HomologousSerum>&& aSera
+                : chart_antigen(aChartAntigen), chart_antigen_index(aAntigenIndex), hidb_antigen(aHidbAntigen),
+                  most_recent_table(aMostRecentTable) // , homologous_sera(aSera)
                 {
                       // std::sort(homologous_sera.begin(), homologous_sera.end());
                 }
@@ -59,8 +60,8 @@ namespace hidb
             std::shared_ptr<acmacs::chart::Antigen> chart_antigen;
             size_t chart_antigen_index;
             std::shared_ptr<hidb::Antigen> hidb_antigen;
+            std::shared_ptr<hidb::Table> most_recent_table;
             // std::vector<HomologousSerum> homologous_sera; // sorted by number of tables and the most recent table
-            // std::string most_recent_table_date;
         };
 
         enum PassageType : int { Cell, Egg, Reassortant, PassageTypeSize };
@@ -132,9 +133,9 @@ namespace hidb
                 return "?";
             }
 
-        inline void add(size_t aAntigenIndex, std::shared_ptr<acmacs::chart::Antigen> aChartAntigen, std::shared_ptr<hidb::Antigen> aHidbAntigen) //, std::vector<HomologousSerum>&& aSera, std::string aMostRecentTableDate)
+        inline void add(size_t aAntigenIndex, std::shared_ptr<acmacs::chart::Antigen> aChartAntigen, std::shared_ptr<hidb::Antigen> aHidbAntigen, std::shared_ptr<hidb::Table> aMostRecentTable) //, std::vector<HomologousSerum>&& aSera
             {
-                mEntries[passage_type(*aChartAntigen)].emplace_back(aAntigenIndex, aChartAntigen, aHidbAntigen); //, std::move(aSera), aMostRecentTableDate);
+                mEntries[passage_type(*aChartAntigen)].emplace_back(aAntigenIndex, aChartAntigen, aHidbAntigen, aMostRecentTable); //, std::move(aSera)
             }
 
         // inline void sort()
