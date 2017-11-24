@@ -451,10 +451,16 @@ hidb::indexes_t hidb::Antigens::find_labid(std::string labid) const
 
 // ----------------------------------------------------------------------
 
-size_t hidb::Antigens::find(const acmacs::chart::Antigen& aAntigen) const
+std::shared_ptr<hidb::Antigen> hidb::Antigens::find(const acmacs::chart::Antigen& aAntigen) const
 {
     const auto indexes = find(aAntigen.name());
-    throw std::runtime_error("hidb::Antigens::find(const acmacs::chart::Antigen& aAntigen): not implemented");
+    for (auto index: indexes) {
+        auto antigen = at(index);
+        if (antigen->annotations() == aAntigen.annotations() && antigen->reassortant() == aAntigen.reassortant() && antigen->passage() == aAntigen.passage())
+            return antigen;
+    }
+    std::cerr << "WARNING: not in hidb: " << aAntigen.full_name() << '\n';
+    throw not_found(aAntigen.full_name());
 
 } // hidb::Antigens::find
 
@@ -465,7 +471,7 @@ std::vector<std::shared_ptr<hidb::Antigen>> hidb::Antigens::find(const acmacs::c
     std::vector<std::shared_ptr<hidb::Antigen>> result;
     for (auto antigen: aAntigens) {
         try {
-            result.push_back(at(find(*antigen)));
+            result.push_back(find(*antigen));
         }
         catch (not_found&) {
             result.emplace_back(nullptr);
@@ -477,9 +483,16 @@ std::vector<std::shared_ptr<hidb::Antigen>> hidb::Antigens::find(const acmacs::c
 
 // ----------------------------------------------------------------------
 
-size_t hidb::Sera::find(const acmacs::chart::Serum& aSerum) const
+std::shared_ptr<hidb::Serum> hidb::Sera::find(const acmacs::chart::Serum& aSerum) const
 {
-    throw std::runtime_error("hidb::Sera::find(const acmacs::chart::Serum& aSerum): not implemented");
+    const auto indexes = find(aSerum.name());
+    for (auto index: indexes) {
+        auto serum = at(index);
+        if (serum->annotations() == aSerum.annotations() && serum->reassortant() == aSerum.reassortant() && serum->serum_id() == aSerum.serum_id())
+            return serum;
+    }
+    std::cerr << "WARNING: not in hidb: " << aSerum.full_name() << '\n';
+    throw not_found(aSerum.full_name());
 
 } // hidb::Sera::find
 
@@ -490,7 +503,7 @@ std::vector<std::shared_ptr<hidb::Serum>> hidb::Sera::find(const acmacs::chart::
     std::vector<std::shared_ptr<hidb::Serum>> result;
     for (auto serum: aSera) {
         try {
-            result.push_back(at(find(*serum)));
+            result.push_back(find(*serum));
         }
         catch (not_found&) {
             result.emplace_back(nullptr);
