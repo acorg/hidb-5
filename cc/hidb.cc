@@ -451,6 +451,22 @@ hidb::indexes_t hidb::Antigens::find_labid(std::string labid) const
 } // hidb::Antigens::find_labid
 
 // ----------------------------------------------------------------------
+
+size_t hidb::Antigens::find(const acmacs::chart::Antigen& aAntigen) const
+{
+    throw std::runtime_error("hidb::Antigens::find(const acmacs::chart::Antigen& aAntigen): not implemented");
+
+} // hidb::Antigens::find
+
+// ----------------------------------------------------------------------
+
+size_t hidb::Sera::find(const acmacs::chart::Serum& aSerum) const
+{
+    throw std::runtime_error("hidb::Sera::find(const acmacs::chart::Serum& aSerum): not implemented");
+
+} // hidb::Sera::find
+
+// ----------------------------------------------------------------------
 /// Local Variables:
 /// eval: (if (fboundp 'eu-rename-buffer) (eu-rename-buffer))
 /// End:

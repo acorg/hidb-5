@@ -46,6 +46,7 @@ namespace hidb
         std::shared_ptr<acmacs::chart::Antigen> operator[](size_t aIndex) const override;
         indexes_t find(std::string aName) const;
         indexes_t find_labid(std::string labid) const;
+        size_t find(const acmacs::chart::Antigen& aAntigen) const; // find_antigen_of_chart
 
      private:
         size_t mNumberOfAntigens;
@@ -86,6 +87,7 @@ namespace hidb
         inline size_t size() const override { return mNumberOfSera; }
         std::shared_ptr<acmacs::chart::Serum> operator[](size_t aIndex) const override;
         indexes_t find(std::string aName) const;
+        size_t find(const acmacs::chart::Serum& aSerum) const; // find_serum_of_chart
 
      private:
         size_t mNumberOfSera;
@@ -145,32 +147,12 @@ namespace hidb
         std::shared_ptr<Sera> sera() const;
         std::shared_ptr<Tables> tables() const;
 
+        // std::vector<const SerumData*> find_homologous_sera(const AntigenData& aAntigen) const; // for vaccines
+        // void find_homologous_antigens_for_sera_of_chart(Chart& aChart) const; // sets homologous_antigen attribute in chart
+        // std::string serum_date(const SerumData& aSerum) const; // for stat
 
-        // inline std::vector<const AntigenData*> find_antigens_by_name(std::string name, std::string* aNotFoundLocation = nullptr) const { return mAntigens.find_by_index(name, aNotFoundLocation); }
-        // const AntigenData& find_antigen_of_chart(const Antigen& aAntigen) const; // throws if not found
-
-        // std::vector<std::pair<const AntigenData*, size_t>> find_antigens_with_score(std::string name) const;
-        // std::vector<std::string> list_antigen_names(std::string aLab, std::string aLineage, bool aFullName) const;
-        // std::vector<const AntigenData*> list_antigens(std::string aLab, std::string aLineage, std::string aAssay) const;
-        // std::vector<const SerumData*> find_sera(std::string name) const;
-        // const SerumData& find_serum_exactly(std::string name_reassortant_annotations_serum_id) const; // throws NotFound if serum with this very set of data not found
-        // std::vector<std::pair<const SerumData*, size_t>> find_sera_with_score(std::string name) const;
-        // std::vector<std::string> list_serum_names(std::string aLab, std::string aLineage, bool aFullName) const;
-        // std::vector<const SerumData*> list_sera(std::string aLab, std::string aLineage) const;
-        // std::vector<const SerumData*> find_homologous_sera(const AntigenData& aAntigen) const;
-        // const SerumData& find_serum_of_chart(const Serum& aSerum, bool report_if_not_found = false) const; // throws if not found
-        // void find_homologous_antigens_for_sera_of_chart(Chart& aChart) const;
-        // std::string serum_date(const SerumData& aSerum) const;
-
-        //   // name is just (international) name without reassortant/passage
-
-        // inline AntigenRefs all_antigens() const { return mAntigens.all(*this); }
-
-        // std::vector<std::string> all_countries() const;
-        // std::vector<std::string> unrecognized_locations() const;
         // void stat_antigens(HiDbStat& aStat, std::string aStart, std::string aEnd) const;
         // void stat_sera(HiDbStat& aStat, HiDbStat* aStatUnique, std::string aStart, std::string aEnd) const;
-
 
         void save(std::string aFilename) const;
 
@@ -182,7 +164,6 @@ namespace hidb
     }; // class HiDb
 
 // ----------------------------------------------------------------------
-
 
 } // namespace hidb
 
