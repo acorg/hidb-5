@@ -35,7 +35,7 @@ namespace hidb
 
         std::string_view location() const;
         std::string_view isolation() const;
-        std::string_view year() const;
+        std::string year() const;
 
      private:
         const char* mAntigen;

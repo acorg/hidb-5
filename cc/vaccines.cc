@@ -74,8 +74,9 @@ void hidb::vaccines_for_name(Vaccines& aVaccines, std::string aName, const acmac
             auto [hidb_antigen, hidb_antigen_index] = hidb_antigens->find(*chart_antigen);
             std::vector<hidb::Vaccines::HomologousSerum> homologous_sera;
             for (auto sd: hidb_sera->find_homologous(hidb_antigen_index, *hidb_antigen)) {
-                if (const auto sr_no = chart_sera->find_by_full_name(sd->full_name()))
+                if (const auto sr_no = chart_sera->find_by_full_name(virus_type + "/" + sd->full_name())) {
                     homologous_sera.emplace_back(*sr_no, (*chart_sera)[*sr_no], sd, hidb.tables()->most_recent(sd->tables()));
+                }
             }
             aVaccines.add(ag_no, chart_antigen, hidb_antigen, hidb.tables()->most_recent(hidb_antigen->tables()), std::move(homologous_sera));
         }

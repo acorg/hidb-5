@@ -81,7 +81,7 @@ std::string_view hidb::Antigen::isolation() const
 
 // ----------------------------------------------------------------------
 
-std::string_view hidb::Antigen::year() const
+std::string hidb::Antigen::year() const
 {
     return reinterpret_cast<const hidb::bin::Antigen*>(mAntigen)->year();
 
@@ -574,13 +574,16 @@ std::vector<std::shared_ptr<hidb::Serum>> hidb::Sera::find(const acmacs::chart::
 std::vector<std::shared_ptr<hidb::Serum>> hidb::Sera::find_homologous(size_t aAntigenIndex, const Antigen& aAntigen) const
 {
     const first_last_t all_sera(reinterpret_cast<const hidb::bin::ast_offset_t*>(mIndex), mNumberOfSera);
-    const first_last_t first_last = find_by<hidb::bin::Serum>(all_sera, mSerum0, aAntigen.location(), aAntigen.isolation(), aAntigen.year());
+    const std::string antigen_year(aAntigen.year());
+    const first_last_t first_last = find_by<hidb::bin::Serum>(all_sera, mSerum0, aAntigen.location(), aAntigen.isolation(), std::string_view(antigen_year));
     std::vector<std::shared_ptr<hidb::Serum>> result;
     for (auto offset_p = first_last.first; offset_p != first_last.last; ++offset_p) {
         const auto [num_homologous, first_homologous_p] = reinterpret_cast<const hidb::bin::Serum*>(mSerum0 + *offset_p)->homologous_antigens();
-        if (std::find(first_homologous_p, first_homologous_p + num_homologous, aAntigenIndex) != (first_homologous_p + num_homologous))
+        if (std::find(first_homologous_p, first_homologous_p + num_homologous, aAntigenIndex) != (first_homologous_p + num_homologous)) {
             result.push_back(std::make_shared<hidb::Serum>(mSerum0 + *offset_p));
+        }
     }
+    // std::cerr << "find_homologous " << aAntigenIndex << ' ' << aAntigen.full_name() << ' ' << result.size() << '\n';
     return result;
 
 } // hidb::Sera::find_homologous
