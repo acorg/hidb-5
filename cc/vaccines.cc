@@ -65,15 +65,16 @@ void hidb::vaccines_for_name(Vaccines& aVaccines, std::string aName, const acmac
     const auto virus_type = aChart.info()->virus_type();
     const auto& hidb = hidb::get(virus_type, aVerbose ? report_time::Yes : report_time::No);
     auto hidb_antigens = hidb.antigens();
+    auto hidb_sera = hidb.sera();
     for (size_t ag_no: aChart.antigens()->find_by_name(virus_type + "/" + aName)) {
         try {
             auto chart_antigen = aChart.antigen(ag_no);
-            auto hidb_antigen = hidb_antigens->find(*chart_antigen);
+            auto [hidb_antigen, hidb_antigen_index] = hidb_antigens->find(*chart_antigen);
             std::vector<hidb::Vaccines::HomologousSerum> homologous_sera;
-            // for (const auto* sd: hidb.find_homologous_sera(hidb_antigen)) {
-            //     if (const auto sr_no = aChart.sera().find_by_full_name(hidb::name_for_exact_matching(sd->data())))
-            //         homologous_sera.emplace_back(*sr_no, static_cast<const Serum*>(&aChart.serum(*sr_no)), sd, hidb.charts()[sd->most_recent_table().table_id()].chart_info().date());
-            // }
+            for (auto sd: hidb_sera->find_homologous(hidb_antigen_index, *hidb_antigen)) {
+                // if (const auto sr_no = aChart.sera().find_by_full_name(hidb::name_for_exact_matching(sd->data())))
+                //     homologous_sera.emplace_back(*sr_no, static_cast<const Serum*>(&aChart.serum(*sr_no)), sd, hidb.charts()[sd->most_recent_table().table_id()].chart_info().date());
+            }
             aVaccines.add(ag_no, chart_antigen, hidb_antigen, hidb.tables()->most_recent(hidb_antigen->tables()), std::move(homologous_sera));
         }
         catch (hidb::not_found&) {
