@@ -26,9 +26,9 @@ std::string hidb::bin::Antigen::name() const
 {
     const auto y = year();
     if (y[0])
-        return string::join("/", {std::string{host()}, std::string{location()}, std::string{isolation()}, y});
+        return string::join("/", {host(), location(), isolation(), std::string_view{y}});
     else
-        return string::join(" ", {std::string{location()}, std::string{isolation()}}); // cdc name
+        return string::join(" ", {location(), isolation()}); // cdc name
 
 } // hidb::bin::Antigen::name
 
@@ -41,7 +41,7 @@ std::string hidb::bin::Antigen::date() const
     const std::string brief = std::to_string(*reinterpret_cast<const date_t*>(_start() + date_offset));
     if (brief.size() != 8)
         return brief;
-    return string::join("-", {brief.substr(0, 4), brief.substr(4, 2), brief.substr(6, 2)});
+    return string::join("-", {std::string_view(brief.data(), 4), std::string_view(brief.data() + 4, 2), std::string_view(brief.data() + 6, 2)});
 
 } // hidb::bin::Antigen::date
 
@@ -81,7 +81,7 @@ std::vector<std::string> hidb::bin::Antigen::annotations() const
 std::string hidb::bin::Serum::name() const
 {
       // host, location, year are empty if name was not recognized
-    return string::join("/", {std::string{host()}, std::string{location()}, std::string{isolation()}, year()});
+    return string::join("/", {host(), location(), isolation(), std::string_view(year())});
 
 } // hidb::bin::Serum::name
 
