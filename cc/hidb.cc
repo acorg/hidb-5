@@ -581,6 +581,26 @@ hidb::SerumPList hidb::Sera::find(const acmacs::chart::Sera& aSera) const
 
 // ----------------------------------------------------------------------
 
+hidb::AntigenPList hidb::Antigens::date_range(std::string first, std::string after_last) const
+{
+    hidb::AntigenPList result;
+    return result;
+
+    // if (first.empty()) {
+    //     if (!after_last.empty())
+    //         erase(std::remove_if(begin(), end(), after_end), end());
+    // }
+    // else {
+    //     if (after_last.empty())
+    //         erase(std::remove_if(begin(), end(), before_begin), end());
+    //     else
+    //         erase(std::remove_if(begin(), end(), not_between), end());
+    // }
+
+} // hidb::Antigens::date_range
+
+// ----------------------------------------------------------------------
+
 hidb::SerumPList hidb::Sera::find_homologous(size_t aAntigenIndex, const Antigen& aAntigen) const
 {
     const first_last_t all_sera(reinterpret_cast<const hidb::bin::ast_offset_t*>(mIndex), mNumberOfSera);
