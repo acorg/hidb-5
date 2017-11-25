@@ -58,7 +58,7 @@ namespace hidb
         AntigenP at(size_t aIndex) const;
         AntigenPIndexList find(std::string aName, bool aFixLocation) const;
         AntigenPList find_labid(std::string labid) const;
-        std::pair<AntigenP, size_t> find(const acmacs::chart::Antigen& aAntigen) const; // find_antigen_of_chart
+        AntigenPIndex find(const acmacs::chart::Antigen& aAntigen) const; // find_antigen_of_chart
         AntigenPList find(const acmacs::chart::Antigens& aAntigens) const;
 
      private:
@@ -94,7 +94,8 @@ namespace hidb
 
     using SerumP = std::shared_ptr<Serum>;
     using SerumPList = std::vector<SerumP>;
-    using SerumPIndexList = std::vector<std::pair<SerumP, size_t>>;
+    using SerumPIndex = std::pair<SerumP, size_t>;
+    using SerumPIndexList = std::vector<SerumPIndex>;
 
     class Sera : public acmacs::chart::Sera
     {
@@ -106,9 +107,9 @@ namespace hidb
         inline std::shared_ptr<acmacs::chart::Serum> operator[](size_t aIndex) const override { return at(aIndex); }
         SerumP at(size_t aIndex) const;
         SerumPIndexList find(std::string aName, bool aFixLocation) const;
-        std::pair<SerumP, size_t> find(const acmacs::chart::Serum& aSerum) const; // find_serum_of_chart
-        std::vector<SerumP> find(const acmacs::chart::Sera& aSera) const;
-        std::vector<SerumP> find_homologous(size_t aAntigenIndex, const Antigen& aAntigen) const; // for vaccines
+        SerumPIndex find(const acmacs::chart::Serum& aSerum) const; // find_serum_of_chart
+        SerumPList find(const acmacs::chart::Sera& aSera) const;
+        SerumPList find_homologous(size_t aAntigenIndex, const Antigen& aAntigen) const; // for vaccines
 
      private:
         size_t mNumberOfSera;
