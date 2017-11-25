@@ -44,7 +44,8 @@ namespace hidb
 
     using AntigenP = std::shared_ptr<Antigen>;
     using AntigenPList = std::vector<AntigenP>;
-    using AntigenPIndexList = std::vector<std::pair<AntigenP, size_t>>;
+    using AntigenPIndex = std::pair<AntigenP, size_t>;
+    using AntigenPIndexList = std::vector<AntigenPIndex>;
 
     class Antigens : public acmacs::chart::Antigens
     {
