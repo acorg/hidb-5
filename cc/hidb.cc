@@ -584,18 +584,15 @@ hidb::SerumPList hidb::Sera::find(const acmacs::chart::Sera& aSera) const
 hidb::AntigenPList hidb::Antigens::date_range(std::string first, std::string after_last) const
 {
     hidb::AntigenPList result;
+    const auto min_date = !first.empty() ? hidb::bin::Antigen::make_date(first) : hidb::bin::Antigen::min_date();
+    const auto max_date = !after_last.empty() ? hidb::bin::Antigen::make_date(after_last) : hidb::bin::Antigen::max_date();
+    const first_last_t all_antigens(reinterpret_cast<const hidb::bin::ast_offset_t*>(mIndex), mNumberOfAntigens);
+    for (auto ag = all_antigens.first; ag != all_antigens.last; ++ag) {
+        const auto date = reinterpret_cast<const hidb::bin::Antigen*>(this->mAntigen0 + *ag)->date_raw();
+        if (date >= min_date && date < max_date)
+            result.push_back(std::make_shared<Antigen>(this->mAntigen0 + *ag));
+    }
     return result;
-
-    // if (first.empty()) {
-    //     if (!after_last.empty())
-    //         erase(std::remove_if(begin(), end(), after_end), end());
-    // }
-    // else {
-    //     if (after_last.empty())
-    //         erase(std::remove_if(begin(), end(), before_begin), end());
-    //     else
-    //         erase(std::remove_if(begin(), end(), not_between), end());
-    // }
 
 } // hidb::Antigens::date_range
 

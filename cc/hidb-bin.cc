@@ -34,6 +34,31 @@ std::string hidb::bin::Antigen::name() const
 
 // ----------------------------------------------------------------------
 
+hidb::bin::date_t hidb::bin::Antigen::make_date(std::string aDate)
+{
+    std::string compacted;
+    if (aDate.size() == 10 && aDate[4] == '-' && aDate[7] == '-')
+        compacted = aDate.substr(0, 4) + aDate.substr(5, 2) + aDate.substr(8, 2);
+    else if (aDate.size() == 8)
+        compacted = aDate;
+    else
+        throw invalid_date{};
+    return static_cast<date_t>(stoul(compacted));
+
+} // hidb::bin::Antigen::make_date
+
+// ----------------------------------------------------------------------
+
+hidb::bin::date_t hidb::bin::Antigen::date_raw() const
+{
+    if (date_offset == table_index_offset)
+        return min_date();
+    return *reinterpret_cast<const date_t*>(_start() + date_offset);
+
+} // hidb::bin::Antigen::date_raw
+
+// ----------------------------------------------------------------------
+
 std::string hidb::bin::Antigen::date() const
 {
     if (date_offset == table_index_offset)

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <stdexcept>
 #include <cinttypes>
 
 // ----------------------------------------------------------------------
@@ -16,6 +17,8 @@ namespace hidb::bin
     using homologous_t = uint32_t;
     using antigen_index_t = uint32_t;
     using serum_index_t = uint32_t;
+
+    class invalid_date : public std::exception {};
 
     struct Header
     {
@@ -55,6 +58,7 @@ namespace hidb::bin
 
         std::string name() const;
         std::string date() const;
+        date_t date_raw() const;
         inline std::string_view host() const { return {_start(), static_cast<size_t>(location_offset)}; }
         inline std::string_view location() const { return {_start() + location_offset, static_cast<size_t>(isolation_offset - location_offset)}; }
         inline std::string_view isolation() const { return {_start() + isolation_offset, static_cast<size_t>(passage_offset - isolation_offset)}; }
@@ -71,6 +75,10 @@ namespace hidb::bin
             }
 
         inline const char* _start() const { return reinterpret_cast<const char*>(this) + sizeof(*this); }
+
+        static date_t make_date(std::string aDate); // throws invalid_date
+        constexpr static date_t min_date() { return 10000101; }
+        constexpr static date_t max_date() { return 30000101; }
 
     }; // struct Antigen
 

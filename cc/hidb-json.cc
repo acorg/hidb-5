@@ -145,12 +145,6 @@ size_t make_antigen(const rjson::object& aSource, hidb::bin::Antigen* aTarget)
             throw std::runtime_error("Overflow when setting offset for a field (antigen): " + acmacs::to_string(off) + " when processing " + aSource.to_json());
         offset = static_cast<std::decay_t<decltype(offset)>>(off);
     };
-    auto convert_date = [&aSource](std::string date) -> hidb::bin::date_t {
-        if (date.size() != 10)
-            throw std::runtime_error("Invalid date in " + aSource.to_json());
-        const std::string compacted = date.substr(0, 4) + date.substr(5, 2) + date.substr(8, 2);
-        return static_cast<hidb::bin::date_t>(stoul(compacted));
-    };
 
     auto* target = target_base;
     if (auto host = aSource.get_or_default("H", ""); !host.empty()) {
@@ -220,9 +214,14 @@ size_t make_antigen(const rjson::object& aSource, hidb::bin::Antigen* aTarget)
     set_offset(aTarget->date_offset, target);
     if (const auto& dates = aSource.get_or_empty_array("D"); !dates.empty()) {
         for (size_t date_no = 0; date_no < dates.size(); ++date_no) {
-            const auto date = convert_date(dates[date_no]);
-            std::memmove(target, &date, sizeof(date));
-            target += sizeof(date);
+            try {
+                const auto date = hidb::bin::Antigen::make_date(dates[date_no]);
+                std::memmove(target, &date, sizeof(date));
+                target += sizeof(date);
+            }
+            catch (hidb::bin::invalid_date&) {
+                throw std::runtime_error("Invalid date in " + aSource.to_json());
+            }
         }
     }
 
