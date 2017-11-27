@@ -7,7 +7,7 @@ MAKEFLAGS = -w
 # ----------------------------------------------------------------------
 
 TARGETS = \
-	$(DIST)/hidb-make \
+	$(DIST)/hidb5-make \
 	$(DIST)/hidb5-convert \
 	$(DIST)/hidb5-stat \
 	$(DIST)/hidb5-find \
@@ -44,7 +44,7 @@ all: check-acmacsd-root $(TARGETS)
 
 install: check-acmacsd-root install-headers $(TARGETS)
 	$(call install_lib,$(HIDB_LIB))
-	ln -sf $(abspath dist)/hidb* $(AD_BIN)
+	ln -sf $(abspath dist)/hidb5* $(AD_BIN)
 
 test: install
 	test/test
@@ -61,7 +61,7 @@ $(HIDB_LIB): $(patsubst %.cc,$(BUILD)/%.o,$(HIDB_SOURCES)) | $(DIST)
 	@printf "%-16s %s\n" "SHARED" $@
 	@$(call make_shared,$(HIDB_LIB_NAME),$(HIDB_LIB_MAJOR),$(HIDB_LIB_MINOR)) $(LDFLAGS) -o $@ $^ $(LDLIBS)
 
-$(DIST)/hidb-make: $(patsubst %.cc,$(BUILD)/%.o,$(HIDB_MAKE_SOURCES)) | $(DIST)
+$(DIST)/hidb5-make: $(patsubst %.cc,$(BUILD)/%.o,$(HIDB_MAKE_SOURCES)) | $(DIST)
 	@printf "%-16s %s\n" "LINK" $@
 	@$(CXX) $(LDFLAGS) -o $@ $^ $(LDLIBS)
 
