@@ -172,6 +172,8 @@ namespace hidb
         std::shared_ptr<Sera> sera() const;
         std::shared_ptr<Tables> tables() const;
 
+        inline std::string_view lab(const Antigen& aAntigen, const Tables& aTables) const { return aTables[aAntigen.tables()[0]]->lab(); }
+
         // void find_homologous_antigens_for_sera_of_chart(Chart& aChart) const; // sets homologous_antigen attribute in chart
         // std::string serum_date(const SerumData& aSerum) const; // for stat
 
