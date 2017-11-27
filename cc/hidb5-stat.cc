@@ -1,6 +1,7 @@
 #include <cstdlib>
 #include <tuple>
 #include <map>
+#include <set>
 #include <regex>
 
 #include "acmacs-base/argc-argv.hh"
@@ -20,6 +21,7 @@ static void make(std::string aStart, std::string aEnd, std::string aFilename);
 static data_t scan_antigens(std::string aStart, std::string aEnd);
 static std::pair<data_t, data_t> scan_sera(std::string aStart, std::string aEnd);
 static void update(data_t& data, std::string virus_type, std::string lab, std::string date, std::string continent, acmacs::chart::BLineage lineage, std::string full_name);
+static void report(const data_t& data, std::string name);
 static std::string make_json(const data_t& data_antigens, const data_t& data_sera, const data_t& data_sera_unique);
 static std::string get_date(std::string aDate);
 
@@ -61,29 +63,53 @@ void make(std::string aStart, std::string aEnd, std::string aFilename)
     auto [data_sera, data_sera_unique] = scan_sera(aStart, aEnd);
     acmacs::file::write(aFilename, make_json(data_antigens, data_sera, data_sera_unique));
 
-    std::cout << "\nAntigens:\n";
-    for (std::string virus_type: {"A(H1N1)", "A(H3N2)", "B"}) {
-        std::cout << std::setw(9) << std::left << virus_type << ": " << data_antigens[std::make_tuple(virus_type, "all",  "all",   "all")] << '\n';
-        if (virus_type == "B") {
-            for (std::string lineage: {"VICTORIA", "YAMAGATA", "UNKNOWN"}) {
-                auto vtl = virus_type + lineage;
-                std::cout << std::setw(9) << std::left << vtl << ": " << data_antigens[std::make_tuple(vtl, "all",  "all",   "all")] << '\n';
-            }
-        }
-    }
+    report(data_antigens, "Antigens");
+    report(data_sera, "Sera");
+    report(data_sera_unique, "Sera unique");
 
-    std::cout << "\nSera:\n";
-    for (std::string virus_type: {"A(H1N1)", "A(H3N2)", "B"}) {
-        std::cout << std::setw(9) << std::left << virus_type << ": " << data_sera[std::make_tuple(virus_type, "all",  "all",   "all")] << '\n';
-        if (virus_type == "B") {
-            for (std::string lineage: {"VICTORIA", "YAMAGATA", "UNKNOWN"}) {
-                auto vtl = virus_type + lineage;
-                std::cout << std::setw(9) << std::left << vtl << ": " << data_sera[std::make_tuple(vtl, "all",  "all",   "all")] << '\n';
-            }
-        }
-    }
+    // std::cout << "\nAntigens:\n";
+    // for (std::string virus_type: {"A(H1N1)", "A(H3N2)", "B"}) {
+    //     std::cout << std::setw(9) << std::left << virus_type << ": " << data_antigens[std::make_tuple(virus_type, "all",  "all",   "all")] << '\n';
+    //     if (virus_type == "B") {
+    //         for (std::string lineage: {"VICTORIA", "YAMAGATA", "UNKNOWN"}) {
+    //             auto vtl = virus_type + lineage;
+    //             std::cout << "  " << std::setw(9) << std::left << vtl << ": " << data_antigens[std::make_tuple(vtl, "all",  "all",   "all")] << '\n';
+    //         }
+    //     }
+    // }
+
+    // std::cout << "\nSera:\n";
+    // for (std::string virus_type: {"A(H1N1)", "A(H3N2)", "B"}) {
+    //     std::cout << std::setw(9) << std::left << virus_type << ": " << data_sera[std::make_tuple(virus_type, "all",  "all",   "all")] << '\n';
+    //     if (virus_type == "B") {
+    //         for (std::string lineage: {"VICTORIA", "YAMAGATA", "UNKNOWN"}) {
+    //             auto vtl = virus_type + lineage;
+    //             std::cout << "  " << std::setw(9) << std::left << vtl << ": " << data_sera[std::make_tuple(vtl, "all",  "all",   "all")] << '\n';
+    //         }
+    //     }
+    // }
 
 } // make
+
+// ----------------------------------------------------------------------
+
+void report(const data_t& data, std::string name)
+{
+    std::cout << '\n' << name << ":\n";
+    for (std::string virus_type: {"A(H1N1)", "A(H3N2)", "B"}) {
+        if (const auto found = data.find(std::make_tuple(virus_type, "all",  "all",   "all")); found != data.end()) {
+            std::cout << "  " << std::setw(9) << std::left << virus_type << ": " << found->second << '\n';
+            if (virus_type == "B") {
+                for (std::string lineage: {"VICTORIA", "YAMAGATA", "UNKNOWN"}) {
+                    const auto vtl = virus_type + lineage;
+                    if (const auto found2 = data.find(std::make_tuple(vtl, "all",  "all",   "all")); found2 != data.end())
+                        std::cout << "  " << std::setw(9) << std::left << vtl << ": " << found2->second << '\n';
+                }
+            }
+        }
+    }
+
+} // report
 
 // ----------------------------------------------------------------------
 
@@ -194,6 +220,7 @@ std::pair<data_t, data_t> scan_sera(std::string aStart, std::string aEnd)
         auto sera = hidb.sera();
         auto antigens = hidb.antigens();
         auto tables = hidb.tables();
+        std::set<std::string> names;
         for (size_t sr_no = 0; sr_no < sera->size(); ++sr_no) {
             auto serum = sera->at(sr_no);
 
@@ -209,7 +236,12 @@ std::pair<data_t, data_t> scan_sera(std::string aStart, std::string aEnd)
                 date += "99";
 
             if (date >= aStart && date < aEnd) {
-                update(data_sera, virus_type, std::string(hidb.lab(*serum, *tables)), date, locdb.continent(std::string(serum->location()), "UNKNOWN"), serum->lineage(), serum->full_name());
+                update(data_sera_unique, virus_type, std::string(hidb.lab(*serum, *tables)), date, locdb.continent(std::string(serum->location()), "UNKNOWN"), serum->lineage(), serum->full_name());
+                const auto name = serum->name();
+                if (names.find(name) == names.end()) {
+                    names.insert(name);
+                    update(data_sera, virus_type, std::string(hidb.lab(*serum, *tables)), date, locdb.continent(std::string(serum->location()), "UNKNOWN"), serum->lineage(), serum->full_name());
+                }
                 min_date = std::min(min_date, date);
                 max_date = std::max(max_date, date);
             }
