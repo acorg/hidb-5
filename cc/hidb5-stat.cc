@@ -19,6 +19,7 @@ using data_t = std::map<data_key_t, size_t>;
 static void make(std::string aStart, std::string aEnd, std::string aFilename);
 static data_t scan_antigens(std::string aStart, std::string aEnd);
 static std::pair<data_t, data_t> scan_sera(std::string aStart, std::string aEnd);
+static void update(data_t& data, std::string virus_type, std::string lab, std::string date, std::string continent, acmacs::chart::BLineage lineage, std::string full_name);
 static std::string make_json(const data_t& data_antigens, const data_t& data_sera, const data_t& data_sera_unique);
 static std::string get_date(std::string aDate);
 
@@ -86,10 +87,71 @@ void make(std::string aStart, std::string aEnd, std::string aFilename)
 
 // ----------------------------------------------------------------------
 
+void update(data_t& data, std::string virus_type, std::string lab, std::string date, std::string continent, acmacs::chart::BLineage lineage, std::string full_name)
+{
+    const std::string all = "all";
+    std::string year = date.substr(0, 4);
+
+    ++data[std::make_tuple(virus_type, lab, date, continent)];
+    ++data[std::make_tuple(virus_type, lab, year, continent)];
+    ++data[std::make_tuple(virus_type, lab, date, all)];
+    ++data[std::make_tuple(virus_type, lab, year, all)];
+    ++data[std::make_tuple(virus_type, lab, all,  continent)];
+    ++data[std::make_tuple(virus_type, lab, all,  all)];
+    ++data[std::make_tuple(virus_type, all, date, continent)];
+    ++data[std::make_tuple(virus_type, all, year, continent)];
+    ++data[std::make_tuple(virus_type, all, date, all)];
+    ++data[std::make_tuple(virus_type, all, year, all)];
+    ++data[std::make_tuple(virus_type, all, all,  continent)];
+    ++data[std::make_tuple(virus_type, all, all,  all)];
+    ++data[std::make_tuple(all,        lab, date, continent)];
+    ++data[std::make_tuple(all,        lab, year, continent)];
+    ++data[std::make_tuple(all,        lab, date, all)];
+    ++data[std::make_tuple(all,        lab, year, all)];
+    ++data[std::make_tuple(all,        lab, all,  continent)];
+    ++data[std::make_tuple(all,        lab, all,  all)];
+    ++data[std::make_tuple(all,        all, date, continent)];
+    ++data[std::make_tuple(all,        all, year, continent)];
+    ++data[std::make_tuple(all,        all, date, all)];
+    ++data[std::make_tuple(all,        all, year, all)];
+    ++data[std::make_tuple(all,        all, all,  continent)];
+    ++data[std::make_tuple(all,        all, all,  all)];
+
+    if (virus_type == "B") {
+        std::string vtl;
+        switch (lineage) {
+          case acmacs::chart::BLineage::Victoria:
+              vtl = "BVICTORIA";
+              break;
+          case acmacs::chart::BLineage::Yamagata:
+              vtl = "BYAMAGATA";
+              break;
+          case acmacs::chart::BLineage::Unknown:
+              vtl = "BUNKNOWN";
+              std::cerr << "WARNING: no lineage for " << full_name << '\n';
+              break;
+        }
+        ++data[std::make_tuple(vtl, lab, date, continent)];
+        ++data[std::make_tuple(vtl, lab, year, continent)];
+        ++data[std::make_tuple(vtl, lab, date, all)];
+        ++data[std::make_tuple(vtl, lab, year, all)];
+        ++data[std::make_tuple(vtl, lab, all,  continent)];
+        ++data[std::make_tuple(vtl, lab, all,  all)];
+        ++data[std::make_tuple(vtl, all, date, continent)];
+        ++data[std::make_tuple(vtl, all, year, continent)];
+        ++data[std::make_tuple(vtl, all, date, all)];
+        ++data[std::make_tuple(vtl, all, year, all)];
+        ++data[std::make_tuple(vtl, all, all,  continent)];
+        ++data[std::make_tuple(vtl, all, all,  all)];
+    }
+
+} // update
+
+// ----------------------------------------------------------------------
+
 data_t scan_antigens(std::string aStart, std::string aEnd)
 {
     auto& locdb = get_locdb();
-    const std::string all = "all";
 
     data_t data_antigens;
     std::string min_date{"3000"}, max_date{"1000"};
@@ -105,63 +167,7 @@ data_t scan_antigens(std::string aStart, std::string aEnd)
             else if (date.size() == 4)
                 date += "99";
             if (date >= aStart && date < aEnd) {
-                std::string continent = locdb.continent(std::string(antigen->location()), "UNKNOWN");
-                std::string year = date.substr(0, 4);
-                std::string lab(hidb.lab(*antigen, *tables));
-
-                ++data_antigens[std::make_tuple(virus_type, lab, date, continent)];
-                ++data_antigens[std::make_tuple(virus_type, lab, year, continent)];
-                ++data_antigens[std::make_tuple(virus_type, lab, date, all)];
-                ++data_antigens[std::make_tuple(virus_type, lab, year, all)];
-                ++data_antigens[std::make_tuple(virus_type, lab, all,  continent)];
-                ++data_antigens[std::make_tuple(virus_type, lab, all,  all)];
-                ++data_antigens[std::make_tuple(virus_type, all, date, continent)];
-                ++data_antigens[std::make_tuple(virus_type, all, year, continent)];
-                ++data_antigens[std::make_tuple(virus_type, all, date, all)];
-                ++data_antigens[std::make_tuple(virus_type, all, year, all)];
-                ++data_antigens[std::make_tuple(virus_type, all, all,  continent)];
-                ++data_antigens[std::make_tuple(virus_type, all, all,  all)];
-                ++data_antigens[std::make_tuple(all,        lab, date, continent)];
-                ++data_antigens[std::make_tuple(all,        lab, year, continent)];
-                ++data_antigens[std::make_tuple(all,        lab, date, all)];
-                ++data_antigens[std::make_tuple(all,        lab, year, all)];
-                ++data_antigens[std::make_tuple(all,        lab, all,  continent)];
-                ++data_antigens[std::make_tuple(all,        lab, all,  all)];
-                ++data_antigens[std::make_tuple(all,        all, date, continent)];
-                ++data_antigens[std::make_tuple(all,        all, year, continent)];
-                ++data_antigens[std::make_tuple(all,        all, date, all)];
-                ++data_antigens[std::make_tuple(all,        all, year, all)];
-                ++data_antigens[std::make_tuple(all,        all, all,  continent)];
-                ++data_antigens[std::make_tuple(all,        all, all,  all)];
-
-                if (virus_type == "B") {
-                    std::string vtl;
-                    switch (antigen->lineage()) {
-                      case acmacs::chart::BLineage::Victoria:
-                          vtl = "BVICTORIA";
-                          break;
-                      case acmacs::chart::BLineage::Yamagata:
-                          vtl = "BYAMAGATA";
-                          break;
-                      case acmacs::chart::BLineage::Unknown:
-                          vtl = "BUNKNOWN";
-                          std::cerr << "WARNING: no lineage for " << antigen->full_name() << '\n';
-                          break;
-                    }
-                    ++data_antigens[std::make_tuple(vtl, lab, date, continent)];
-                    ++data_antigens[std::make_tuple(vtl, lab, year, continent)];
-                    ++data_antigens[std::make_tuple(vtl, lab, date, all)];
-                    ++data_antigens[std::make_tuple(vtl, lab, year, all)];
-                    ++data_antigens[std::make_tuple(vtl, lab, all,  continent)];
-                    ++data_antigens[std::make_tuple(vtl, lab, all,  all)];
-                    ++data_antigens[std::make_tuple(vtl, all, date, continent)];
-                    ++data_antigens[std::make_tuple(vtl, all, year, continent)];
-                    ++data_antigens[std::make_tuple(vtl, all, date, all)];
-                    ++data_antigens[std::make_tuple(vtl, all, year, all)];
-                    ++data_antigens[std::make_tuple(vtl, all, all,  continent)];
-                    ++data_antigens[std::make_tuple(vtl, all, all,  all)];
-                }
-
+                update(data_antigens, virus_type, std::string(hidb.lab(*antigen, *tables)), date, locdb.continent(std::string(antigen->location()), "UNKNOWN"), antigen->lineage(), antigen->full_name());
                 min_date = std::min(min_date, date);
                 max_date = std::max(max_date, date);
             }
@@ -203,63 +209,7 @@ std::pair<data_t, data_t> scan_sera(std::string aStart, std::string aEnd)
                 date += "99";
 
             if (date >= aStart && date < aEnd) {
-                std::string continent = locdb.continent(std::string(serum->location()), "UNKNOWN");
-                std::string year = date.substr(0, 4);
-                std::string lab(hidb.lab(*serum, *tables));
-
-                ++data_sera[std::make_tuple(virus_type, lab, date, continent)];
-                ++data_sera[std::make_tuple(virus_type, lab, year, continent)];
-                ++data_sera[std::make_tuple(virus_type, lab, date, all)];
-                ++data_sera[std::make_tuple(virus_type, lab, year, all)];
-                ++data_sera[std::make_tuple(virus_type, lab, all,  continent)];
-                ++data_sera[std::make_tuple(virus_type, lab, all,  all)];
-                ++data_sera[std::make_tuple(virus_type, all, date, continent)];
-                ++data_sera[std::make_tuple(virus_type, all, year, continent)];
-                ++data_sera[std::make_tuple(virus_type, all, date, all)];
-                ++data_sera[std::make_tuple(virus_type, all, year, all)];
-                ++data_sera[std::make_tuple(virus_type, all, all,  continent)];
-                ++data_sera[std::make_tuple(virus_type, all, all,  all)];
-                ++data_sera[std::make_tuple(all,        lab, date, continent)];
-                ++data_sera[std::make_tuple(all,        lab, year, continent)];
-                ++data_sera[std::make_tuple(all,        lab, date, all)];
-                ++data_sera[std::make_tuple(all,        lab, year, all)];
-                ++data_sera[std::make_tuple(all,        lab, all,  continent)];
-                ++data_sera[std::make_tuple(all,        lab, all,  all)];
-                ++data_sera[std::make_tuple(all,        all, date, continent)];
-                ++data_sera[std::make_tuple(all,        all, year, continent)];
-                ++data_sera[std::make_tuple(all,        all, date, all)];
-                ++data_sera[std::make_tuple(all,        all, year, all)];
-                ++data_sera[std::make_tuple(all,        all, all,  continent)];
-                ++data_sera[std::make_tuple(all,        all, all,  all)];
-
-                if (virus_type == "B") {
-                    std::string vtl;
-                    switch (serum->lineage()) {
-                      case acmacs::chart::BLineage::Victoria:
-                          vtl = "BVICTORIA";
-                          break;
-                      case acmacs::chart::BLineage::Yamagata:
-                          vtl = "BYAMAGATA";
-                          break;
-                      case acmacs::chart::BLineage::Unknown:
-                          vtl = "BUNKNOWN";
-                          std::cerr << "WARNING: no lineage for " << serum->full_name() << '\n';
-                          break;
-                    }
-                    ++data_sera[std::make_tuple(vtl, lab, date, continent)];
-                    ++data_sera[std::make_tuple(vtl, lab, year, continent)];
-                    ++data_sera[std::make_tuple(vtl, lab, date, all)];
-                    ++data_sera[std::make_tuple(vtl, lab, year, all)];
-                    ++data_sera[std::make_tuple(vtl, lab, all,  continent)];
-                    ++data_sera[std::make_tuple(vtl, lab, all,  all)];
-                    ++data_sera[std::make_tuple(vtl, all, date, continent)];
-                    ++data_sera[std::make_tuple(vtl, all, year, continent)];
-                    ++data_sera[std::make_tuple(vtl, all, date, all)];
-                    ++data_sera[std::make_tuple(vtl, all, year, all)];
-                    ++data_sera[std::make_tuple(vtl, all, all,  continent)];
-                    ++data_sera[std::make_tuple(vtl, all, all,  all)];
-                }
-
+                update(data_sera, virus_type, std::string(hidb.lab(*serum, *tables)), date, locdb.continent(std::string(serum->location()), "UNKNOWN"), serum->lineage(), serum->full_name());
                 min_date = std::min(min_date, date);
                 max_date = std::max(max_date, date);
             }
