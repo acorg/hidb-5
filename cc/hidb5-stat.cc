@@ -10,7 +10,11 @@
 
 using namespace std::string_literals;
 
+using data_key_t = std::tuple<std::string, std::string, std::string, std::string>; // virus_type, lab, date, continent
+using data_t = std::map<data_key_t, size_t>;
+
 static void make(std::string aStart, std::string aEnd);
+static std::pair<data_t, data_t> scan(std::string aStart, std::string aEnd);
 static std::string get_date(std::string aDate);
 
 // ----------------------------------------------------------------------
@@ -47,10 +51,27 @@ int main(int argc, char* const argv[])
 
 void make(std::string aStart, std::string aEnd)
 {
-    using key = std::tuple<std::string, std::string, std::string, std::string>; // virus_type, lab, date, continent
+    auto [data_antigens, data_sera] = scan(aStart, aEnd);
+
+    for (std::string virus_type: {"A(H1N1)", "A(H3N2)", "B"}) {
+        std::cout << std::setw(9) << std::left << virus_type << ": " << data_antigens[std::make_tuple(virus_type, "",  "",   "")] << '\n';
+        if (virus_type == "B") {
+            for (std::string lineage: {"VICTORIA", "YAMAGATA", "UNKNOWN"}) {
+                auto vtl = virus_type + lineage;
+                std::cout << std::setw(9) << std::left << vtl << ": " << data_antigens[std::make_tuple(vtl, "",  "",   "")] << '\n';
+            }
+        }
+    }
+
+} // make
+
+// ----------------------------------------------------------------------
+
+std::pair<data_t, data_t> scan(std::string aStart, std::string aEnd)
+{
     auto& locdb = get_locdb();
 
-    std::map<key, size_t> data_antigens;
+    data_t data_antigens;
     std::string min_date{"3000"}, max_date{"1000"};
     for (std::string virus_type: {"A(H1N1)", "A(H3N2)", "B"}) {
         const auto& hidb = hidb::get(virus_type, report_time::No);
@@ -104,6 +125,7 @@ void make(std::string aStart, std::string aEnd)
                           break;
                       case acmacs::chart::BLineage::Unknown:
                           vtl = "BUNKNOWN";
+                          std::cerr << "WARNING: no lineage for " << antigen->full_name() << '\n';
                           break;
                     }
                     ++data_antigens[std::make_tuple(vtl, lab, date, continent)];
@@ -125,19 +147,13 @@ void make(std::string aStart, std::string aEnd)
             }
         }
     }
-
     std::cout << "Dates: " << min_date << " - " << max_date << '\n';
-    for (std::string virus_type: {"A(H1N1)", "A(H3N2)", "B"}) {
-        std::cout << std::setw(9) << std::left << virus_type << ": " << data_antigens[std::make_tuple(virus_type, "",  "",   "")] << '\n';
-        if (virus_type == "B") {
-            for (std::string lineage: {"VICTORIA", "YAMAGATA", "UNKNOWN"}) {
-                auto vtl = virus_type + lineage;
-                std::cout << std::setw(9) << std::left << vtl << ": " << data_antigens[std::make_tuple(vtl, "",  "",   "")] << '\n';
-            }
-        }
-    }
 
-} // make
+    data_t data_sera;
+
+    return {data_antigens, data_sera};
+
+} // scan
 
 // ----------------------------------------------------------------------
 
