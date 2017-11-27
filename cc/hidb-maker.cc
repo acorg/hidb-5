@@ -222,6 +222,7 @@ Antigen* Antigens::add(const acmacs::chart::Antigen& aAntigen)
     (*insert_at)->add_date(aAntigen.date());
     const auto lab_ids{aAntigen.lab_ids()};
     (*insert_at)->add_lab_id(lab_ids.begin(), lab_ids.end());
+    (*insert_at)->update_lineage(aAntigen.lineage());
     return insert_at->get();
 
 } // Antigens::add

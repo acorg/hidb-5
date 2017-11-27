@@ -234,6 +234,16 @@ class Antigen : public AntigenSerum
     template <typename Iter> inline void add_lab_id(Iter first, Iter last) { for (; first != last; ++first) lab_ids.insert(*first); }
     inline void add_date(std::string aSource) { if (!aSource.empty()) dates.insert(aSource); }
 
+    inline void update_lineage(std::string aLineage)
+        {
+            if (!aLineage.empty()) {
+                if (lineage.empty())
+                    lineage = aLineage;
+                else if (lineage != Lineage(aLineage))
+                    std::cerr << "WARNING: conflicting lineages for " << virus_type << '/' << location << '/' << isolation << '/' << year << ": " << lineage << " vs. " << aLineage << '\n';
+            }
+        }
+
     inline std::string type_name() const override { return "Antigen"; }
     std::string to_string() const override;
 
