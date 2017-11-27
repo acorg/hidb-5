@@ -17,8 +17,9 @@ using data_key_t = std::tuple<std::string, std::string, std::string, std::string
 using data_t = std::map<data_key_t, size_t>;
 
 static void make(std::string aStart, std::string aEnd, std::string aFilename);
-static std::pair<data_t, data_t> scan(std::string aStart, std::string aEnd);
-static std::string make_json(const data_t& data_antigens, const data_t& data_sera);
+static data_t scan_antigens(std::string aStart, std::string aEnd);
+static std::pair<data_t, data_t> scan_sera(std::string aStart, std::string aEnd);
+static std::string make_json(const data_t& data_antigens, const data_t& data_sera, const data_t& data_sera_unique);
 static std::string get_date(std::string aDate);
 
 // ----------------------------------------------------------------------
@@ -55,9 +56,11 @@ int main(int argc, char* const argv[])
 
 void make(std::string aStart, std::string aEnd, std::string aFilename)
 {
-    auto [data_antigens, data_sera] = scan(aStart, aEnd);
-    acmacs::file::write(aFilename, make_json(data_antigens, data_sera));
+    auto data_antigens = scan_antigens(aStart, aEnd);
+    auto [data_sera, data_sera_unique] = scan_sera(aStart, aEnd);
+    acmacs::file::write(aFilename, make_json(data_antigens, data_sera, data_sera_unique));
 
+    std::cout << "\nAntigens:\n";
     for (std::string virus_type: {"A(H1N1)", "A(H3N2)", "B"}) {
         std::cout << std::setw(9) << std::left << virus_type << ": " << data_antigens[std::make_tuple(virus_type, "all",  "all",   "all")] << '\n';
         if (virus_type == "B") {
@@ -68,11 +71,22 @@ void make(std::string aStart, std::string aEnd, std::string aFilename)
         }
     }
 
+    std::cout << "\nSera:\n";
+    for (std::string virus_type: {"A(H1N1)", "A(H3N2)", "B"}) {
+        std::cout << std::setw(9) << std::left << virus_type << ": " << data_sera[std::make_tuple(virus_type, "all",  "all",   "all")] << '\n';
+        if (virus_type == "B") {
+            for (std::string lineage: {"VICTORIA", "YAMAGATA", "UNKNOWN"}) {
+                auto vtl = virus_type + lineage;
+                std::cout << std::setw(9) << std::left << vtl << ": " << data_sera[std::make_tuple(vtl, "all",  "all",   "all")] << '\n';
+            }
+        }
+    }
+
 } // make
 
 // ----------------------------------------------------------------------
 
-std::pair<data_t, data_t> scan(std::string aStart, std::string aEnd)
+data_t scan_antigens(std::string aStart, std::string aEnd)
 {
     auto& locdb = get_locdb();
     const std::string all = "all";
@@ -153,17 +167,113 @@ std::pair<data_t, data_t> scan(std::string aStart, std::string aEnd)
             }
         }
     }
-    std::cout << "Dates: " << min_date << " - " << max_date << '\n';
+    std::cout << "Antigen dates: " << min_date << " - " << max_date << '\n';
 
-    data_t data_sera;
+    return data_antigens;
 
-    return {data_antigens, data_sera};
-
-} // scan
+} // scan_antigens
 
 // ----------------------------------------------------------------------
 
-std::string make_json(const data_t& data_antigens, const data_t& data_sera)
+std::pair<data_t, data_t> scan_sera(std::string aStart, std::string aEnd)
+{
+    auto& locdb = get_locdb();
+    const std::string all = "all";
+
+    data_t data_sera, data_sera_unique;
+
+    std::string min_date{"3000"}, max_date{"1000"};
+    for (std::string virus_type: {"A(H1N1)", "A(H3N2)", "B"}) {
+        const auto& hidb = hidb::get(virus_type, report_time::No);
+        auto sera = hidb.sera();
+        auto antigens = hidb.antigens();
+        auto tables = hidb.tables();
+        for (size_t sr_no = 0; sr_no < sera->size(); ++sr_no) {
+            auto serum = sera->at(sr_no);
+
+            std::string date;
+            for (auto ag_no: serum->homologous_antigens()) {
+                date = antigens->at(ag_no)->date_compact().substr(0, 6);
+                if (!date.empty())
+                    break;
+            }
+            if (date.empty())
+                date = serum->year() + "99";
+            else if (date.size() == 4)
+                date += "99";
+
+            if (date >= aStart && date < aEnd) {
+                std::string continent = locdb.continent(std::string(serum->location()), "UNKNOWN");
+                std::string year = date.substr(0, 4);
+                std::string lab(hidb.lab(*serum, *tables));
+
+                ++data_sera[std::make_tuple(virus_type, lab, date, continent)];
+                ++data_sera[std::make_tuple(virus_type, lab, year, continent)];
+                ++data_sera[std::make_tuple(virus_type, lab, date, all)];
+                ++data_sera[std::make_tuple(virus_type, lab, year, all)];
+                ++data_sera[std::make_tuple(virus_type, lab, all,  continent)];
+                ++data_sera[std::make_tuple(virus_type, lab, all,  all)];
+                ++data_sera[std::make_tuple(virus_type, all, date, continent)];
+                ++data_sera[std::make_tuple(virus_type, all, year, continent)];
+                ++data_sera[std::make_tuple(virus_type, all, date, all)];
+                ++data_sera[std::make_tuple(virus_type, all, year, all)];
+                ++data_sera[std::make_tuple(virus_type, all, all,  continent)];
+                ++data_sera[std::make_tuple(virus_type, all, all,  all)];
+                ++data_sera[std::make_tuple(all,        lab, date, continent)];
+                ++data_sera[std::make_tuple(all,        lab, year, continent)];
+                ++data_sera[std::make_tuple(all,        lab, date, all)];
+                ++data_sera[std::make_tuple(all,        lab, year, all)];
+                ++data_sera[std::make_tuple(all,        lab, all,  continent)];
+                ++data_sera[std::make_tuple(all,        lab, all,  all)];
+                ++data_sera[std::make_tuple(all,        all, date, continent)];
+                ++data_sera[std::make_tuple(all,        all, year, continent)];
+                ++data_sera[std::make_tuple(all,        all, date, all)];
+                ++data_sera[std::make_tuple(all,        all, year, all)];
+                ++data_sera[std::make_tuple(all,        all, all,  continent)];
+                ++data_sera[std::make_tuple(all,        all, all,  all)];
+
+                if (virus_type == "B") {
+                    std::string vtl;
+                    switch (serum->lineage()) {
+                      case acmacs::chart::BLineage::Victoria:
+                          vtl = "BVICTORIA";
+                          break;
+                      case acmacs::chart::BLineage::Yamagata:
+                          vtl = "BYAMAGATA";
+                          break;
+                      case acmacs::chart::BLineage::Unknown:
+                          vtl = "BUNKNOWN";
+                          std::cerr << "WARNING: no lineage for " << serum->full_name() << '\n';
+                          break;
+                    }
+                    ++data_sera[std::make_tuple(vtl, lab, date, continent)];
+                    ++data_sera[std::make_tuple(vtl, lab, year, continent)];
+                    ++data_sera[std::make_tuple(vtl, lab, date, all)];
+                    ++data_sera[std::make_tuple(vtl, lab, year, all)];
+                    ++data_sera[std::make_tuple(vtl, lab, all,  continent)];
+                    ++data_sera[std::make_tuple(vtl, lab, all,  all)];
+                    ++data_sera[std::make_tuple(vtl, all, date, continent)];
+                    ++data_sera[std::make_tuple(vtl, all, year, continent)];
+                    ++data_sera[std::make_tuple(vtl, all, date, all)];
+                    ++data_sera[std::make_tuple(vtl, all, year, all)];
+                    ++data_sera[std::make_tuple(vtl, all, all,  continent)];
+                    ++data_sera[std::make_tuple(vtl, all, all,  all)];
+                }
+
+                min_date = std::min(min_date, date);
+                max_date = std::max(max_date, date);
+            }
+        }
+    }
+    std::cout << "Serum dates: " << min_date << " - " << max_date << '\n';
+
+    return {data_sera, data_sera_unique};
+
+} // scan_sera
+
+// ----------------------------------------------------------------------
+
+std::string make_json(const data_t& data_antigens, const data_t& data_sera, const data_t& data_sera_unique)
 {
     rjson::object data{{"antigens", rjson::object{}},
                        {"sera", rjson::object{}},
@@ -174,6 +284,24 @@ std::string make_json(const data_t& data_antigens, const data_t& data_sera)
         auto [virus_type, lab, date, continent] = key;
         rjson::object& antigens = data["antigens"];
         rjson::object& for_vt = antigens.get_or_add(virus_type, rjson::object{});
+        rjson::object& for_lab = for_vt.get_or_add(lab, rjson::object{});
+        rjson::object& for_date = for_lab.get_or_add(date, rjson::object{});
+        for_date.set_field(continent, rjson::integer{value});
+    }
+
+    for (auto [key, value]: data_sera) {
+        auto [virus_type, lab, date, continent] = key;
+        rjson::object& sera = data["sera"];
+        rjson::object& for_vt = sera.get_or_add(virus_type, rjson::object{});
+        rjson::object& for_lab = for_vt.get_or_add(lab, rjson::object{});
+        rjson::object& for_date = for_lab.get_or_add(date, rjson::object{});
+        for_date.set_field(continent, rjson::integer{value});
+    }
+
+    for (auto [key, value]: data_sera_unique) {
+        auto [virus_type, lab, date, continent] = key;
+        rjson::object& sera = data["sera_unique"];
+        rjson::object& for_vt = sera.get_or_add(virus_type, rjson::object{});
         rjson::object& for_lab = for_vt.get_or_add(lab, rjson::object{});
         rjson::object& for_date = for_lab.get_or_add(date, rjson::object{});
         for_date.set_field(continent, rjson::integer{value});

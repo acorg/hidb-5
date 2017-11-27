@@ -89,6 +89,10 @@ namespace hidb
         indexes_t tables() const;
         size_t number_of_tables() const;
 
+        std::string_view location() const;
+        std::string_view isolation() const;
+        std::string year() const;
+
      private:
         const char* mSerum;
 
@@ -173,6 +177,7 @@ namespace hidb
         std::shared_ptr<Tables> tables() const;
 
         inline std::string_view lab(const Antigen& aAntigen, const Tables& aTables) const { return aTables[aAntigen.tables()[0]]->lab(); }
+        inline std::string_view lab(const Serum& aSerum, const Tables& aTables) const { return aTables[aSerum.tables()[0]]->lab(); }
 
         // void find_homologous_antigens_for_sera_of_chart(Chart& aChart) const; // sets homologous_antigen attribute in chart
         // std::string serum_date(const SerumData& aSerum) const; // for stat

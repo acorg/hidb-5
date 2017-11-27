@@ -280,6 +280,30 @@ size_t hidb::Serum::number_of_tables() const
 
 // ----------------------------------------------------------------------
 
+std::string_view hidb::Serum::location() const
+{
+    return reinterpret_cast<const hidb::bin::Serum*>(mSerum)->location();
+
+} // hidb::Serum::location
+
+// ----------------------------------------------------------------------
+
+std::string_view hidb::Serum::isolation() const
+{
+    return reinterpret_cast<const hidb::bin::Serum*>(mSerum)->isolation();
+
+} // hidb::Serum::isolation
+
+// ----------------------------------------------------------------------
+
+std::string hidb::Serum::year() const
+{
+    return reinterpret_cast<const hidb::bin::Serum*>(mSerum)->year();
+
+} // hidb::Serum::year
+
+// ----------------------------------------------------------------------
+
 std::shared_ptr<hidb::Tables> hidb::HiDb::tables() const
 {
     const auto* tables = mData + reinterpret_cast<const hidb::bin::Header*>(mData)->table_offset;
