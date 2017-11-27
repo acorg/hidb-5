@@ -57,7 +57,7 @@ namespace hidb::bin
         char year_data[4];
 
         std::string name() const;
-        std::string date() const;
+        std::string date(bool compact) const;
         date_t date_raw() const;
         inline std::string_view host() const { return {_start(), static_cast<size_t>(location_offset)}; }
         inline std::string_view location() const { return {_start() + location_offset, static_cast<size_t>(isolation_offset - location_offset)}; }

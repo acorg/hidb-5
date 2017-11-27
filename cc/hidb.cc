@@ -92,9 +92,17 @@ std::string hidb::Antigen::year() const
 
 acmacs::chart::Date hidb::Antigen::date() const
 {
-    return reinterpret_cast<const hidb::bin::Antigen*>(mAntigen)->date();
+    return reinterpret_cast<const hidb::bin::Antigen*>(mAntigen)->date(false);
 
 } // hidb::Antigen::date
+
+// ----------------------------------------------------------------------
+
+std::string hidb::Antigen::date_compact() const
+{
+    return reinterpret_cast<const hidb::bin::Antigen*>(mAntigen)->date(true);
+
+} // hidb::Antigen::date_compact
 
 // ----------------------------------------------------------------------
 

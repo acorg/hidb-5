@@ -59,14 +59,14 @@ hidb::bin::date_t hidb::bin::Antigen::date_raw() const
 
 // ----------------------------------------------------------------------
 
-std::string hidb::bin::Antigen::date() const
+std::string hidb::bin::Antigen::date(bool compact) const
 {
     if (date_offset == table_index_offset)
         return {};
     const std::string brief = std::to_string(*reinterpret_cast<const date_t*>(_start() + date_offset));
     if (brief.size() != 8)
         return brief;
-    return string::join("-", {std::string_view(brief.data(), 4), std::string_view(brief.data() + 4, 2), std::string_view(brief.data() + 6, 2)});
+    return compact ? brief : string::join("-", {std::string_view(brief.data(), 4), std::string_view(brief.data() + 4, 2), std::string_view(brief.data() + 6, 2)});
 
 } // hidb::bin::Antigen::date
 
