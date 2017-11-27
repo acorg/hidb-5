@@ -25,5 +25,5 @@ trap failed ERR
 if [[ "${HOSTNAME}" == "jagd" || "${HOSTNAME}" == "i19" ]]; then
     export LD_LIBRARY_PATH="$ACMACSD_ROOT"/lib
     cd "$TESTDIR"
-    ../dist/hidb-make "$TDIR"/hidb.json.xz ./test.acd1.xz
+    ../dist/hidb5-make "$TDIR"/hidb.json.xz ./test.acd1.xz
 fi
