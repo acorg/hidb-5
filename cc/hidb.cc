@@ -1,6 +1,7 @@
 #include <algorithm>
 
 #include "acmacs-base/string.hh"
+#include "acmacs-base/string-split.hh"
 #include "acmacs-base/virus-name.hh"
 #include "locationdb/locdb.hh"
 #include "hidb-5/hidb.hh"
@@ -447,7 +448,7 @@ hidb::AntigenPIndexList hidb::Antigens::find(std::string aName, bool aFixLocatio
         if (aName.size() > 3 && aName[2] == ' ') // cdc name?
             first_last = find_by<hidb::bin::Antigen>(all_antigens, mAntigen0, std::string_view(aName.data(), 2), std::string_view(aName.data() + 3), std::string_view{});
         if (first_last.empty()) {
-            const auto parts = string::split(aName, "/");
+            const auto parts = acmacs::string::split(aName, "/");
             switch (parts.size()) {
               case 1:           // just location?
                   first_last = find_by<hidb::bin::Antigen>(all_antigens, mAntigen0, parts[0], std::string_view{}, std::string_view{});
@@ -487,7 +488,7 @@ hidb::SerumPIndexList hidb::Sera::find(std::string aName, bool aFixLocation) con
         first_last = find_by<hidb::bin::Serum>(all_sera, mSerum0, location, isolation, year);
     }
     catch (virus_name::Unrecognized&) {
-        const auto parts = string::split(aName, "/");
+        const auto parts = acmacs::string::split(aName, "/");
         switch (parts.size()) {
           case 1:           // just location?
               first_last = find_by<hidb::bin::Serum>(all_sera, mSerum0, parts[0], std::string_view{}, std::string_view{});
