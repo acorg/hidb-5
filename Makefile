@@ -63,11 +63,11 @@ $(HIDB_LIB): $(patsubst %.cc,$(BUILD)/%.o,$(HIDB_SOURCES)) | $(DIST)
 
 $(DIST)/hidb5-make: $(patsubst %.cc,$(BUILD)/%.o,$(HIDB_MAKE_SOURCES)) | $(DIST)
 	@printf "%-16s %s\n" "LINK" $@
-	@$(CXX) $(LDFLAGS) -o $@ $^ $(LDLIBS)
+	@$(CXX) $(LDFLAGS) -o $@ $^ $(LDLIBS) $(AD_RPATH)
 
 $(DIST)/%: $(BUILD)/%.o | $(HIDB_LIB)
 	@printf "%-16s %s\n" "LINK" $@
-	@$(CXX) $(LDFLAGS) -o $@ $^ $(HIDB_LIB) $(LDLIBS)
+	@$(CXX) $(LDFLAGS) -o $@ $^ $(HIDB_LIB) $(LDLIBS) $(AD_RPATH)
 
 # ======================================================================
 ### Local Variables:
