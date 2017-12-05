@@ -47,22 +47,30 @@ std::shared_ptr<hidb::Antigens> hidb::HiDb::antigens() const
     return std::make_shared<hidb::Antigens>(static_cast<size_t>(number_of_antigens),
                                             antigens + sizeof(hidb::bin::ast_number_t),
                                             antigens + sizeof(hidb::bin::ast_number_t) + sizeof(hidb::bin::ast_offset_t) * (number_of_antigens + 1),
-                                            reinterpret_cast<const hidb::bin::Header*>(mData)->virus_type());
+                                            *this);
 
 } // hidb::HiDb::antigens
 
 // ----------------------------------------------------------------------
 
+std::string_view hidb::HiDb::virus_type() const
+{
+    return reinterpret_cast<const hidb::bin::Header*>(mData)->virus_type();
+
+} // hidb::HiDb::virus_type
+
+// ----------------------------------------------------------------------
+
 hidb::AntigenP hidb::Antigens::at(size_t aIndex) const
 {
-    return std::make_shared<hidb::Antigen>(mAntigen0 + reinterpret_cast<const hidb::bin::ast_offset_t*>(mIndex)[aIndex], mVirusType);
+    return std::make_shared<hidb::Antigen>(mAntigen0 + reinterpret_cast<const hidb::bin::ast_offset_t*>(mIndex)[aIndex], mHiDb);
 }
 
 // ----------------------------------------------------------------------
 
 acmacs::chart::Name hidb::Antigen::name() const
 {
-    return reinterpret_cast<const hidb::bin::Antigen*>(mAntigen)->name();
+    return std::string(mHiDb.virus_type()) + "/" + reinterpret_cast<const hidb::bin::Antigen*>(mAntigen)->name();
 
 } // hidb::Antigen::name
 
@@ -180,7 +188,7 @@ std::shared_ptr<hidb::Sera> hidb::HiDb::sera() const
     return std::make_shared<hidb::Sera>(static_cast<size_t>(number_of_sera),
                                         sera + sizeof(hidb::bin::ast_number_t),
                                         sera + sizeof(hidb::bin::ast_number_t) + sizeof(hidb::bin::ast_offset_t) * (number_of_sera + 1),
-                                        reinterpret_cast<const hidb::bin::Header*>(mData)->virus_type());
+                                        *this);
 
 } // hidb::HiDb::sera
 
@@ -188,7 +196,7 @@ std::shared_ptr<hidb::Sera> hidb::HiDb::sera() const
 
 hidb::SerumP hidb::Sera::at(size_t aIndex) const
 {
-    return std::make_shared<hidb::Serum>(mSerum0 + reinterpret_cast<const hidb::bin::ast_offset_t*>(mIndex)[aIndex], mVirusType);
+    return std::make_shared<hidb::Serum>(mSerum0 + reinterpret_cast<const hidb::bin::ast_offset_t*>(mIndex)[aIndex], mHiDb);
 
 } // hidb::Sera::operator[]
 
@@ -196,7 +204,7 @@ hidb::SerumP hidb::Sera::at(size_t aIndex) const
 
 acmacs::chart::Name hidb::Serum::name() const
 {
-    return reinterpret_cast<const hidb::bin::Serum*>(mSerum)->name();
+    return std::string(mHiDb.virus_type()) + "/" + reinterpret_cast<const hidb::bin::Serum*>(mSerum)->name();
 
 } // hidb::Serum::name
 
@@ -470,7 +478,7 @@ hidb::AntigenPIndexList hidb::Antigens::find(std::string aName, bool aFixLocatio
 
     AntigenPIndexList result(first_last.size());
     std::transform(first_last.first, first_last.last, result.begin(),
-                   [this,index_begin=all_antigens.first](const hidb::bin::ast_offset_t& offset) -> AntigenPIndex { return {std::make_shared<Antigen>(this->mAntigen0 + offset, mVirusType), static_cast<size_t>(&offset - index_begin)}; });
+                   [this,index_begin=all_antigens.first](const hidb::bin::ast_offset_t& offset) -> AntigenPIndex { return {std::make_shared<Antigen>(this->mAntigen0 + offset, mHiDb), static_cast<size_t>(&offset - index_begin)}; });
     return result;
 
 } // hidb::Antigens::find
@@ -511,7 +519,7 @@ hidb::SerumPIndexList hidb::Sera::find(std::string aName, bool aFixLocation) con
 
     SerumPIndexList result(first_last.size());
     std::transform(first_last.first, first_last.last, result.begin(),
-                   [this,index_begin=all_sera.first](const hidb::bin::ast_offset_t& offset) -> SerumPIndex { return {std::make_shared<Serum>(this->mSerum0 + offset, mVirusType), static_cast<size_t>(&offset - index_begin)}; });
+                   [this,index_begin=all_sera.first](const hidb::bin::ast_offset_t& offset) -> SerumPIndex { return {std::make_shared<Serum>(this->mSerum0 + offset, mHiDb), static_cast<size_t>(&offset - index_begin)}; });
     return result;
 
 } // hidb::Sera::find
@@ -527,7 +535,7 @@ hidb::AntigenPList hidb::Antigens::find_labid(std::string labid) const
         for (auto ag = all_antigens.first; ag != all_antigens.last; ++ag) {
             const auto lab_ids = reinterpret_cast<const hidb::bin::Antigen*>(this->mAntigen0 + *ag)->lab_ids();
             if (const auto found = std::find(lab_ids.begin(), lab_ids.end(), look_for); found != lab_ids.end())
-                result.push_back(std::make_shared<Antigen>(this->mAntigen0 + *ag, mVirusType));
+                result.push_back(std::make_shared<Antigen>(this->mAntigen0 + *ag, mHiDb));
         }
     };
 
@@ -625,7 +633,7 @@ hidb::AntigenPList hidb::Antigens::date_range(std::string first, std::string aft
     for (auto ag = all_antigens.first; ag != all_antigens.last; ++ag) {
         const auto date = reinterpret_cast<const hidb::bin::Antigen*>(this->mAntigen0 + *ag)->date_raw();
         if (date >= min_date && date < max_date)
-            result.push_back(std::make_shared<Antigen>(this->mAntigen0 + *ag, mVirusType));
+            result.push_back(std::make_shared<Antigen>(this->mAntigen0 + *ag, mHiDb));
     }
     return result;
 
@@ -642,7 +650,7 @@ hidb::SerumPList hidb::Sera::find_homologous(size_t aAntigenIndex, const Antigen
     for (auto offset_p = first_last.first; offset_p != first_last.last; ++offset_p) {
         const auto [num_homologous, first_homologous_p] = reinterpret_cast<const hidb::bin::Serum*>(mSerum0 + *offset_p)->homologous_antigens();
         if (std::find(first_homologous_p, first_homologous_p + num_homologous, aAntigenIndex) != (first_homologous_p + num_homologous)) {
-            result.push_back(std::make_shared<hidb::Serum>(mSerum0 + *offset_p, mVirusType));
+            result.push_back(std::make_shared<hidb::Serum>(mSerum0 + *offset_p, mHiDb));
         }
     }
     // std::cerr << "find_homologous " << aAntigenIndex << ' ' << aAntigen.full_name() << ' ' << result.size() << '\n';
