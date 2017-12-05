@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <string_view>
 #include <stdexcept>
 #include <cinttypes>
 
@@ -27,7 +28,9 @@ namespace hidb::bin
         uint32_t serum_offset;
         uint32_t table_offset;
         uint8_t  virus_type_size;
-        char virus_type[7];
+        char virus_type_[7];
+
+        inline std::string_view virus_type() const { return {virus_type_, virus_type_size}; }
 
     }; // struct Header
 

@@ -63,8 +63,8 @@ std::string hidb::json::read(std::string aData)
     auto* antigen_data = reinterpret_cast<ptr_t>(reinterpret_cast<ptr_t>(antigen_index) + sizeof(hidb::bin::ast_offset_t) * (estimations.number_of_antigens + 1) + sizeof(hidb::bin::ast_number_t));
 
     header_bin->virus_type_size = static_cast<decltype(header_bin->virus_type_size)>(estimations.virus_type.size());
-    std::memset(header_bin->virus_type, 0, static_cast<size_t>(header_bin->virus_type_size));
-    std::memmove(header_bin->virus_type, estimations.virus_type.data(), static_cast<size_t>(header_bin->virus_type_size));
+    std::memset(header_bin->virus_type_, 0, static_cast<size_t>(header_bin->virus_type_size));
+    std::memmove(header_bin->virus_type_, estimations.virus_type.data(), static_cast<size_t>(header_bin->virus_type_size));
 
     Timeit ti_antigens("converting " + acmacs::to_string(estimations.number_of_antigens) + " antigens: ");
     antigen_index->number_of = static_cast<hidb::bin::ast_number_t>(estimations.number_of_antigens);

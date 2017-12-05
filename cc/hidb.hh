@@ -18,7 +18,7 @@ namespace hidb
     class Antigen : public acmacs::chart::Antigen
     {
      public:
-        inline Antigen(const char* aAntigen) : mAntigen(aAntigen) {}
+        inline Antigen(const char* aAntigen, std::string_view aVirusType) : mAntigen(aAntigen), mVirusType(aVirusType) {}
 
         acmacs::chart::Name name() const override;
         acmacs::chart::Date date() const override;
@@ -33,6 +33,7 @@ namespace hidb
         indexes_t tables() const;
         size_t number_of_tables() const;
 
+        inline std::string_view virus_type() const { return mVirusType; }
         std::string_view location() const;
         std::string_view isolation() const;
         std::string year() const;
@@ -40,6 +41,7 @@ namespace hidb
 
      private:
         const char* mAntigen;
+        const std::string_view mVirusType;
 
     }; // class Antigen
 
@@ -51,8 +53,8 @@ namespace hidb
     class Antigens : public acmacs::chart::Antigens
     {
      public:
-        inline Antigens(size_t aNumberOfAntigens, const char* aIndex, const char* aAntigen0)
-            : mNumberOfAntigens(aNumberOfAntigens), mIndex(aIndex), mAntigen0(aAntigen0) {}
+        inline Antigens(size_t aNumberOfAntigens, const char* aIndex, const char* aAntigen0, std::string_view aVirusType)
+            : mNumberOfAntigens(aNumberOfAntigens), mIndex(aIndex), mAntigen0(aAntigen0), mVirusType(aVirusType) {}
 
         inline size_t size() const override { return mNumberOfAntigens; }
         inline std::shared_ptr<acmacs::chart::Antigen> operator[](size_t aIndex) const override { return at(aIndex); }
@@ -67,6 +69,7 @@ namespace hidb
         size_t mNumberOfAntigens;
         const char* mIndex;
         const char* mAntigen0;
+        const std::string_view mVirusType;
 
     }; // class Antigens
 
@@ -75,7 +78,7 @@ namespace hidb
     class Serum : public acmacs::chart::Serum
     {
      public:
-        inline Serum(const char* aSerum) : mSerum(aSerum) {}
+        inline Serum(const char* aSerum, std::string_view aVirusType) : mSerum(aSerum), mVirusType(aVirusType) {}
 
         acmacs::chart::Name name() const override;
         acmacs::chart::Passage passage() const override;
@@ -89,12 +92,14 @@ namespace hidb
         indexes_t tables() const;
         size_t number_of_tables() const;
 
+        inline std::string_view virus_type() const { return mVirusType; }
         std::string_view location() const;
         std::string_view isolation() const;
         std::string year() const;
 
      private:
         const char* mSerum;
+        const std::string_view mVirusType;
 
     }; // class Serum
 
@@ -106,8 +111,8 @@ namespace hidb
     class Sera : public acmacs::chart::Sera
     {
      public:
-        inline Sera(size_t aNumberOfSera, const char* aIndex, const char* aSerum0)
-            : mNumberOfSera(aNumberOfSera), mIndex(aIndex), mSerum0(aSerum0) {}
+        inline Sera(size_t aNumberOfSera, const char* aIndex, const char* aSerum0, std::string_view aVirusType)
+            : mNumberOfSera(aNumberOfSera), mIndex(aIndex), mSerum0(aSerum0), mVirusType(aVirusType) {}
 
         inline size_t size() const override { return mNumberOfSera; }
         inline std::shared_ptr<acmacs::chart::Serum> operator[](size_t aIndex) const override { return at(aIndex); }
@@ -121,6 +126,7 @@ namespace hidb
         size_t mNumberOfSera;
         const char* mIndex;
         const char* mSerum0;
+        const std::string_view mVirusType;
 
     }; // class Sera
 
