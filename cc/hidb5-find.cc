@@ -83,9 +83,14 @@ void find(const hidb::HiDb& hidb, const argc_argv& args)
 void find_antigens(const hidb::HiDb& hidb, std::string aName, const argc_argv& /*args*/)
 {
     try {
-        const auto antigen_index_list = hidb.antigens()->find(string::upper(aName), true);
+        std::string prefix;
+        auto antigen_index_list = hidb.antigens()->find(string::upper(aName), hidb::FixLocation::Yes, hidb::FindFuzzy::No);
+        if (antigen_index_list.empty()) {
+            antigen_index_list = hidb.antigens()->find(string::upper(aName), hidb::FixLocation::Yes, hidb::FindFuzzy::Yes);
+            prefix = "*** ";
+        }
         for (auto antigen_index: antigen_index_list)
-            report_antigen(hidb, *antigen_index.first, true);
+            report_antigen(hidb, *antigen_index.first, true, prefix);
     }
     catch (LocationNotFound& err) {
         throw std::runtime_error("location not found: "s + err.what());
@@ -108,7 +113,12 @@ void find_antigens_by_labid(const hidb::HiDb& hidb, std::string aLabId, const ar
 void find_sera(const hidb::HiDb& hidb, std::string aName, const argc_argv& /*args*/)
 {
     try {
-        const auto serum_index_list = hidb.sera()->find(string::upper(aName), true);
+        std::string prefix;
+        auto serum_index_list = hidb.sera()->find(string::upper(aName), hidb::FixLocation::Yes, hidb::FindFuzzy::No);
+        if (serum_index_list.empty()) {
+            serum_index_list = hidb.sera()->find(string::upper(aName), hidb::FixLocation::Yes, hidb::FindFuzzy::Yes);
+            prefix = "*** ";
+        }
         for (auto serum_index: serum_index_list)
             report_serum(hidb, *serum_index.first, true);
     }

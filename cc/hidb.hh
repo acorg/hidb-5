@@ -15,6 +15,9 @@ namespace hidb
     using indexes_t = std::vector<size_t>;
     class not_found : public std::runtime_error { public: using std::runtime_error::runtime_error; };
 
+    enum class FindFuzzy { No, Yes };
+    enum class FixLocation { No, Yes };
+
     class HiDb;
 
     class Antigen : public acmacs::chart::Antigen
@@ -60,7 +63,7 @@ namespace hidb
         inline size_t size() const override { return mNumberOfAntigens; }
         inline std::shared_ptr<acmacs::chart::Antigen> operator[](size_t aIndex) const override { return at(aIndex); }
         AntigenP at(size_t aIndex) const;
-        AntigenPIndexList find(std::string aName, bool aFixLocation) const;
+        AntigenPIndexList find(std::string aName, FixLocation aFixLocation, FindFuzzy fuzzy = FindFuzzy::No) const;
         AntigenPList find_labid(std::string labid) const;
         AntigenPIndex find(const acmacs::chart::Antigen& aAntigen) const; // find_antigen_of_chart
         AntigenPList find(const acmacs::chart::Antigens& aAntigens) const;
@@ -117,7 +120,7 @@ namespace hidb
         inline size_t size() const override { return mNumberOfSera; }
         inline std::shared_ptr<acmacs::chart::Serum> operator[](size_t aIndex) const override { return at(aIndex); }
         SerumP at(size_t aIndex) const;
-        SerumPIndexList find(std::string aName, bool aFixLocation) const;
+        SerumPIndexList find(std::string aName, FixLocation aFixLocation, FindFuzzy fuzzy = FindFuzzy::No) const;
         SerumPIndex find(const acmacs::chart::Serum& aSerum) const; // find_serum_of_chart
         SerumPList find(const acmacs::chart::Sera& aSera) const;
         SerumPList find_homologous(size_t aAntigenIndex, const Antigen& aAntigen) const; // for vaccines
