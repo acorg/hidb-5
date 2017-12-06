@@ -28,7 +28,7 @@ static std::unique_ptr<HiDbSet> sHiDbSet;
 class HiDbSet
 {
  public:
-    const hidb::HiDb& get(std::string aVirusType, report_time timer = report_time::No) const
+    const hidb::HiDb& get(const std::string& aVirusType, report_time timer = report_time::No) const
         {
             auto h = mPtrs.find(aVirusType);
             if (h == mPtrs.end()) {
@@ -77,7 +77,7 @@ void hidb::setup(std::string aHiDbDir, std::optional<std::string> /*aLocDbFilena
 
 // ----------------------------------------------------------------------
 
-const hidb::HiDb& hidb::get(std::string aVirusType, report_time timer)
+const hidb::HiDb& hidb::get(const std::string& aVirusType, report_time timer)
 {
     if (!sHiDbSet)
         sHiDbSet = std::make_unique<HiDbSet>();
