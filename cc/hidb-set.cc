@@ -40,13 +40,13 @@ class HiDbSet
                 else if (aVirusType == "B")
                     prefix = "hidb5.b";
                 else
-                    throw std::runtime_error("Unrecognized virus type: \"" + aVirusType + '"');
+                    throw hidb::get_error("Unrecognized virus type: \"" + aVirusType + '"');
 
                 fs::path filename = fs::path(sHiDbDir) / (prefix + ".hidb5b");
                 if (!fs::exists(filename))
                     filename = fs::path(sHiDbDir) / (prefix + ".json.xz");
                 if (!fs::exists(filename))
-                    throw std::runtime_error("Cannot find hidb for " + aVirusType + " in " + sHiDbDir);
+                    throw hidb::get_error("Cannot find hidb for " + aVirusType + " in " + sHiDbDir);
 
                 h = mPtrs.emplace(aVirusType, std::make_unique<hidb::HiDb>(filename, sVerbose ? report_time::Yes : timer)).first;
             }
