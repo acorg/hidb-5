@@ -12,6 +12,7 @@ int main(int argc, char* const argv[])
     try {
         argc_argv args(argc, argv, {
                 {"--db-dir", ""},
+                {"--time", false, "report time of loading chart"},
                 {"-v", false},
                 {"--verbose", false},
                 {"-h", false},
@@ -23,7 +24,7 @@ int main(int argc, char* const argv[])
         const bool verbose = args["-v"] || args["--verbose"];
         hidb::setup(args["--db-dir"], {}, verbose);
 
-        auto chart = acmacs::chart::import_factory(args[0], acmacs::chart::Verify::None);
+        auto chart = acmacs::chart::import_factory(args[0], acmacs::chart::Verify::None, args["--time"] ? report_time::Yes : report_time::No);
         auto& hidb = hidb::get(chart->info()->virus_type());
         auto antigens = hidb.antigens()->find(*chart->antigens());
         for (auto ag: antigens) {
