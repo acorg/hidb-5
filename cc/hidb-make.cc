@@ -25,7 +25,7 @@ int main(int argc, char* const argv[])
         else {
             HidbMaker maker;
             for (size_t arg_no = 1; arg_no < args.number_of_arguments(); ++arg_no) {
-                auto chart = acmacs::chart::import_factory(args[arg_no], acmacs::chart::Verify::All, args["--time"] ? report_time::Yes : report_time::No);
+                auto chart = acmacs::chart::import_from_file(args[arg_no], acmacs::chart::Verify::All, args["--time"] ? report_time::Yes : report_time::No);
                 maker.add(*chart);
             }
             maker.save(args[0]);
