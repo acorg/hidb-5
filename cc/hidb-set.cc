@@ -1,11 +1,10 @@
 #include <map>
 #include <memory>
 
+#include "acmacs-base/acmacsd.hh"
 #include "acmacs-base/filesystem.hh"
 #include "hidb-5/hidb-set.hh"
 #include "hidb-5/hidb.hh"
-
-using namespace std::string_literals;
 
 // ----------------------------------------------------------------------
 
@@ -18,7 +17,7 @@ class HiDbSet;
 #endif
 
 static bool sVerbose = false;
-static std::string sHiDbDir = std::getenv("HOME") + "/AD/data"s;
+static std::string sHiDbDir = acmacs::acmacsd_root() + "/data";
 static std::unique_ptr<HiDbSet> sHiDbSet;
 
 #pragma GCC diagnostic pop
