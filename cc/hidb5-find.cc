@@ -42,7 +42,7 @@ int main(int argc, char* const argv[])
         hidb::setup(args["--db-dir"], {}, verbose);
 
         if (fs::exists(args[0]))
-            find(hidb::HiDb(args[0], report_time::Yes), args);
+            find(hidb::HiDb(args[0], verbose), args);
         else
             find(hidb::get(string::upper(args[0]), report_time::Yes), args);
         return 0;

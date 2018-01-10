@@ -14,7 +14,7 @@
 class Estimations
 {
  public:
-    Estimations(const rjson::value& aSource);
+    Estimations(const rjson::value& aSource, bool verbose);
 
     size_t number_of_antigens;
     size_t number_of_sera;
@@ -30,9 +30,9 @@ class Estimations
     std::string virus_type;
 
  private:
-    void antigen(const rjson::array& antigens);
-    void serum(const rjson::array& sera);
-    void table(const rjson::array& tables);
+    void antigen(const rjson::array& antigens, bool verbose);
+    void serum(const rjson::array& sera, bool verbose);
+    void table(const rjson::array& tables, bool verbose);
 
 }; // class Estimations
 
@@ -44,12 +44,12 @@ static size_t make_table(const rjson::object& aSource, hidb::bin::Table* aTarget
 
 // ----------------------------------------------------------------------
 
-std::string hidb::json::read(std::string aData)
+std::string hidb::json::read(std::string aData, bool verbose)
 {
     using ptr_t = char*;
 
     const auto val = rjson::parse_string(aData);
-    Estimations estimations{val};
+    Estimations estimations(val, verbose);
 
     std::string result(estimations.size, 0);
 
@@ -66,7 +66,7 @@ std::string hidb::json::read(std::string aData)
     std::memset(header_bin->virus_type_, 0, static_cast<size_t>(header_bin->virus_type_size));
     std::memmove(header_bin->virus_type_, estimations.virus_type.data(), static_cast<size_t>(header_bin->virus_type_size));
 
-    Timeit ti_antigens("converting " + acmacs::to_string(estimations.number_of_antigens) + " antigens: ");
+    Timeit ti_antigens("converting " + acmacs::to_string(estimations.number_of_antigens) + " antigens: ", verbose ? report_time::Yes : report_time::No);
     antigen_index->number_of = static_cast<hidb::bin::ast_number_t>(estimations.number_of_antigens);
     hidb::bin::ast_offset_t* antigen_offset = &antigen_index->offset;
     *antigen_offset = 0;
@@ -85,7 +85,7 @@ std::string hidb::json::read(std::string aData)
     auto* serum_index = reinterpret_cast<hidb::bin::ASTIndex*>(data_start + header_bin->serum_offset);
     auto* serum_data = reinterpret_cast<ptr_t>(reinterpret_cast<ptr_t>(serum_index) + sizeof(hidb::bin::ast_offset_t) * (estimations.number_of_sera + 1) + sizeof(hidb::bin::ast_number_t));
 
-    Timeit ti_sera("converting " + acmacs::to_string(estimations.number_of_sera) + " sera: ");
+    Timeit ti_sera("converting " + acmacs::to_string(estimations.number_of_sera) + " sera: ", verbose ? report_time::Yes : report_time::No);
     serum_index->number_of = static_cast<hidb::bin::ast_number_t>(estimations.number_of_sera);
     hidb::bin::ast_offset_t* serum_offset = &serum_index->offset;
     *serum_offset = 0;
@@ -104,7 +104,7 @@ std::string hidb::json::read(std::string aData)
     auto* table_index = reinterpret_cast<hidb::bin::ASTIndex*>(data_start + header_bin->table_offset);
     auto* table_data = reinterpret_cast<ptr_t>(reinterpret_cast<ptr_t>(table_index) + sizeof(hidb::bin::ast_offset_t) * (estimations.number_of_tables + 1) + sizeof(hidb::bin::ast_number_t));
 
-    Timeit ti_tables("converting " + acmacs::to_string(estimations.number_of_tables) + " tables: ");
+    Timeit ti_tables("converting " + acmacs::to_string(estimations.number_of_tables) + " tables: ", verbose ? report_time::Yes : report_time::No);
     table_index->number_of = static_cast<hidb::bin::ast_number_t>(estimations.number_of_tables);
     hidb::bin::ast_offset_t* table_offset = &table_index->offset;
     *table_offset = 0;
@@ -120,7 +120,12 @@ std::string hidb::json::read(std::string aData)
     ti_tables.report();
 
     result.resize(static_cast<size_t>(table_data - data_start));
-    std::cerr << "INFO: hidb bin size: " << result.size() << '\n';
+    if (verbose)
+        std::cerr << "INFO: hidb bin size: " << result.size() << '\n';
+    if (result.size() > estimations.size)
+        std::cerr << "WARNING: data overflow: " << (result.size() - estimations.size) << " bytes\n";
+    else if (verbose)
+        std::cerr << "size estimation extra: " << (estimations.size - result.size()) << " bytes\n";
     return result;
 
 } // hidb::json::read
@@ -462,28 +467,33 @@ size_t make_table(const rjson::object& aSource, hidb::bin::Table* aTarget)
 
 // ----------------------------------------------------------------------
 
-Estimations::Estimations(const rjson::value& aSource)
+Estimations::Estimations(const rjson::value& aSource, bool verbose)
 {
-    antigen(aSource["a"]);
-    serum(aSource["s"]);
-    table(aSource["t"]);
+    antigen(aSource["a"], verbose);
+    serum(aSource["s"], verbose);
+    table(aSource["t"], verbose);
 
     size = sizeof(hidb::bin::Header)
             + (number_of_antigens + number_of_sera + number_of_tables) * sizeof(hidb::bin::ast_offset_t) + sizeof(hidb::bin::ast_number_t) * 3
-            + number_of_antigens * antigen_size + number_of_sera * serum_size + number_of_tables * table_size;
+            + number_of_antigens * antigen_size + number_of_sera * serum_size + number_of_tables * table_size
+              // + 1024
+            ;
 
-    std::cerr << "Estimated bin size: " << size << '\n';
+    if (verbose)
+        std::cerr << "Estimated bin size: " << size << '\n';
 
-    std::cerr << "virus_types: " << virus_types << '\n';
+    if (verbose)
+        std::cerr << "virus_types: " << virus_types << '\n';
     const auto most_often = std::max_element(virus_types.begin(), virus_types.end(), [](const auto& a, const auto& b) -> bool { return a.second < b.second; });
     virus_type = most_often->first;
-    std::cerr << "virus_type: " << virus_type << '\n';
+    if (verbose)
+        std::cerr << "virus_type: " << virus_type << '\n';
 
 } // Estimations::Estimations
 
 // ----------------------------------------------------------------------
 
-void Estimations::antigen(const rjson::array& antigens)
+void Estimations::antigen(const rjson::array& antigens, bool verbose)
 {
     number_of_antigens = antigens.size();
 
@@ -523,28 +533,30 @@ void Estimations::antigen(const rjson::array& antigens)
     antigen_size = ag_max_all + sizeof(hidb::bin::Antigen) + ag_max_num_dates * sizeof(hidb::bin::date_t)
             + sizeof(hidb::bin::number_of_table_indexes_t) + ag_max_num_table_indexes * sizeof(hidb::bin::table_index_t);
 
-    std::cerr << "Antigens:           " << number_of_antigens << '\n'
-              << "ag_max_host:        " << ag_max_host << '\n'
-              << "ag_max_location:    " << ag_max_location << '\n'
-              << "ag_max_isolation:   " << ag_max_isolation << '\n'
-              << "ag_max_passage:     " << ag_max_passage << '\n'
-              << "ag_max_reassortant: " << ag_max_reassortant << '\n'
-              << "ag_max_annotations: " << ag_max_annotations << '\n'
-              << "ag_max_num_annotat: " << ag_max_num_annotations << '\n'
-              << "ag_max_lab_id:      " << ag_max_lab_id << '\n'
-              << "ag_max_num_lab_id:  " << ag_max_num_lab_id << '\n'
-              << "ag_max_num_dates:   " << ag_max_num_dates << '\n'
-              << "ag_max_num_table_i: " << ag_max_num_table_indexes << '\n'
-              << "ag_max_all:         " << ag_max_all << '\n'
-              << "antigen_size:       " << antigen_size << '\n'
-              << "ag_super_max:       " << (ag_max_host + ag_max_location + ag_max_isolation + ag_max_passage + ag_max_reassortant + ag_max_annotations + ag_max_lab_id) << '\n'
-              << '\n';
+    if (verbose) {
+        std::cerr << "Antigens:           " << number_of_antigens << '\n'
+                  << "ag_max_host:        " << ag_max_host << '\n'
+                  << "ag_max_location:    " << ag_max_location << '\n'
+                  << "ag_max_isolation:   " << ag_max_isolation << '\n'
+                  << "ag_max_passage:     " << ag_max_passage << '\n'
+                  << "ag_max_reassortant: " << ag_max_reassortant << '\n'
+                  << "ag_max_annotations: " << ag_max_annotations << '\n'
+                  << "ag_max_num_annotat: " << ag_max_num_annotations << '\n'
+                  << "ag_max_lab_id:      " << ag_max_lab_id << '\n'
+                  << "ag_max_num_lab_id:  " << ag_max_num_lab_id << '\n'
+                  << "ag_max_num_dates:   " << ag_max_num_dates << '\n'
+                  << "ag_max_num_table_i: " << ag_max_num_table_indexes << '\n'
+                  << "ag_max_all:         " << ag_max_all << '\n'
+                  << "antigen_size:       " << antigen_size << '\n'
+                  << "ag_super_max:       " << (ag_max_host + ag_max_location + ag_max_isolation + ag_max_passage + ag_max_reassortant + ag_max_annotations + ag_max_lab_id) << '\n'
+                  << '\n';
+    }
 
 } // Estimations::antigen
 
 // ----------------------------------------------------------------------
 
-void Estimations::serum(const rjson::array& sera)
+void Estimations::serum(const rjson::array& sera, bool verbose)
 {
     number_of_sera = sera.size();
 
@@ -584,32 +596,41 @@ void Estimations::serum(const rjson::array& sera)
             + sr_max_num_homologous * sizeof(hidb::bin::homologous_t)
             + sizeof(hidb::bin::number_of_table_indexes_t) + sr_max_num_table_indexes * sizeof(hidb::bin::table_index_t);
 
-    std::cerr << "Sera:               " << number_of_sera << '\n'
-              << "sr_max_host:        " << sr_max_host << '\n'
-              << "sr_max_location:    " << sr_max_location << '\n'
-              << "sr_max_isolation:   " << sr_max_isolation << '\n'
-              << "sr_max_passage:     " << sr_max_passage << '\n'
-              << "sr_max_reassortant: " << sr_max_reassortant << '\n'
-              << "sr_max_annotations: " << sr_max_annotations << '\n'
-              << "sr_max_num_annotat: " << sr_max_num_annotations << '\n'
-              << "sr_max_serum_id:    " << sr_max_serum_id << '\n'
-              << "sr_max_serum_speci: " << sr_max_serum_species << '\n'
-              << "sr_max_num_table_i: " << sr_max_num_table_indexes << '\n'
-              << "sr_max_num_homolog: " << sr_max_num_homologous << '\n'
-              << "sr_max_all:         " << sr_max_all << '\n'
-              << "serum_size:         " << serum_size << '\n'
-              << "sr_super_max:       " << (sr_max_host + sr_max_location + sr_max_isolation + sr_max_passage + sr_max_reassortant + sr_max_annotations + sr_max_serum_id + sr_max_serum_species + sr_max_num_homologous * sizeof(hidb::bin::homologous_t)) << '\n'
-              << '\n';
+    if (verbose) {
+        std::cerr << "Sera:               " << number_of_sera << '\n'
+                  << "sr_max_host:        " << sr_max_host << '\n'
+                  << "sr_max_location:    " << sr_max_location << '\n'
+                  << "sr_max_isolation:   " << sr_max_isolation << '\n'
+                  << "sr_max_passage:     " << sr_max_passage << '\n'
+                  << "sr_max_reassortant: " << sr_max_reassortant << '\n'
+                  << "sr_max_annotations: " << sr_max_annotations << '\n'
+                  << "sr_max_num_annotat: " << sr_max_num_annotations << '\n'
+                  << "sr_max_serum_id:    " << sr_max_serum_id << '\n'
+                  << "sr_max_serum_speci: " << sr_max_serum_species << '\n'
+                  << "sr_max_num_table_i: " << sr_max_num_table_indexes << '\n'
+                  << "sr_max_num_homolog: " << sr_max_num_homologous << '\n'
+                  << "sr_max_all:         " << sr_max_all << '\n'
+                  << "serum_size:         " << serum_size << '\n'
+                  << "sr_super_max:       " << (sr_max_host + sr_max_location + sr_max_isolation + sr_max_passage + sr_max_reassortant + sr_max_annotations + sr_max_serum_id + sr_max_serum_species + sr_max_num_homologous * sizeof(hidb::bin::homologous_t)) << '\n'
+                  << '\n';
+    }
 
 } // Estimations::serum
 
 // ----------------------------------------------------------------------
 
-void Estimations::table(const rjson::array& tables)
+void Estimations::table(const rjson::array& tables, bool verbose)
 {
     number_of_tables = tables.size();
 
-    table_size = 0;
+    table_size = sizeof(hidb::bin::Table) + number_of_antigens * number_of_sera * 2;
+
+    if (verbose) {
+        std::cerr << "Tables:               " << number_of_tables << '\n'
+                  << "table_size:         " << table_size << '\n'
+                  << "ags*srs:         " << (number_of_antigens * number_of_sera) << '\n'
+                  << '\n';
+    }
 
 } // Estimations::table
 

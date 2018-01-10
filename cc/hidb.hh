@@ -179,7 +179,7 @@ namespace hidb
     class HiDb
     {
      public:
-        HiDb(std::string aFilename, report_time timer);
+        HiDb(std::string aFilename, bool verbose);
 
         std::shared_ptr<Antigens> antigens() const;
         std::shared_ptr<Sera> sera() const;

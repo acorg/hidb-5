@@ -10,7 +10,7 @@
 
 // ----------------------------------------------------------------------
 
-hidb::HiDb::HiDb(std::string aFilename, report_time /*timer*/)
+hidb::HiDb::HiDb(std::string aFilename, bool verbose)
 {
     // Timeit ti("reading hidb from " + aFilename + ": ", timer);
     acmacs::file::read_access access(aFilename);
@@ -19,7 +19,7 @@ hidb::HiDb::HiDb(std::string aFilename, report_time /*timer*/)
         mData = mAccess.data();
     }
     else if (std::string data = access; data.find("\"  version\": \"hidb-v5\"") != std::string::npos) {
-        mDataStorage = hidb::json::read(data);
+        mDataStorage = hidb::json::read(data, verbose);
         mData = mDataStorage.data();
     }
     else

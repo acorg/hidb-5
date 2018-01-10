@@ -47,7 +47,7 @@ class HiDbSet
                 if (!fs::exists(filename))
                     throw hidb::get_error("Cannot find hidb for " + aVirusType + " in " + sHiDbDir);
 
-                h = mPtrs.emplace(aVirusType, std::make_unique<hidb::HiDb>(filename, sVerbose ? report_time::Yes : timer)).first;
+                h = mPtrs.emplace(aVirusType, std::make_unique<hidb::HiDb>(filename, sVerbose || (timer == report_time::Yes))).first;
             }
             return *h->second;
         }

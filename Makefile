@@ -12,7 +12,8 @@ TARGETS = \
 	$(DIST)/hidb5-stat \
 	$(DIST)/hidb5-find \
 	$(DIST)/hidb5-antigens-sera-of-chart \
-	$(DIST)/hidb5-vaccines-of-chart
+	$(DIST)/hidb5-vaccines-of-chart \
+	$(DIST)/hidb5-dates
 
 HIDB_MAKE_SOURCES = hidb-maker.cc hidb-make.cc
 
