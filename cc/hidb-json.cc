@@ -123,9 +123,9 @@ std::string hidb::json::read(std::string aData, bool verbose)
     if (verbose)
         std::cerr << "INFO: hidb bin size: " << result.size() << '\n';
     if (result.size() > estimations.size)
-        std::cerr << "WARNING: data overflow: " << (result.size() - estimations.size) << " bytes\n";
+        std::cerr << "WARNING: data overflow: " << (result.size() - estimations.size) << " bytes " << std::fixed << std::setprecision(1) << (100.0 * (result.size() - estimations.size) / result.size()) << "%\n";
     else if (verbose)
-        std::cerr << "size estimation extra: " << (estimations.size - result.size()) << " bytes\n";
+        std::cerr << "size estimation extra: " << (estimations.size - result.size()) << " bytes " << std::fixed << std::setprecision(1) << (100.0 * (estimations.size - result.size()) / result.size()) << "%\n";
     return result;
 
 } // hidb::json::read
@@ -621,14 +621,35 @@ void Estimations::serum(const rjson::array& sera, bool verbose)
 
 void Estimations::table(const rjson::array& tables, bool verbose)
 {
-    number_of_tables = tables.size();
+    constexpr const size_t average_titer_length = 5;
 
-    table_size = sizeof(hidb::bin::Table) + number_of_antigens * number_of_sera * 2;
+    size_t fields_size = 0, antigens = 0, sera = 0;;
+
+    number_of_tables = tables.size();
+    for (const auto& table: tables) {
+        fields_size += table.get_or_default("A", "").size() // assay
+                + table.get_or_default("D", "").size()      // date
+                + table.get_or_default("l", "").size()      // lab
+                + table.get_or_default("r", "").size()      // rbc
+                ;
+        antigens += table.get_or_empty_array("a").size();
+        sera += table.get_or_empty_array("s").size();
+    }
+    const auto antigens_per_table = antigens / number_of_tables + 1;
+    const auto sera_per_table = sera / number_of_tables + 1;
+
+    table_size = sizeof(hidb::bin::Table)
+            + fields_size / number_of_tables
+            + 1                 // padding
+            + sizeof(uint32_t) * antigens_per_table
+            + sizeof(uint32_t) * sera_per_table
+            + 1                    // max titer length
+            + average_titer_length * antigens_per_table * sera_per_table
+            ;
 
     if (verbose) {
         std::cerr << "Tables:               " << number_of_tables << '\n'
                   << "table_size:         " << table_size << '\n'
-                  << "ags*srs:         " << (number_of_antigens * number_of_sera) << '\n'
                   << '\n';
     }
 
