@@ -62,12 +62,14 @@ namespace hidb::bin
         std::string name() const;
         std::string date(bool compact) const;
         date_t date_raw() const;
-        inline std::string_view host() const { return {_start(), static_cast<size_t>(location_offset)}; }
-        inline std::string_view location() const { return {_start() + location_offset, static_cast<size_t>(isolation_offset - location_offset)}; }
-        inline std::string_view isolation() const { return {_start() + isolation_offset, static_cast<size_t>(passage_offset - isolation_offset)}; }
-        inline std::string year() const { if (*year_data) return std::string(year_data, sizeof(year_data)); else return std::string{}; }
-        inline std::string_view passage() const { return {_start() + passage_offset, static_cast<size_t>(reassortant_offset - passage_offset)}; }
-        inline std::string_view reassortant() const { return {_start() + reassortant_offset, static_cast<size_t>(annotation_offset[0] - reassortant_offset)}; }
+        std::string_view host() const { return {_start(), static_cast<size_t>(location_offset)}; }
+        std::string_view location() const { return {_start() + location_offset, static_cast<size_t>(isolation_offset - location_offset)}; }
+        std::string_view isolation() const { return {_start() + isolation_offset, static_cast<size_t>(passage_offset - isolation_offset)}; }
+        std::string year() const { if (*year_data) return std::string(year_data, sizeof(year_data)); else return std::string{}; }
+        std::string_view year_fast() const { return {year_data, sizeof(year_data)}; } // call cdc_name() first!
+        std::string_view passage() const { return {_start() + passage_offset, static_cast<size_t>(reassortant_offset - passage_offset)}; }
+        std::string_view reassortant() const { return {_start() + reassortant_offset, static_cast<size_t>(annotation_offset[0] - reassortant_offset)}; }
+        bool cdc_name() const { return *year_data == 0; }
         std::vector<std::string_view> lab_ids() const;
         std::vector<std::string_view> annotations() const;
 
@@ -82,6 +84,7 @@ namespace hidb::bin
         static date_t make_date(std::string aDate); // throws invalid_date
         constexpr static date_t min_date() { return 10000101; }
         constexpr static date_t max_date() { return 30000101; }
+
 
     }; // struct Antigen
 

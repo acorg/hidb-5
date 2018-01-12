@@ -70,7 +70,11 @@ hidb::AntigenP hidb::Antigens::at(size_t aIndex) const
 
 acmacs::chart::Name hidb::Antigen::name() const
 {
-    return std::string(mHiDb.virus_type()) + "/" + reinterpret_cast<const hidb::bin::Antigen*>(mAntigen)->name();
+    auto antigen = reinterpret_cast<const hidb::bin::Antigen*>(mAntigen);
+    if (antigen->cdc_name())
+        return antigen->name();
+    else
+        return std::string(mHiDb.virus_type()) + "/" + antigen->name();
 
 } // hidb::Antigen::name
 

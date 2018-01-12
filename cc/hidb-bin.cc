@@ -24,9 +24,8 @@ bool hidb::bin::has_signature(const char* data)
 
 std::string hidb::bin::Antigen::name() const
 {
-    const auto y = year();
-    if (y[0])
-        return string::join("/", {host(), location(), isolation(), std::string_view{y}});
+    if (!cdc_name())
+        return string::join("/", {host(), location(), isolation(), year_fast()});
     else
         return string::join(" ", {location(), isolation()}); // cdc name
 
