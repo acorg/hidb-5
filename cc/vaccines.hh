@@ -77,6 +77,7 @@ namespace hidb
         inline bool empty() const { return std::all_of(std::begin(mEntries), std::end(mEntries), [](const auto& e) { return e.empty(); }); }
 
         inline const Entry* for_passage_type(PassageType pt, size_t aNo = 0) const { return mEntries[pt].size() > aNo ? &mEntries[pt][aNo] : nullptr; }
+        size_t size_for_passage_type(PassageType pt) const { return mEntries[pt].size(); }
         inline const Entry* egg(size_t aNo = 0) const { return for_passage_type(Egg, aNo); }
         inline const Entry* cell(size_t aNo = 0) const { return for_passage_type(Cell, aNo); }
         inline const Entry* reassortant(size_t aNo = 0) const { return for_passage_type(Reassortant, aNo); }
