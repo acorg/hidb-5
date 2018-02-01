@@ -67,7 +67,7 @@ namespace hidb
         AntigenPList find_labid(std::string labid) const;
         AntigenPIndex find(const acmacs::chart::Antigen& aAntigen) const; // find_antigen_of_chart
         AntigenPList find(const acmacs::chart::Antigens& aAntigens) const;
-        AntigenPList date_range(std::string first, std::string after_last) const;
+        AntigenPList date_range(std::string_view first, std::string_view after_last) const;
 
      private:
         size_t mNumberOfAntigens;

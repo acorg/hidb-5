@@ -33,11 +33,11 @@ std::string hidb::bin::Antigen::name() const
 
 // ----------------------------------------------------------------------
 
-hidb::bin::date_t hidb::bin::Antigen::make_date(std::string aDate)
+hidb::bin::date_t hidb::bin::Antigen::make_date(std::string_view aDate)
 {
     std::string compacted;
     if (aDate.size() == 10 && aDate[4] == '-' && aDate[7] == '-')
-        compacted = aDate.substr(0, 4) + aDate.substr(5, 2) + aDate.substr(8, 2);
+        compacted = std::string(aDate.substr(0, 4)) + std::string(aDate.substr(5, 2)) + std::string(aDate.substr(8, 2));
     else if (aDate.size() == 8)
         compacted = aDate;
     else

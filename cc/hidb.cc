@@ -632,7 +632,7 @@ hidb::SerumPList hidb::Sera::find(const acmacs::chart::Sera& aSera) const
 
 // ----------------------------------------------------------------------
 
-hidb::AntigenPList hidb::Antigens::date_range(std::string first, std::string after_last) const
+hidb::AntigenPList hidb::Antigens::date_range(std::string_view first, std::string_view after_last) const
 {
     hidb::AntigenPList result;
     const auto min_date = !first.empty() ? hidb::bin::Antigen::make_date(first) : hidb::bin::Antigen::min_date();

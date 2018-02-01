@@ -81,7 +81,7 @@ namespace hidb::bin
 
         inline const char* _start() const { return reinterpret_cast<const char*>(this) + sizeof(*this); }
 
-        static date_t make_date(std::string aDate); // throws invalid_date
+        static date_t make_date(std::string_view aDate); // throws invalid_date
         constexpr static date_t min_date() { return 10000101; }
         constexpr static date_t max_date() { return 30000101; }
 

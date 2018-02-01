@@ -190,7 +190,7 @@ size_t make_antigen(const rjson::object& aSource, hidb::bin::Antigen* aTarget)
         for (size_t ann_no = 0; ann_no < sizeof(hidb::bin::Antigen::annotation_offset); ++ann_no) {
             set_offset(aTarget->annotation_offset[ann_no], target);
             if (ann_no < annotations.size()) {
-                const std::string ann = annotations[ann_no];
+                const auto ann = annotations[ann_no].strv();
                 std::memmove(target, ann.data(), ann.size());
                 target += ann.size();
             }
@@ -203,7 +203,7 @@ size_t make_antigen(const rjson::object& aSource, hidb::bin::Antigen* aTarget)
         for (size_t lab_id_no = 0; lab_id_no < sizeof(hidb::bin::Antigen::lab_id_offset); ++lab_id_no) {
             set_offset(aTarget->lab_id_offset[lab_id_no], target);
             if (lab_id_no < lab_ids.size()) {
-                const std::string lab_id = lab_ids[lab_id_no];
+                const auto lab_id = lab_ids[lab_id_no].strv();
                 std::memmove(target, lab_id.data(), lab_id.size());
                 target += lab_id.size();
             }
@@ -220,7 +220,7 @@ size_t make_antigen(const rjson::object& aSource, hidb::bin::Antigen* aTarget)
     if (const auto& dates = aSource.get_or_empty_array("D"); !dates.empty()) {
         for (size_t date_no = 0; date_no < dates.size(); ++date_no) {
             try {
-                const auto date = hidb::bin::Antigen::make_date(dates[date_no]);
+                const auto date = hidb::bin::Antigen::make_date(dates[date_no].strv());
                 std::memmove(target, &date, sizeof(date));
                 target += sizeof(date);
             }
@@ -313,7 +313,7 @@ size_t make_serum(const rjson::object& aSource, hidb::bin::Serum* aTarget)
         for (size_t ann_no = 0; ann_no < sizeof(hidb::bin::Serum::annotation_offset); ++ann_no) {
             set_offset(aTarget->annotation_offset[ann_no], target);
             if (ann_no < annotations.size()) {
-                const std::string ann = annotations[ann_no];
+                const auto ann = annotations[ann_no].strv();
                 std::memmove(target, ann.data(), ann.size());
                 target += ann.size();
             }
@@ -443,15 +443,14 @@ size_t make_table(const rjson::object& aSource, hidb::bin::Table* aTarget)
     size_t max_titer_size = 0;
     for (size_t ag_no = 0; ag_no < antigens.size(); ++ag_no) {
         for (size_t sr_no = 0; sr_no < sera.size(); ++sr_no) {
-            const std::string titer = titers[ag_no][sr_no];
-            max_titer_size = std::max(max_titer_size, titer.size());
+            max_titer_size = std::max(max_titer_size, titers[ag_no][sr_no].strv().size());
         }
     }
     *target = static_cast<char>(max_titer_size);
     ++target;
     for (size_t ag_no = 0; ag_no < antigens.size(); ++ag_no) {
         for (size_t sr_no = 0; sr_no < sera.size(); ++sr_no) {
-            std::string titer = titers[ag_no][sr_no];
+            auto titer = titers[ag_no][sr_no].str();
             titer.resize(max_titer_size, 0);
             std::memmove(target, titer.data(), titer.size());
             target += titer.size();
