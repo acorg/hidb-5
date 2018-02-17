@@ -28,6 +28,8 @@ int main(int argc, char* const argv[])
         argc_argv args(argc, argv, {
                 {"-s", false},  // find sera
                 {"-t", false},  // find table
+                {"--first-table", false},
+                {"--lab", ""},
                 {"--labid", false},  // find by lab id
                 {"--db-dir", ""},
                 {"-v", false},
@@ -120,7 +122,7 @@ void find_sera(const hidb::HiDb& hidb, std::string aName, const argc_argv& /*arg
             prefix = "*** ";
         }
         for (auto serum_index: serum_index_list)
-            report_serum(hidb, *serum_index.first, true);
+            report_serum(hidb, *serum_index.first, hidb::report_tables::all);
     }
     catch (LocationNotFound& err) {
         throw std::runtime_error("location not found: "s + err.what());
@@ -160,12 +162,25 @@ void list_all_antigens(const hidb::HiDb& hidb, const argc_argv& /*args*/)
 
 // ----------------------------------------------------------------------
 
-void list_all_sera(const hidb::HiDb& hidb, const argc_argv& /*args*/)
+void list_all_sera(const hidb::HiDb& hidb, const argc_argv& args)
 {
+    const std::string lab = args["--lab"];
+    const bool first_table = args["--first-table"];
     auto sera = hidb.sera();
+    auto tables = hidb.tables();
+    auto has_lab = [tables,&lab](const auto& sr) -> bool {
+                       if (lab.empty())
+                           return true;
+                       const auto labs = sr.labs(*tables);
+                       return std::find(labs.begin(), labs.end(), lab) != labs.end();
+                   };
+
     std::cout << "Sera: " << sera->size() << '\n';
-    for (auto serum: *sera)
-        report_serum(hidb, dynamic_cast<const hidb::Serum&>(*serum), true);
+    for (auto serum: *sera) {
+        const auto& sr = dynamic_cast<const hidb::Serum&>(*serum);
+        if (has_lab(sr))
+            report_serum(hidb, sr, first_table ? hidb::report_tables::oldest : hidb::report_tables::all);
+    }
 
 } // list_all_sera
 

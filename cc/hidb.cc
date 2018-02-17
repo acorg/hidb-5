@@ -319,6 +319,20 @@ std::string hidb::Serum::year() const
 
 // ----------------------------------------------------------------------
 
+std::vector<std::string> hidb::Serum::labs(const Tables& all_tables) const
+{
+    std::vector<std::string> result;
+    for (auto table_index : tables()) {
+        const std::string lab{all_tables[table_index]->lab()};
+        if (std::find(result.begin(), result.end(), lab) == result.end())
+            result.push_back(lab);
+    }
+    return result;
+
+} // hidb::Serum::labs
+
+// ----------------------------------------------------------------------
+
 std::shared_ptr<hidb::Tables> hidb::HiDb::tables() const
 {
     const auto* tables = mData + reinterpret_cast<const hidb::bin::Header*>(mData)->table_offset;

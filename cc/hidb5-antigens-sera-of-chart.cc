@@ -11,6 +11,8 @@ int main(int argc, char* const argv[])
 {
     try {
         argc_argv args(argc, argv, {
+                {"--sera-only", false},
+                {"--first-table", false},
                 {"--db-dir", ""},
                 {"--time", false, "report time of loading chart"},
                 {"-v", false},
@@ -26,16 +28,20 @@ int main(int argc, char* const argv[])
 
         auto chart = acmacs::chart::import_from_file(args[0], acmacs::chart::Verify::None, args["--time"] ? report_time::Yes : report_time::No);
         auto& hidb = hidb::get(chart->info()->virus_type());
-        auto antigens = hidb.antigens()->find(*chart->antigens());
-        for (auto ag: antigens) {
-            if (ag)
-                hidb::report_antigen(hidb, *ag, true);
+
+        if (!args["--sera-only"]) {
+            auto antigens = hidb.antigens()->find(*chart->antigens());
+            for (auto ag: antigens) {
+                if (ag)
+                    hidb::report_antigen(hidb, *ag, true);
+            }
+            std::cout << '\n';
         }
-        std::cout << '\n';
+
         auto sera = hidb.sera()->find(*chart->sera());
         for (auto sr: sera) {
             if (sr)
-                hidb::report_serum(hidb, *sr, true);
+                hidb::report_serum(hidb, *sr, args["--first-table"] ? hidb::report_tables::oldest : hidb::report_tables::all);
         }
 
         return 0;

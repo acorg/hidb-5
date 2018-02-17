@@ -79,6 +79,8 @@ namespace hidb
 
       // ----------------------------------------------------------------------
 
+    class Tables;
+
     class Serum : public acmacs::chart::Serum
     {
      public:
@@ -96,6 +98,7 @@ namespace hidb
         indexes_t tables() const;
         size_t number_of_tables() const;
 
+        std::vector<std::string> labs(const Tables& tables) const;
         std::string_view location() const;
         std::string_view isolation() const;
         std::string year() const;

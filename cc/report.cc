@@ -28,7 +28,7 @@ void hidb::report_antigen(const hidb::HiDb& hidb, const hidb::Antigen& aAntigen,
         std::cout << ' ' << static_cast<std::string>(lineage);
     if (aReportTables) {
         std::cout << '\n';
-        report_tables(hidb, aAntigen.tables(), aPrefix + "    ");
+        report_tables(hidb, aAntigen.tables(), report_tables::all, aPrefix + "    ");
     }
     else
         std::cout << '\n';
@@ -37,7 +37,7 @@ void hidb::report_antigen(const hidb::HiDb& hidb, const hidb::Antigen& aAntigen,
 
 // ----------------------------------------------------------------------
 
-void hidb::report_sera(const hidb::HiDb& hidb, const indexes_t& aIndexes, bool aReportTables, std::string aPrefix)
+void hidb::report_sera(const hidb::HiDb& hidb, const indexes_t& aIndexes, enum hidb::report_tables aReportTables, std::string aPrefix)
 {
     for (auto index: aIndexes)
         report_serum(hidb, index, aReportTables, aPrefix);
@@ -46,7 +46,7 @@ void hidb::report_sera(const hidb::HiDb& hidb, const indexes_t& aIndexes, bool a
 
 // ----------------------------------------------------------------------
 
-void hidb::report_serum(const hidb::HiDb& hidb, const hidb::Serum& aSerum, bool aReportTables, std::string aPrefix)
+void hidb::report_serum(const hidb::HiDb& hidb, const hidb::Serum& aSerum, enum hidb::report_tables aReportTables, std::string aPrefix)
 {
     std::cout << aPrefix << aSerum.name();
     if (const auto annotations = aSerum.annotations(); !annotations.empty())
@@ -64,34 +64,47 @@ void hidb::report_serum(const hidb::HiDb& hidb, const hidb::Serum& aSerum, bool 
     std::cout << '\n';
     for (size_t ag_no: aSerum.homologous_antigens())
         report_antigen(hidb, ag_no, false, aPrefix + "    ");
-    if (aReportTables)
-        report_tables(hidb, aSerum.tables(), aPrefix + "    ");
+    report_tables(hidb, aSerum.tables(), aReportTables, aPrefix + "    ");
 
 } // hidb::report_serum
 
 // ----------------------------------------------------------------------
 
-void hidb::report_tables(const hidb::HiDb& hidb, const indexes_t& aTables, std::string aPrefix)
+void hidb::report_tables(const hidb::HiDb& hidb, const indexes_t& aTables, enum hidb::report_tables aReportTables, std::string aPrefix)
 {
-    auto hidb_tables = hidb.tables();
-    std::vector<std::shared_ptr<hidb::Table>> tables(aTables.size());
-    std::transform(aTables.begin(), aTables.end(), tables.begin(), [hidb_tables](size_t aIndex) { return (*hidb_tables)[aIndex]; });
-    if (tables.size() > 1) {
-        std::sort(tables.begin(), tables.end(), [](auto a, auto b) -> bool { return a->date() > b->date(); });
-        std::map<std::pair<std::string_view, std::string_view>, std::vector<std::shared_ptr<hidb::Table>>> by_lab_assay;
-        for (auto table: tables)
-            by_lab_assay[{table->lab(), table->assay()}].push_back(table);
-        if (by_lab_assay.size() > 1)
-            std::cout << aPrefix << "Tables:" << tables.size() << "  Recent: " << tables[0]->name() << '\n';
-        for (auto entry: by_lab_assay) {
-            std::cout << aPrefix << entry.first.first << ':' << entry.first.second << ' ' << entry.second.size();
-            for (auto table: entry.second)
-                std::cout << ' ' << string::join(":", {table->date(), table->rbc()});
+    if (aReportTables != report_tables::none) {
+        auto hidb_tables = hidb.tables();
+        std::vector<std::shared_ptr<hidb::Table>> tables(aTables.size());
+        std::transform(aTables.begin(), aTables.end(), tables.begin(), [hidb_tables](size_t aIndex) { return (*hidb_tables)[aIndex]; });
+        if (!tables.empty()) {
+            std::sort(tables.begin(), tables.end(), [](auto a, auto b) -> bool { return a->date() > b->date(); });
+            std::map<std::pair<std::string_view, std::string_view>, std::vector<std::shared_ptr<hidb::Table>>> by_lab_assay;
+            switch (aReportTables) {
+              case report_tables::all:
+                  for (auto table: tables)
+                      by_lab_assay[{table->lab(), table->assay()}].push_back(table);
+                  if (by_lab_assay.size() > 1)
+                      std::cout << aPrefix << "Tables:" << tables.size() << "  Recent: " << tables[0]->name() << '\n';
+                  for (auto entry: by_lab_assay) {
+                      std::cout << aPrefix << entry.first.first << ':' << entry.first.second << ' ' << entry.second.size();
+                      for (auto table: entry.second)
+                          std::cout << ' ' << string::join(":", {table->date(), table->rbc()});
+                  }
+                  break;
+              case report_tables::oldest:
+                  std::cout << aPrefix << "Tables:" << tables.size() << "  Oldest: " << tables.back()->name() << '\n';
+                  break;
+              case report_tables::recent:
+                  std::cout << aPrefix << "Tables:" << tables.size() << "  Recent: " << tables.front()->name() << '\n';
+                  break;
+              case report_tables::none:
+                  break;
+            }
+            std::cout << '\n';
         }
-        std::cout << '\n';
+        else
+            std::cerr << "WARNING: no tables!\n";
     }
-    else
-        std::cout << aPrefix << "Tables:" << tables.size() << "  Recent: " << tables[0]->name() << '\n';
 
 } // hidb::report_tables
 
