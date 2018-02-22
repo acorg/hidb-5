@@ -5,6 +5,7 @@
 #include <algorithm>
 
 #include "acmacs-chart-2/chart.hh"
+#include "hidb-5/hidb.hh"
 
 // ----------------------------------------------------------------------
 
@@ -15,7 +16,7 @@ namespace hidb
      public:
         enum Type { Previous, Current, Surrogate };
 
-        inline Vaccine(std::string aName, Type aType) : name(aName), type(aType) {}
+        Vaccine(std::string aName, Type aType) : name(aName), type(aType) {}
 
         std::string name;
         Type type;
@@ -35,7 +36,7 @@ namespace hidb
         class HomologousSerum
         {
          public:
-            inline HomologousSerum(size_t aSerumIndex, std::shared_ptr<acmacs::chart::Serum> aChartSerum, hidb::SerumP aHidbSerum, std::shared_ptr<hidb::Table> aMostRecentTable)
+            HomologousSerum(size_t aSerumIndex, std::shared_ptr<acmacs::chart::Serum> aChartSerum, hidb::SerumP aHidbSerum, std::shared_ptr<hidb::Table> aMostRecentTable)
                 : chart_serum(aChartSerum), chart_serum_index(aSerumIndex), hidb_serum(aHidbSerum), most_recent_table(aMostRecentTable) {}
             bool operator < (const HomologousSerum& a) const;
             size_t number_of_tables() const;
@@ -49,7 +50,7 @@ namespace hidb
         class Entry
         {
          public:
-            inline Entry(size_t aAntigenIndex, std::shared_ptr<acmacs::chart::Antigen> aChartAntigen, AntigenP aHidbAntigen, std::shared_ptr<hidb::Table> aMostRecentTable, std::vector<HomologousSerum>&& aSera)
+            Entry(size_t aAntigenIndex, std::shared_ptr<acmacs::chart::Antigen> aChartAntigen, AntigenP aHidbAntigen, std::shared_ptr<hidb::Table> aMostRecentTable, std::vector<HomologousSerum>&& aSera)
                 : chart_antigen(aChartAntigen), chart_antigen_index(aAntigenIndex), hidb_antigen(aHidbAntigen),
                   most_recent_table(aMostRecentTable), homologous_sera(std::move(aSera))
                 {
@@ -64,35 +65,49 @@ namespace hidb
             std::vector<HomologousSerum> homologous_sera; // sorted by number of tables and the most recent table
         };
 
+        struct ReportConfig
+        {
+            size_t indent_ = 0;
+            std::string vaccine_sep_ = "";
+            std::string passage_type_sep_ = "";
+            bool show_no_ = true;
+
+            constexpr ReportConfig& indent(size_t new_indent) { indent_ = new_indent; return *this; }
+            ReportConfig& passage_type_sep(std::string sep) { passage_type_sep_ = sep; return *this; }
+            ReportConfig& vaccine_sep(std::string sep) { vaccine_sep_ = sep; return *this; }
+            constexpr ReportConfig& show_no(bool show) { show_no_ = show; return *this; }
+
+        };
+
         enum PassageType : int { Cell, Egg, Reassortant, PassageTypeSize };
         template <typename UnaryFunction> static void for_each_passage_type(UnaryFunction f) { f(Cell); f(Egg); f(Reassortant); }
 
-        inline Vaccines(const Vaccine& aNameType) : mNameType(aNameType) {}
+        Vaccines(const Vaccine& aNameType) : mNameType(aNameType) {}
 
-        inline size_t number_of(PassageType pt) const { return mEntries[pt].size(); }
-        inline size_t number_of_eggs() const { return number_of(Egg); }
-        inline size_t number_of_cells() const { return number_of(Cell); }
-        inline size_t number_of_reassortants() const { return number_of(Reassortant); }
-        inline bool empty(PassageType pt) const { return mEntries[pt].empty(); }
-        inline bool empty() const { return std::all_of(std::begin(mEntries), std::end(mEntries), [](const auto& e) { return e.empty(); }); }
+        size_t number_of(PassageType pt) const { return mEntries[pt].size(); }
+        size_t number_of_eggs() const { return number_of(Egg); }
+        size_t number_of_cells() const { return number_of(Cell); }
+        size_t number_of_reassortants() const { return number_of(Reassortant); }
+        bool empty(PassageType pt) const { return mEntries[pt].empty(); }
+        bool empty() const { return std::all_of(std::begin(mEntries), std::end(mEntries), [](const auto& e) { return e.empty(); }); }
 
-        inline const Entry* for_passage_type(PassageType pt, size_t aNo = 0) const { return mEntries[pt].size() > aNo ? &mEntries[pt][aNo] : nullptr; }
+        const Entry* for_passage_type(PassageType pt, size_t aNo = 0) const { return mEntries[pt].size() > aNo ? &mEntries[pt][aNo] : nullptr; }
         size_t size_for_passage_type(PassageType pt) const { return mEntries[pt].size(); }
-        inline const Entry* egg(size_t aNo = 0) const { return for_passage_type(Egg, aNo); }
-        inline const Entry* cell(size_t aNo = 0) const { return for_passage_type(Cell, aNo); }
-        inline const Entry* reassortant(size_t aNo = 0) const { return for_passage_type(Reassortant, aNo); }
+        const Entry* egg(size_t aNo = 0) const { return for_passage_type(Egg, aNo); }
+        const Entry* cell(size_t aNo = 0) const { return for_passage_type(Cell, aNo); }
+        const Entry* reassortant(size_t aNo = 0) const { return for_passage_type(Reassortant, aNo); }
 
-        inline std::string type_as_string() const { return mNameType.type_as_string(); }
-        std::string report(size_t aIndent = 0) const;
-        std::string report(PassageType aPassageType, size_t aIndent = 0, size_t aMark = static_cast<size_t>(-1)) const;
+        std::string type_as_string() const { return mNameType.type_as_string(); }
+        std::string report(const Vaccines::ReportConfig& config) const;
+        std::string report(PassageType aPassageType, const Vaccines::ReportConfig& config, size_t aMark = static_cast<size_t>(-1)) const;
 
-        inline bool match(std::string aName, std::string aType) const
+        bool match(std::string aName, std::string aType) const
             {
                 return (aName.empty() || mNameType.name.find(aName) != std::string::npos) && (aType.empty() || mNameType.type == Vaccine::type_from_string(aType));
             }
 
-        inline std::string type() const { return mNameType.type_as_string(); }
-        inline std::string name() const { return mNameType.name; }
+        std::string type() const { return mNameType.type_as_string(); }
+        std::string name() const { return mNameType.name; }
 
         static inline PassageType passage_type(std::string pt)
             {
@@ -134,12 +149,12 @@ namespace hidb
                 return "?";
             }
 
-        inline void add(size_t aAntigenIndex, std::shared_ptr<acmacs::chart::Antigen> aChartAntigen, AntigenP aHidbAntigen, std::shared_ptr<hidb::Table> aMostRecentTable, std::vector<HomologousSerum>&& aSera)
+        void add(size_t aAntigenIndex, std::shared_ptr<acmacs::chart::Antigen> aChartAntigen, AntigenP aHidbAntigen, std::shared_ptr<hidb::Table> aMostRecentTable, std::vector<HomologousSerum>&& aSera)
             {
                 mEntries[passage_type(*aChartAntigen)].emplace_back(aAntigenIndex, aChartAntigen, aHidbAntigen, aMostRecentTable, std::move(aSera));
             }
 
-        inline void sort()
+        void sort()
             {
                 for (auto& entry: mEntries)
                     std::sort(entry.begin(), entry.end());
@@ -154,7 +169,7 @@ namespace hidb
      public:
         using std::vector<Vaccines>::vector;
 
-        std::string report(size_t aIndent = 0) const;
+        std::string report(const Vaccines::ReportConfig& config) const;
 
     }; // class VaccinesOfChart
 

@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <functional>
 #include <iomanip>
+// #include <cmath>
 
 #include "hidb-5/hidb.hh"
 #include "hidb-5/vaccines.hh"
@@ -167,12 +168,13 @@ size_t hidb::Vaccines::HomologousSerum::number_of_tables() const
 
 // ----------------------------------------------------------------------
 
-std::string hidb::Vaccines::report(size_t aIndent) const
+std::string hidb::Vaccines::report(const Vaccines::ReportConfig& config) const
 {
     std::ostringstream out;
     if (!empty()) {
-        out << std::string(aIndent, ' ') << "Vaccine " << type_as_string() << ' ' << mNameType.name << std::endl;
-        for_each_passage_type([this,aIndent,&out](PassageType pt) { out << this->report(pt, aIndent + 2); });
+        out << std::string(config.indent_, ' ') << "Vaccine " << type_as_string() << " [" << mNameType.name << "]\n";
+        for_each_passage_type([this,&config,&out](PassageType pt) { out << this->report(pt, config); });
+        out << config.vaccine_sep_;
     }
     return out.str();
 
@@ -180,13 +182,16 @@ std::string hidb::Vaccines::report(size_t aIndent) const
 
 // ----------------------------------------------------------------------
 
-std::string hidb::Vaccines::report(PassageType aPassageType, size_t aIndent, size_t aMark) const
+std::string hidb::Vaccines::report(PassageType aPassageType, const Vaccines::ReportConfig& config, size_t aMark) const
 {
     std::ostringstream out;
-    const std::string indent(aIndent, ' ');
+    const std::string indent(config.indent_ + 2, ' ');
     auto entry_report = [&](size_t aNo, const auto& entry, bool aMarkIt) {
-        out << indent << (aMarkIt ? ">>" : "  ") << std::setw(2) << aNo << ' ' << entry.chart_antigen_index << ' ' << entry.chart_antigen->full_name()
-            << " tables:" << entry.hidb_antigen->number_of_tables()
+        out << indent << (aMarkIt ? ">>" : "  ");
+        if (config.show_no_)
+            out << std::setw(2) << aNo << ' ';
+        out << std::setw(4) << entry.chart_antigen_index << " \"" << entry.chart_antigen->full_name()
+            << "\" tables:" << entry.hidb_antigen->number_of_tables()
             << " recent:" << entry.most_recent_table->name() << '\n';
         for (const auto& hs: entry.homologous_sera)
             out << indent << "      " << hs.chart_serum->serum_id() << ' ' << hs.chart_serum->annotations().join() << " tables:" << hs.hidb_serum->number_of_tables() << " recent:" << hs.most_recent_table->name() << std::endl;
@@ -195,8 +200,11 @@ std::string hidb::Vaccines::report(PassageType aPassageType, size_t aIndent, siz
     const auto& entry = mEntries[aPassageType];
     if (!entry.empty()) {
         out << indent << passage_type_name(aPassageType) << " (" << entry.size() << ')' << std::endl;
+        // const auto me = std::max_element(entry.begin(), entry.end(), [](const auto& e1, const auto& e2) { return e1.chart_antigen_index < e2.chart_antigen_index; });
+          // const auto num_digits = static_cast<int>(std::log10(me->chart_antigen_index)) + 1;
         for (size_t no = 0; no < entry.size(); ++no)
             entry_report(no, entry[no], aMark == no);
+        out << config.passage_type_sep_;
     }
     return out.str();
 
@@ -215,11 +223,11 @@ std::string hidb::Vaccines::report(PassageType aPassageType, size_t aIndent, siz
 // ----------------------------------------------------------------------
 // ----------------------------------------------------------------------
 
-std::string hidb::VaccinesOfChart::report(size_t aIndent) const
+std::string hidb::VaccinesOfChart::report(const Vaccines::ReportConfig& config) const
 {
     std::string result;
     for (const auto& v: *this)
-        result += v.report(aIndent);
+        result += v.report(config);
     return result;
 
 } // hidb::VaccinesOfChart::report

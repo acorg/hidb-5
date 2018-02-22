@@ -26,7 +26,7 @@ int main(int argc, char* const argv[])
 
         auto chart = acmacs::chart::import_from_file(args[0], acmacs::chart::Verify::None, args["--time"] ? report_time::Yes : report_time::No);
         auto vaccines = hidb::vaccines(*chart, verbose);
-        std::cout << vaccines.report() << '\n';
+        std::cout << vaccines.report(hidb::Vaccines::ReportConfig{}.vaccine_sep("\n").show_no(false)) << '\n';
         return 0;
     }
     catch (std::exception& err) {
