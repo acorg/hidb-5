@@ -33,8 +33,8 @@ static std::map<std::string, std::vector<hidb::Vaccine>> sVaccines = {
     {"BVICTORIA", {
             {"MALAYSIA/2506/2004",       hidb::Vaccine::Previous},
             {"BRISBANE/60/2008",         hidb::Vaccine::Previous},
-            {"MARYLAND/15/2016",       hidb::Vaccine::Current}, // 2018-02-22, which of the two WHO chosen?
-            {"COLORADO/6/2017",        hidb::Vaccine::Current}, // 2018-02-22, which of the two WHO chosen?
+              // {"MARYLAND/15/2016",       hidb::Vaccine::Current},
+            {"COLORADO/6/2017",        hidb::Vaccine::Current}, // 2018-03-01 http://www.who.int/influenza/vaccines/virus/recommendations/2018_19_north/en/
               // {"PARIS/1762/2009",          hidb::Vaccine::Current}, // not used by Crick anymore, B/Ireland/3154/2016 is used instead (2017-08-21)
             {"SOUTH AUSTRALIA/81/2012",  hidb::Vaccine::Surrogate},
             {"IRELAND/3154/2016",        hidb::Vaccine::Surrogate},
