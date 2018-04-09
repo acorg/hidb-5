@@ -165,6 +165,7 @@ namespace hidb
         inline size_t size() const { return mNumberOfTables; }
         std::shared_ptr<Table> operator[](size_t aIndex) const;
         std::shared_ptr<Table> most_recent(const indexes_t& aTables) const;
+        std::shared_ptr<Table> oldest(const indexes_t& aTables) const;
 
         using iterator = acmacs::chart::internal::iterator<Tables, std::shared_ptr<Table>>;
         inline iterator begin() const { return {*this, 0}; }

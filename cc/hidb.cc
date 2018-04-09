@@ -423,6 +423,19 @@ std::shared_ptr<hidb::Table> hidb::Tables::most_recent(const indexes_t& aTables)
 
 // ----------------------------------------------------------------------
 
+std::shared_ptr<hidb::Table> hidb::Tables::oldest(const indexes_t& aTables) const
+{
+    const auto* index = reinterpret_cast<const hidb::bin::ast_offset_t*>(mIndex);
+    auto table_date_compare = [this,index] (size_t i1, size_t i2) -> bool {
+                                  const auto t1{reinterpret_cast<const bin::Table*>(this->mTable0 + index[i1])}, t2{reinterpret_cast<const bin::Table*>(this->mTable0 + index[i2])};
+                                  return t1->date() < t2->date();
+                              };
+    return operator[](*std::min_element(aTables.begin(), aTables.end(), table_date_compare));
+
+} // hidb::Tables::oldest
+
+// ----------------------------------------------------------------------
+
 using offset_t = const hidb::bin::ast_offset_t*;
 
 struct first_last_t
