@@ -185,6 +185,23 @@ size_t hidb::Antigen::number_of_tables() const
 
 // ----------------------------------------------------------------------
 
+std::string hidb::Antigen::country(const LocDb& locdb) const
+{
+    const std::string loc{location()};
+    try {
+        return locdb.country(loc);
+    }
+    catch (LocationNotFound&) {
+        if (loc.size() == 2) {
+            return locdb.find_cdc_abbreviation(loc).country();
+        }
+    }
+    return "UNKNOWN";
+
+} // hidb::Antigen::country
+
+// ----------------------------------------------------------------------
+
 std::shared_ptr<hidb::Sera> hidb::HiDb::sera() const
 {
     const auto* sera = mData + reinterpret_cast<const hidb::bin::Header*>(mData)->serum_offset;

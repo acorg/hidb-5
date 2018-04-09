@@ -8,6 +8,8 @@
 
 // ----------------------------------------------------------------------
 
+class LocDb;
+
 namespace hidb
 {
     namespace bin { struct Table; }
@@ -23,7 +25,7 @@ namespace hidb
     class Antigen : public acmacs::chart::Antigen
     {
      public:
-        inline Antigen(const char* aAntigen, const HiDb& aHiDb) : mAntigen(aAntigen), mHiDb(aHiDb) {}
+        Antigen(const char* aAntigen, const HiDb& aHiDb) : mAntigen(aAntigen), mHiDb(aHiDb) {}
 
         acmacs::chart::Name name() const override;
         acmacs::chart::Date date() const override;
@@ -31,9 +33,9 @@ namespace hidb
         acmacs::chart::BLineage lineage() const override;
         acmacs::chart::Reassortant reassortant() const override;
         acmacs::chart::LabIds lab_ids() const override;
-        inline acmacs::chart::Clades clades() const override { return {}; }
+        acmacs::chart::Clades clades() const override { return {}; }
         acmacs::chart::Annotations annotations() const override;
-        inline bool reference() const override { return false; }
+        bool reference() const override { return false; }
 
         indexes_t tables() const;
         size_t number_of_tables() const;
@@ -42,6 +44,8 @@ namespace hidb
         std::string_view isolation() const;
         std::string year() const;
         std::string date_compact() const;
+
+        std::string country(const LocDb& locdb) const;
 
      private:
         const char* mAntigen;
@@ -57,11 +61,11 @@ namespace hidb
     class Antigens : public acmacs::chart::Antigens
     {
      public:
-        inline Antigens(size_t aNumberOfAntigens, const char* aIndex, const char* aAntigen0, const HiDb& aHiDb)
+        Antigens(size_t aNumberOfAntigens, const char* aIndex, const char* aAntigen0, const HiDb& aHiDb)
             : mNumberOfAntigens(aNumberOfAntigens), mIndex(aIndex), mAntigen0(aAntigen0), mHiDb(aHiDb) {}
 
-        inline size_t size() const override { return mNumberOfAntigens; }
-        inline std::shared_ptr<acmacs::chart::Antigen> operator[](size_t aIndex) const override { return at(aIndex); }
+        size_t size() const override { return mNumberOfAntigens; }
+        std::shared_ptr<acmacs::chart::Antigen> operator[](size_t aIndex) const override { return at(aIndex); }
         AntigenP at(size_t aIndex) const;
         AntigenPIndexList find(std::string aName, FixLocation aFixLocation, FindFuzzy fuzzy = FindFuzzy::No) const;
         AntigenPList find_labid(std::string labid) const;
@@ -84,7 +88,7 @@ namespace hidb
     class Serum : public acmacs::chart::Serum
     {
      public:
-        inline Serum(const char* aSerum, const HiDb& aHiDb) : mSerum(aSerum), mHiDb(aHiDb) {}
+        Serum(const char* aSerum, const HiDb& aHiDb) : mSerum(aSerum), mHiDb(aHiDb) {}
 
         acmacs::chart::Name name() const override;
         acmacs::chart::Passage passage() const override;
@@ -117,11 +121,11 @@ namespace hidb
     class Sera : public acmacs::chart::Sera
     {
      public:
-        inline Sera(size_t aNumberOfSera, const char* aIndex, const char* aSerum0, const HiDb& aHiDb)
+        Sera(size_t aNumberOfSera, const char* aIndex, const char* aSerum0, const HiDb& aHiDb)
             : mNumberOfSera(aNumberOfSera), mIndex(aIndex), mSerum0(aSerum0), mHiDb(aHiDb) {}
 
-        inline size_t size() const override { return mNumberOfSera; }
-        inline std::shared_ptr<acmacs::chart::Serum> operator[](size_t aIndex) const override { return at(aIndex); }
+        size_t size() const override { return mNumberOfSera; }
+        std::shared_ptr<acmacs::chart::Serum> operator[](size_t aIndex) const override { return at(aIndex); }
         SerumP at(size_t aIndex) const;
         SerumPIndexList find(std::string aName, FixLocation aFixLocation, FindFuzzy fuzzy = FindFuzzy::No) const;
         SerumPIndex find(const acmacs::chart::Serum& aSerum) const; // find_serum_of_chart
@@ -141,7 +145,7 @@ namespace hidb
     class Table // : public acmacs::chart::Table
     {
      public:
-        inline Table(const char* aTable) : mTable(reinterpret_cast<const bin::Table*>(aTable)) {}
+        Table(const char* aTable) : mTable(reinterpret_cast<const bin::Table*>(aTable)) {}
 
         std::string name() const;
         std::string_view assay() const;
@@ -159,17 +163,17 @@ namespace hidb
     class Tables // : public acmacs::chart::Tables
     {
      public:
-        inline Tables(size_t aNumberOfTables, const char* aIndex, const char* aTable0)
+        Tables(size_t aNumberOfTables, const char* aIndex, const char* aTable0)
             : mNumberOfTables(aNumberOfTables), mIndex(aIndex), mTable0(aTable0) {}
 
-        inline size_t size() const { return mNumberOfTables; }
+        size_t size() const { return mNumberOfTables; }
         std::shared_ptr<Table> operator[](size_t aIndex) const;
         std::shared_ptr<Table> most_recent(const indexes_t& aTables) const;
         std::shared_ptr<Table> oldest(const indexes_t& aTables) const;
 
         using iterator = acmacs::chart::internal::iterator<Tables, std::shared_ptr<Table>>;
-        inline iterator begin() const { return {*this, 0}; }
-        inline iterator end() const { return {*this, size()}; }
+        iterator begin() const { return {*this, 0}; }
+        iterator end() const { return {*this, size()}; }
 
      private:
         size_t mNumberOfTables;
@@ -190,8 +194,8 @@ namespace hidb
         std::shared_ptr<Tables> tables() const;
         std::string_view virus_type() const;
 
-        inline std::string_view lab(const Antigen& aAntigen, const Tables& aTables) const { return aTables[aAntigen.tables()[0]]->lab(); }
-        inline std::string_view lab(const Serum& aSerum, const Tables& aTables) const { return aTables[aSerum.tables()[0]]->lab(); }
+        std::string_view lab(const Antigen& aAntigen, const Tables& aTables) const { return aTables[aAntigen.tables()[0]]->lab(); }
+        std::string_view lab(const Serum& aSerum, const Tables& aTables) const { return aTables[aSerum.tables()[0]]->lab(); }
 
         // void find_homologous_antigens_for_sera_of_chart(Chart& aChart) const; // sets homologous_antigen attribute in chart
         // std::string serum_date(const SerumData& aSerum) const; // for stat
