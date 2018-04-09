@@ -33,10 +33,12 @@ include $(ACMACSD_ROOT)/share/makefiles/Makefile.dist-build.vars
 CXXFLAGS = -MMD -g $(OPTIMIZATION) $(PROFILE) -fPIC -std=$(STD) $(WARNINGS) -Icc -I$(AD_INCLUDE) $(PKG_INCLUDES)
 LDFLAGS = $(OPTIMIZATION) $(PROFILE)
 LDLIBS = \
-	$(AD_LIB)/$(call shared_lib_name,libacmacsbase,1,0) \
-	$(AD_LIB)/$(call shared_lib_name,liblocationdb,1,0) \
-	$(AD_LIB)/$(call shared_lib_name,libacmacschart,2,0) \
-	$(shell pkg-config --libs liblzma) $(CXX_LIB)
+  $(AD_LIB)/$(call shared_lib_name,libacmacsbase,1,0) \
+  $(AD_LIB)/$(call shared_lib_name,liblocationdb,1,0) \
+  $(AD_LIB)/$(call shared_lib_name,libacmacschart,2,0) \
+  $(shell pkg-config --libs liblzma) \
+  -L$(AD_LIB) -lboost_date_time \
+  $(CXX_LIB)
 
 PKG_INCLUDES = $(shell pkg-config --cflags liblzma)
 
