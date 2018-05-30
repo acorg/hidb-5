@@ -71,6 +71,13 @@ std::string hidb::bin::Antigen::date(bool compact) const
 
 // ----------------------------------------------------------------------
 
+#ifndef __clang__
+#pragma GCC push_options
+// g++-7 and g++-8 fails on optimizing the loop in the function below even with -O1, loop becomes infinite
+// possible reason is sizeof(lab_id_offset) = 5
+#pragma GCC optimize("O0")
+#endif
+
 std::vector<std::string_view> hidb::bin::Antigen::lab_ids() const
 {
     std::vector<std::string_view> result;
@@ -86,6 +93,10 @@ std::vector<std::string_view> hidb::bin::Antigen::lab_ids() const
     return result;
 
 } // hidb::bin::Antigen::lab_ids
+
+#ifndef __clang__
+#pragma GCC pop_options
+#endif
 
 // ----------------------------------------------------------------------
 
