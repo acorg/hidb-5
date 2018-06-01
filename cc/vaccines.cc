@@ -3,6 +3,7 @@
 #include <iomanip>
 // #include <cmath>
 
+#include "acmacs-chart-2/chart-modify.hh"
 #include "hidb-5/hidb.hh"
 #include "hidb-5/vaccines.hh"
 
@@ -97,6 +98,30 @@ const std::vector<hidb::Vaccine>& hidb::vaccine_names(std::string aSubtype, std:
     return sVaccines.at(aSubtype + aLineage);
 
 } // hidb::vaccines
+
+// ----------------------------------------------------------------------
+
+void hidb::update_vaccines(acmacs::chart::ChartModify& chart, const VaccinesOfChart& vaccines, bool /*verbose*/)
+{
+    for (const auto& vacc : vaccines) {
+        if (!vacc.empty()) {
+            Vaccines::for_each_passage_type([&chart,&vacc](Vaccines::PassageType pt) {
+                for (size_t no = 0; no < vacc.size_for_passage_type(pt); ++no) {
+                    const auto* entry = vacc.for_passage_type(pt, no);
+                }
+            });
+        }
+    }
+
+} // hidb::update_vaccines
+
+// ----------------------------------------------------------------------
+
+void hidb::update_vaccines(acmacs::chart::ChartModify& aChart, bool aVerbose)
+{
+    update_vaccines(aChart, vaccines(aChart, aVerbose), aVerbose);
+
+} // hidb::update_vaccines
 
 // ----------------------------------------------------------------------
 

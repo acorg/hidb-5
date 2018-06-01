@@ -9,6 +9,8 @@
 
 // ----------------------------------------------------------------------
 
+namespace acmacs::chart { class ChartModify; }
+
 namespace hidb
 {
     class Vaccine
@@ -180,6 +182,8 @@ namespace hidb
     // Vaccines* find_vaccines_in_chart(std::string aName, const Chart& aChart);
     void vaccines_for_name(Vaccines& aVaccines, std::string aName, const acmacs::chart::Chart& aChart, bool aVerbose = false);
     VaccinesOfChart vaccines(const acmacs::chart::Chart& aChart, bool aVerbose = false);
+    void update_vaccines(acmacs::chart::ChartModify& aChart, const VaccinesOfChart& vaccines, bool aVerbose = false);
+    void update_vaccines(acmacs::chart::ChartModify& aChart, bool aVerbose = false);
 
 } // namespace hidb
 
