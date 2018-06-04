@@ -75,7 +75,7 @@ void hidb::vaccines_for_name(Vaccines& aVaccines, std::string aName, const acmac
     for (size_t ag_no: chart_antigens->find_by_name(virus_type + "/" + aName)) {
         try {
             auto chart_antigen = aChart.antigen(ag_no);
-            auto [hidb_antigen, hidb_antigen_index] = hidb_antigens->find(*chart_antigen);
+            auto [hidb_antigen, hidb_antigen_index] = hidb_antigens->find(*chart_antigen, passage_strictness::ignore_if_empty);
             std::vector<hidb::Vaccines::HomologousSerum> homologous_sera;
             for (auto sd: hidb_sera->find_homologous(hidb_antigen_index, *hidb_antigen)) {
                 if (const auto sr_no = chart_sera->find_by_full_name(virus_type + "/" + sd->full_name())) {
@@ -101,11 +101,11 @@ const std::vector<hidb::Vaccine>& hidb::vaccine_names(std::string aSubtype, std:
 
 // ----------------------------------------------------------------------
 
-void hidb::update_vaccines(acmacs::chart::ChartModify& chart, const VaccinesOfChart& vaccines, bool /*verbose*/)
+void hidb::update_vaccines(acmacs::chart::ChartModify& /*chart*/, const VaccinesOfChart& vaccines, bool /*verbose*/)
 {
     for (const auto& vacc : vaccines) {
         if (!vacc.empty()) {
-            Vaccines::for_each_passage_type([&chart,&vacc](Vaccines::PassageType pt) {
+            Vaccines::for_each_passage_type([&vacc](Vaccines::PassageType pt) {
                 for (size_t no = 0; no < vacc.size_for_passage_type(pt); ++no) {
                     const auto* entry = vacc.for_passage_type(pt, no);
                 }

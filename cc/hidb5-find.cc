@@ -86,9 +86,9 @@ void find_antigens(const hidb::HiDb& hidb, std::string aName, const argc_argv& /
 {
     try {
         std::string prefix;
-        auto antigen_index_list = hidb.antigens()->find(string::upper(aName), hidb::FixLocation::Yes, hidb::FindFuzzy::No);
+        auto antigen_index_list = hidb.antigens()->find(string::upper(aName), hidb::fix_location::yes, hidb::find_fuzzy::no);
         if (antigen_index_list.empty()) {
-            antigen_index_list = hidb.antigens()->find(string::upper(aName), hidb::FixLocation::Yes, hidb::FindFuzzy::Yes);
+            antigen_index_list = hidb.antigens()->find(string::upper(aName), hidb::fix_location::yes, hidb::find_fuzzy::yes);
             prefix = "*** ";
         }
         for (auto antigen_index: antigen_index_list)
@@ -116,9 +116,9 @@ void find_sera(const hidb::HiDb& hidb, std::string aName, const argc_argv& /*arg
 {
     try {
         std::string prefix;
-        auto serum_index_list = hidb.sera()->find(string::upper(aName), hidb::FixLocation::Yes, hidb::FindFuzzy::No);
+        auto serum_index_list = hidb.sera()->find(string::upper(aName), hidb::fix_location::yes, hidb::find_fuzzy::no);
         if (serum_index_list.empty()) {
-            serum_index_list = hidb.sera()->find(string::upper(aName), hidb::FixLocation::Yes, hidb::FindFuzzy::Yes);
+            serum_index_list = hidb.sera()->find(string::upper(aName), hidb::fix_location::yes, hidb::find_fuzzy::yes);
             prefix = "*** ";
         }
         for (auto serum_index: serum_index_list)

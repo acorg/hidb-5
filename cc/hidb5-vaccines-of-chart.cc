@@ -25,6 +25,8 @@ int main(int argc, char* const argv[])
         hidb::setup(args["--db-dir"], {}, verbose);
 
         auto chart = acmacs::chart::import_from_file(args[0], acmacs::chart::Verify::None, args["--time"] ? report_time::Yes : report_time::No);
+        if (chart->info()->virus_type(acmacs::chart::Info::Compute::Yes).empty())
+            throw std::runtime_error("chart has no virus_type");
         auto vaccines = hidb::vaccines(*chart, verbose);
         std::cout << vaccines.report(hidb::Vaccines::ReportConfig{}.vaccine_sep("\n").show_no(false)) << '\n';
         return 0;

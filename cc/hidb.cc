@@ -479,13 +479,13 @@ template <typename F> inline first_last_t filter_by(first_last_t first_last, F f
     return {found, first_last.last};
 }
 
-template <typename AgSr, typename S> inline first_last_t find_by(first_last_t first_last, const char* aData, S location, S isolation, S year, hidb::FindFuzzy fuzzy)
+template <typename AgSr, typename S> inline first_last_t find_by(first_last_t first_last, const char* aData, S location, S isolation, S year, hidb::find_fuzzy fuzzy)
 {
     first_last = filter_by(first_last, [aData](hidb::bin::ast_offset_t offset) { return reinterpret_cast<const AgSr*>(aData + offset)->location(); }, location);
     if (!isolation.empty()) {
         const auto first_last_saved = first_last;
         first_last = filter_by(first_last, [aData](hidb::bin::ast_offset_t offset) { return reinterpret_cast<const AgSr*>(aData + offset)->isolation(); }, isolation);
-        if (first_last.empty() && fuzzy == hidb::FindFuzzy::Yes) // try isolation as prefix
+        if (first_last.empty() && fuzzy == hidb::find_fuzzy::yes) // try isolation as prefix
             first_last = filter_by(first_last_saved, [aData,size=isolation.size()](hidb::bin::ast_offset_t offset) { return reinterpret_cast<const AgSr*>(aData + offset)->isolation().substr(0, size); }, isolation);
     }
     if (!year.empty())
@@ -495,14 +495,14 @@ template <typename AgSr, typename S> inline first_last_t find_by(first_last_t fi
 
 // ----------------------------------------------------------------------
 
-hidb::AntigenPIndexList hidb::Antigens::find(std::string aName, FixLocation aFixLocation, FindFuzzy fuzzy) const
+hidb::AntigenPIndexList hidb::Antigens::find(std::string aName, fix_location aFixLocation, find_fuzzy fuzzy) const
 {
     const first_last_t all_antigens(reinterpret_cast<const hidb::bin::ast_offset_t*>(mIndex), mNumberOfAntigens);
     first_last_t first_last;
     try {
         std::string virus_type, host, location, isolation, year, passage;
         virus_name::split(aName, virus_type, host, location, isolation, year, passage);
-        if (aFixLocation == FixLocation::Yes)
+        if (aFixLocation == fix_location::yes)
             location = get_locdb().find(location).name;
         first_last = find_by<hidb::bin::Antigen>(all_antigens, mAntigen0, location, isolation, year, fuzzy);
     }
@@ -537,7 +537,7 @@ hidb::AntigenPIndexList hidb::Antigens::find(std::string aName, FixLocation aFix
 
 // ----------------------------------------------------------------------
 
-hidb::SerumPIndexList hidb::Sera::find(std::string aName, FixLocation aFixLocation, FindFuzzy fuzzy) const
+hidb::SerumPIndexList hidb::Sera::find(std::string aName, fix_location aFixLocation, find_fuzzy fuzzy) const
 {
     const first_last_t all_sera(reinterpret_cast<const hidb::bin::ast_offset_t*>(mIndex), mNumberOfSera);
     first_last_t first_last;
@@ -545,7 +545,7 @@ hidb::SerumPIndexList hidb::Sera::find(std::string aName, FixLocation aFixLocati
     try {
         std::string virus_type, host, isolation, year, passage;
         virus_name::split(aName, virus_type, host, location, isolation, year, passage);
-        if (aFixLocation == FixLocation::Yes)
+        if (aFixLocation == fix_location::yes)
             location = get_locdb().find(location).name;
         first_last = find_by<hidb::bin::Serum>(all_sera, mSerum0, location, isolation, year, fuzzy);
     }
@@ -556,11 +556,11 @@ hidb::SerumPIndexList hidb::Sera::find(std::string aName, FixLocation aFixLocati
               first_last = find_by<hidb::bin::Serum>(all_sera, mSerum0, parts[0], std::string_view{}, std::string_view{}, fuzzy);
               break;
           case 2:           // location/isolation
-              location = aFixLocation == hidb::FixLocation::Yes ? get_locdb().find(std::string(parts[0])).name : std::string(parts[0]);
+              location = aFixLocation == hidb::fix_location::yes ? get_locdb().find(std::string(parts[0])).name : std::string(parts[0]);
               first_last = find_by<hidb::bin::Serum>(all_sera, mSerum0, std::string_view(location), parts[1], std::string_view{}, fuzzy);
               break;
           case 3:          // host/location/isolation?
-              location = aFixLocation == hidb::FixLocation::Yes ? get_locdb().find(std::string(parts[1])).name : std::string(parts[1]);
+              location = aFixLocation == hidb::fix_location::yes ? get_locdb().find(std::string(parts[1])).name : std::string(parts[1]);
               first_last = find_by<hidb::bin::Serum>(all_sera, mSerum0, std::string_view(location), parts[2], std::string_view{}, fuzzy);
               break;
           default:          // ?
@@ -610,12 +610,13 @@ hidb::AntigenPList hidb::Antigens::find_labid(std::string labid) const
 
 // ----------------------------------------------------------------------
 
-hidb::AntigenPIndex hidb::Antigens::find(const acmacs::chart::Antigen& aAntigen) const
+hidb::AntigenPIndex hidb::Antigens::find(const acmacs::chart::Antigen& aAntigen, passage_strictness aPassageStrictness) const
 {
-    const auto antigen_index_list = find(aAntigen.name(), hidb::FixLocation::No);
+    const auto antigen_index_list = find(aAntigen.name(), hidb::fix_location::no);
+    const bool ignore_passage = aPassageStrictness == passage_strictness::ignore_if_empty && aAntigen.passage().empty();
     for (auto antigen_index: antigen_index_list) {
         const auto& antigen = antigen_index.first;
-        if (antigen->annotations() == aAntigen.annotations() && antigen->reassortant() == aAntigen.reassortant() && antigen->passage() == aAntigen.passage())
+        if (antigen->annotations() == aAntigen.annotations() && antigen->reassortant() == aAntigen.reassortant() && (ignore_passage || antigen->passage() == aAntigen.passage()))
             return antigen_index;
     }
     std::cerr << "WARNING: not in hidb: " << aAntigen.full_name() << '\n';
@@ -644,7 +645,7 @@ hidb::AntigenPList hidb::Antigens::find(const acmacs::chart::Antigens& aAntigens
 
 hidb::SerumPIndex hidb::Sera::find(const acmacs::chart::Serum& aSerum) const
 {
-    const auto serum_index_list = find(aSerum.name(), hidb::FixLocation::No);
+    const auto serum_index_list = find(aSerum.name(), hidb::fix_location::no);
     for (auto serum_index: serum_index_list) {
         const auto& serum = serum_index.first;
         if (serum->annotations() == aSerum.annotations() && serum->reassortant() == aSerum.reassortant() && serum->serum_id() == aSerum.serum_id())
@@ -697,7 +698,7 @@ hidb::SerumPList hidb::Sera::find_homologous(size_t aAntigenIndex, const Antigen
 {
     const first_last_t all_sera(reinterpret_cast<const hidb::bin::ast_offset_t*>(mIndex), mNumberOfSera);
     const std::string antigen_year(aAntigen.year());
-    const first_last_t first_last = find_by<hidb::bin::Serum>(all_sera, mSerum0, aAntigen.location(), aAntigen.isolation(), std::string_view(antigen_year), FindFuzzy::No);
+    const first_last_t first_last = find_by<hidb::bin::Serum>(all_sera, mSerum0, aAntigen.location(), aAntigen.isolation(), std::string_view(antigen_year), find_fuzzy::no);
     hidb::SerumPList result;
     for (auto offset_p = first_last.first; offset_p != first_last.last; ++offset_p) {
         const auto [num_homologous, first_homologous_p] = reinterpret_cast<const hidb::bin::Serum*>(mSerum0 + *offset_p)->homologous_antigens();

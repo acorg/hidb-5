@@ -17,8 +17,9 @@ namespace hidb
     using indexes_t = std::vector<size_t>;
     class not_found : public std::runtime_error { public: using std::runtime_error::runtime_error; };
 
-    enum class FindFuzzy { No, Yes };
-    enum class FixLocation { No, Yes };
+    enum class find_fuzzy { no, yes };
+    enum class fix_location { no, yes };
+    enum class passage_strictness { yes, ignore_if_empty };
 
     class HiDb;
 
@@ -67,9 +68,9 @@ namespace hidb
         size_t size() const override { return mNumberOfAntigens; }
         std::shared_ptr<acmacs::chart::Antigen> operator[](size_t aIndex) const override { return at(aIndex); }
         AntigenP at(size_t aIndex) const;
-        AntigenPIndexList find(std::string aName, FixLocation aFixLocation, FindFuzzy fuzzy = FindFuzzy::No) const;
+        AntigenPIndexList find(std::string aName, fix_location aFixLocation, find_fuzzy fuzzy = find_fuzzy::no) const;
         AntigenPList find_labid(std::string labid) const;
-        AntigenPIndex find(const acmacs::chart::Antigen& aAntigen) const; // find_antigen_of_chart
+        AntigenPIndex find(const acmacs::chart::Antigen& aAntigen, passage_strictness aPassageStrictness = passage_strictness::yes) const; // hidb::vaccines_for_name
         AntigenPList find(const acmacs::chart::Antigens& aAntigens) const;
         AntigenPList date_range(std::string_view first, std::string_view after_last) const;
 
@@ -127,7 +128,7 @@ namespace hidb
         size_t size() const override { return mNumberOfSera; }
         std::shared_ptr<acmacs::chart::Serum> operator[](size_t aIndex) const override { return at(aIndex); }
         SerumP at(size_t aIndex) const;
-        SerumPIndexList find(std::string aName, FixLocation aFixLocation, FindFuzzy fuzzy = FindFuzzy::No) const;
+        SerumPIndexList find(std::string aName, fix_location aFixLocation, find_fuzzy fuzzy = find_fuzzy::no) const;
         SerumPIndex find(const acmacs::chart::Serum& aSerum) const; // find_serum_of_chart
         SerumPList find(const acmacs::chart::Sera& aSera) const;
         SerumPList find_homologous(size_t aAntigenIndex, const Antigen& aAntigen) const; // for vaccines
