@@ -21,7 +21,13 @@ static std::map<std::string, std::vector<hidb::Vaccine>> sVaccines = {
             {"MICHIGAN/45/2015",         hidb::Vaccine::Current},
         }},
     {"A(H3N2)", {
-            {"BRISBANE/10/2007",         hidb::Vaccine::Previous},
+            {"SYDNEY/5/1997",            hidb::Vaccine::Previous}, // -2000
+            {"MOSCOW/10/1999",           hidb::Vaccine::Previous}, // 2000-2004
+            {"FUJIAN/411/2002",          hidb::Vaccine::Previous}, // 2004-2005
+            {"WELLINGTON/1/2004",        hidb::Vaccine::Previous}, // 2005
+            {"CALIFORNIA/7/2004",        hidb::Vaccine::Previous}, // 2005-2006
+            {"WISCONSIN/67/2005",        hidb::Vaccine::Previous}, // 2006-2008
+            {"BRISBANE/10/2007",         hidb::Vaccine::Previous}, // 2008-2010
             {"PERTH/16/2009",            hidb::Vaccine::Previous},
             {"VICTORIA/361/2011",        hidb::Vaccine::Previous},
             {"TEXAS/50/2012",            hidb::Vaccine::Previous},
