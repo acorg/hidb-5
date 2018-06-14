@@ -2,6 +2,7 @@
 
 #include "acmacs-base/argc-argv.hh"
 #include "acmacs-base/date.hh"
+#include "acmacs-base/csv.hh"
 #include "locationdb/locdb.hh"
 #include "hidb-5/hidb.hh"
 #include "hidb-5/hidb-set.hh"
@@ -50,10 +51,22 @@ int main(int argc, char* const argv[])
             }
         }
         for (auto [tag, entries] : data) {
+            acmacs::CsvWriter csv;
+            for (auto field : {"Name", "Isolation", "Table", "Days", "Country", "Lab Id", "Lineage"})
+                csv.add_field(field);
+            csv.new_row();
+            for (const auto& entry: entries) {
+                csv.add_field(std::get<0>(entry));
+                csv.add_field(std::get<1>(entry));
+                csv.add_field(std::get<2>(entry));
+                csv.add_field(std::get<3>(entry));
+                csv.add_field(std::get<4>(entry));
+                csv.add_field(std::get<5>(entry));
+                csv.add_field(std::get<6>(entry));
+                csv.new_row();
+            }
             std::ofstream out(args[0] + tag + ".csv");
-            out << "Name,Isolation,Table,Days,Country,Lab Id,Lineage\n";
-            for (const auto& entry: entries)
-                out << std::get<0>(entry) << ',' << std::get<1>(entry) << ',' << std::get<2>(entry) << ',' << std::get<3>(entry) << ',' << std::get<4>(entry) << ',' << std::get<5>(entry) << ',' << std::get<6>(entry) << '\n';
+            out << static_cast<std::string_view>(csv);
         }
 
         return 0;
