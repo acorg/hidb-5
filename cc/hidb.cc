@@ -500,8 +500,8 @@ hidb::AntigenPIndexList hidb::Antigens::find(std::string aName, fix_location aFi
     const first_last_t all_antigens(reinterpret_cast<const hidb::bin::ast_offset_t*>(mIndex), mNumberOfAntigens);
     first_last_t first_last;
     try {
-        std::string virus_type, host, location, isolation, year, passage;
-        virus_name::split(aName, virus_type, host, location, isolation, year, passage);
+        std::string virus_type, host, location, isolation, year, passage, extra;
+        virus_name::split_with_extra(aName, virus_type, host, location, isolation, year, passage, extra);
         if (aFixLocation == fix_location::yes)
             location = get_locdb().find(location).name;
         first_last = find_by<hidb::bin::Antigen>(all_antigens, mAntigen0, location, isolation, year, fuzzy);
@@ -543,8 +543,8 @@ hidb::SerumPIndexList hidb::Sera::find(std::string aName, fix_location aFixLocat
     first_last_t first_last;
     std::string location;
     try {
-        std::string virus_type, host, isolation, year, passage;
-        virus_name::split(aName, virus_type, host, location, isolation, year, passage);
+        std::string virus_type, host, isolation, year, passage, extra;
+        virus_name::split_with_extra(aName, virus_type, host, location, isolation, year, passage, extra);
         if (aFixLocation == fix_location::yes)
             location = get_locdb().find(location).name;
         first_last = find_by<hidb::bin::Serum>(all_sera, mSerum0, location, isolation, year, fuzzy);
