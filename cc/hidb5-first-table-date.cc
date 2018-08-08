@@ -37,7 +37,7 @@ int main(int argc, char* const argv[])
             auto tables = hidb.tables();
             for (auto ag_no = 0UL; ag_no < antigens->size(); ++ag_no) {
                 auto antigen = antigens->at(ag_no);
-                const std::string date = antigen->date_compact();
+                const Date date = antigen->date_compact();
                 const auto lineage = antigen->lineage();
                 const auto country = antigen->country(locdb);
                 std::string lab_id;
@@ -45,7 +45,7 @@ int main(int argc, char* const argv[])
                     lab_id = lab_ids[0];
                 auto first_table = tables->oldest(antigen->tables());
                 const auto first_table_date = first_table->date().substr(0, 8);
-                const ssize_t days = date.empty() ? -1 : days_between_dates(date, first_table_date);
+                const int days = date.empty() ? -1 : days_between_dates(date, Date(first_table_date));
                 const std::string tag = std::string(subtype) + '-' + std::string(first_table->lab()) + '-' + std::string(first_table->assay());
                 data[tag].emplace_back(antigen->name(), date, first_table_date, days >= 0 ? std::to_string(days) : std::string{}, country, lab_id, lineage);
             }
