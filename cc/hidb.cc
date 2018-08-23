@@ -612,6 +612,8 @@ hidb::AntigenPList hidb::Antigens::find_labid(std::string labid) const
 
 hidb::AntigenPIndex hidb::Antigens::find(const acmacs::chart::Antigen& aAntigen, passage_strictness aPassageStrictness) const
 {
+    if (aAntigen.annotations().distinct()) // distinct antigens are not stored
+        throw not_found(aAntigen.full_name());
     const auto antigen_index_list = find(aAntigen.name(), hidb::fix_location::no);
     const bool ignore_passage = aPassageStrictness == passage_strictness::ignore_if_empty && aAntigen.passage().empty();
     for (auto antigen_index: antigen_index_list) {
