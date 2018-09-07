@@ -81,26 +81,30 @@ void hidb::report_tables(std::ostream& out, const hidb::HiDb& hidb, const indexe
         if (!tables.empty()) {
             std::sort(tables.begin(), tables.end(), [](auto a, auto b) -> bool { return a->date() > b->date(); });
             std::map<std::pair<std::string_view, std::string_view>, std::vector<std::shared_ptr<hidb::Table>>> by_lab_assay;
+            for (auto table : tables)
+                by_lab_assay[{table->lab(), table->assay()}].push_back(table);
             switch (aReportTables) {
-              case report_tables::all:
-                  for (auto table: tables)
-                      by_lab_assay[{table->lab(), table->assay()}].push_back(table);
-                  if (by_lab_assay.size() > 1)
-                      out << aPrefix << "Tables:" << tables.size() << "  Recent: " << tables[0]->name() << '\n';
-                  for (auto entry: by_lab_assay) {
-                      out << aPrefix << entry.first.first << ':' << entry.first.second << ' ' << entry.second.size();
-                      for (auto table: entry.second)
-                          out << ' ' << string::join(":", {table->date(), table->rbc()});
-                  }
-                  break;
-              case report_tables::oldest:
-                  out << aPrefix << "Tables:" << tables.size() << "  Oldest: " << tables.back()->name();
-                  break;
-              case report_tables::recent:
-                  out << aPrefix << "Tables:" << tables.size() << "  Recent: " << tables.front()->name();
-                  break;
-              case report_tables::none:
-                  break;
+                case report_tables::all:
+                    if (by_lab_assay.size() > 1)
+                        out << aPrefix << "Tables:" << tables.size() << "  Recent: " << tables[0]->name() << '\n';
+                    for (auto entry : by_lab_assay) {
+                        out << aPrefix << entry.first.first << ':' << entry.first.second << ' ' << entry.second.size();
+                        for (auto table : entry.second)
+                            out << ' ' << string::join(":", {table->date(), table->rbc()});
+                    }
+                    break;
+                case report_tables::oldest:
+                    out << aPrefix << "Tables:" << tables.size();
+                    for (auto entry : by_lab_assay)
+                        out << aPrefix << "  " << entry.first.first << ':' << entry.first.second << ' ' << entry.second.size() << " oldest:" << entry.second.back()->name();
+                    break;
+                case report_tables::recent:
+                    out << aPrefix << "Tables:" << tables.size();
+                    for (auto entry : by_lab_assay)
+                        out << aPrefix << "  " << entry.first.first << ':' << entry.first.second << ' ' << entry.second.size() << " recent:" << entry.second.front()->name();
+                    break;
+                case report_tables::none:
+                    break;
             }
         }
         else
