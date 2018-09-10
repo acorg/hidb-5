@@ -7,6 +7,7 @@
 
 #include "acmacs-base/string.hh"
 #include "acmacs-base/enumerate.hh"
+#include "acmacs-base/rjson-forward.hh"
 
 namespace acmacs::chart
 {
@@ -17,8 +18,6 @@ namespace acmacs::chart
     class Serum;
 
 } // namespace acmacs::chart
-
-namespace rjson { inline namespace v1 { class array; } } // namespace rjson
 
 // ----------------------------------------------------------------------
 
@@ -315,9 +314,9 @@ class HidbMaker
     Tables mTables;
 
     void make_index();
-    void export_antigens(rjson::array& target) const;
-    void export_sera(rjson::array& target) const;
-    void export_tables(rjson::array& target) const;
+    void export_antigens(rjson::v1::array& target) const;
+    void export_sera(rjson::v1::array& target) const;
+    void export_tables(rjson::v1::array& target) const;
 
 }; // class HidbMaker
 

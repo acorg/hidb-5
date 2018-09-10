@@ -14,7 +14,7 @@
 class Estimations
 {
  public:
-    Estimations(const rjson::value& aSource, bool verbose);
+    Estimations(const rjson::v1::value& aSource, bool verbose);
 
     size_t number_of_antigens;
     size_t number_of_sera;
@@ -30,17 +30,17 @@ class Estimations
     std::string virus_type;
 
  private:
-    void antigen(const rjson::array& antigens, bool verbose);
-    void serum(const rjson::array& sera, bool verbose);
-    void table(const rjson::array& tables, bool verbose);
+    void antigen(const rjson::v1::array& antigens, bool verbose);
+    void serum(const rjson::v1::array& sera, bool verbose);
+    void table(const rjson::v1::array& tables, bool verbose);
 
 }; // class Estimations
 
 // ----------------------------------------------------------------------
 
-static size_t make_antigen(const rjson::object& aSource, hidb::bin::Antigen* aTarget);
-static size_t make_serum(const rjson::object& aSource, hidb::bin::Serum* aTarget);
-static size_t make_table(const rjson::object& aSource, hidb::bin::Table* aTarget);
+static size_t make_antigen(const rjson::v1::object& aSource, hidb::bin::Antigen* aTarget);
+static size_t make_serum(const rjson::v1::object& aSource, hidb::bin::Serum* aTarget);
+static size_t make_table(const rjson::v1::object& aSource, hidb::bin::Table* aTarget);
 
 // ----------------------------------------------------------------------
 
@@ -48,7 +48,7 @@ std::string hidb::json::read(std::string aData, bool verbose)
 {
     using ptr_t = char*;
 
-    const auto val = rjson::parse_string(aData);
+    const auto val = rjson::v1::parse_string(aData);
     Estimations estimations(val, verbose);
 
     std::string result(estimations.size, 0);
@@ -72,7 +72,7 @@ std::string hidb::json::read(std::string aData, bool verbose)
     *antigen_offset = 0;
     ++antigen_offset;
     hidb::bin::ast_offset_t previous_antigen_offset = 0;
-    for (const rjson::object& antigen: static_cast<const rjson::array&>(val["a"])) {
+    for (const rjson::v1::object& antigen: static_cast<const rjson::v1::array&>(val["a"])) {
         const auto ag_size = make_antigen(antigen, reinterpret_cast<hidb::bin::Antigen*>(antigen_data));
         *antigen_offset = static_cast<hidb::bin::ast_offset_t>(ag_size) + previous_antigen_offset;
         previous_antigen_offset = *antigen_offset;
@@ -91,7 +91,7 @@ std::string hidb::json::read(std::string aData, bool verbose)
     *serum_offset = 0;
     ++serum_offset;
     hidb::bin::ast_offset_t previous_serum_offset = 0;
-    for (const rjson::object& serum: static_cast<const rjson::array&>(val["s"])) {
+    for (const rjson::v1::object& serum: static_cast<const rjson::v1::array&>(val["s"])) {
         const auto sr_size = make_serum(serum, reinterpret_cast<hidb::bin::Serum*>(serum_data));
         *serum_offset = static_cast<hidb::bin::ast_offset_t>(sr_size) + previous_serum_offset;
         previous_serum_offset = *serum_offset;
@@ -110,7 +110,7 @@ std::string hidb::json::read(std::string aData, bool verbose)
     *table_offset = 0;
     ++table_offset;
     hidb::bin::ast_offset_t previous_table_offset = 0;
-    for (const rjson::object& table: static_cast<const rjson::array&>(val["t"])) {
+    for (const rjson::v1::object& table: static_cast<const rjson::v1::array&>(val["t"])) {
         const auto table_size = make_table(table, reinterpret_cast<hidb::bin::Table*>(table_data));
         *table_offset = static_cast<hidb::bin::ast_offset_t>(table_size) + previous_table_offset;
         previous_table_offset = *table_offset;
@@ -132,7 +132,7 @@ std::string hidb::json::read(std::string aData, bool verbose)
 
 // ----------------------------------------------------------------------
 
-size_t make_antigen(const rjson::object& aSource, hidb::bin::Antigen* aTarget)
+size_t make_antigen(const rjson::v1::object& aSource, hidb::bin::Antigen* aTarget)
 {
     if (std::string year = aSource.get_or_default("y", ""); year.size() == 4)
         std::memmove(aTarget->year_data, year.data(), 4);
@@ -252,7 +252,7 @@ size_t make_antigen(const rjson::object& aSource, hidb::bin::Antigen* aTarget)
 
 // ----------------------------------------------------------------------
 
-size_t make_serum(const rjson::object& aSource, hidb::bin::Serum* aTarget)
+size_t make_serum(const rjson::v1::object& aSource, hidb::bin::Serum* aTarget)
 {
     if (std::string year = aSource.get_or_default("y", ""); year.size() == 4)
         std::memmove(aTarget->year_data, year.data(), 4);
@@ -368,7 +368,7 @@ size_t make_serum(const rjson::object& aSource, hidb::bin::Serum* aTarget)
 
 // ----------------------------------------------------------------------
 
-size_t make_table(const rjson::object& aSource, hidb::bin::Table* aTarget)
+size_t make_table(const rjson::v1::object& aSource, hidb::bin::Table* aTarget)
 {
     if (std::string lineage = aSource.get_or_default("L", ""); lineage.size() == 1)
         aTarget->lineage = lineage[0];
@@ -466,7 +466,7 @@ size_t make_table(const rjson::object& aSource, hidb::bin::Table* aTarget)
 
 // ----------------------------------------------------------------------
 
-Estimations::Estimations(const rjson::value& aSource, bool verbose)
+Estimations::Estimations(const rjson::v1::value& aSource, bool verbose)
 {
     antigen(aSource["a"], verbose);
     serum(aSource["s"], verbose);
@@ -492,7 +492,7 @@ Estimations::Estimations(const rjson::value& aSource, bool verbose)
 
 // ----------------------------------------------------------------------
 
-void Estimations::antigen(const rjson::array& antigens, bool verbose)
+void Estimations::antigen(const rjson::v1::array& antigens, bool verbose)
 {
     number_of_antigens = antigens.size();
 
@@ -513,12 +513,12 @@ void Estimations::antigen(const rjson::array& antigens, bool verbose)
         ag_max_reassortant = std::max(ag_max_reassortant, reassortant);
         ag_max_num_annotations = std::max(ag_max_num_annotations, antigen.get_or_empty_array("a").size());
         size_t annotations = 0;
-        for (const rjson::string& anno: antigen.get_or_empty_array("a"))
+        for (const rjson::v1::string& anno: antigen.get_or_empty_array("a"))
             annotations += anno.size();
         ag_max_annotations = std::max(ag_max_annotations, annotations);
         ag_max_num_lab_id = std::max(ag_max_num_lab_id, antigen.get_or_empty_array("l").size());
         size_t lab_ids = 0;
-        for (const rjson::string& li: antigen.get_or_empty_array("l"))
+        for (const rjson::v1::string& li: antigen.get_or_empty_array("l"))
             lab_ids += li.size();
         ag_max_lab_id = std::max(ag_max_lab_id, lab_ids);
         ag_max_num_dates = std::max(ag_max_num_dates, antigen.get_or_empty_array("D").size());
@@ -555,7 +555,7 @@ void Estimations::antigen(const rjson::array& antigens, bool verbose)
 
 // ----------------------------------------------------------------------
 
-void Estimations::serum(const rjson::array& sera, bool verbose)
+void Estimations::serum(const rjson::v1::array& sera, bool verbose)
 {
     number_of_sera = sera.size();
 
@@ -580,7 +580,7 @@ void Estimations::serum(const rjson::array& sera, bool verbose)
         sr_max_serum_species = std::max(sr_max_serum_species, serum_species);
         sr_max_num_annotations = std::max(sr_max_num_annotations, serum.get_or_empty_array("a").size());
         size_t annotations = 0;
-        for (const rjson::string& anno: serum.get_or_empty_array("a"))
+        for (const rjson::v1::string& anno: serum.get_or_empty_array("a"))
             annotations += anno.size();
         sr_max_annotations = std::max(sr_max_annotations, annotations);
         sr_max_num_table_indexes = std::max(sr_max_num_table_indexes, serum.get_or_empty_array("T").size());
@@ -618,7 +618,7 @@ void Estimations::serum(const rjson::array& sera, bool verbose)
 
 // ----------------------------------------------------------------------
 
-void Estimations::table(const rjson::array& tables, bool verbose)
+void Estimations::table(const rjson::v1::array& tables, bool verbose)
 {
     constexpr const size_t average_titer_length = 5;
 
