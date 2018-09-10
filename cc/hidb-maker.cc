@@ -57,7 +57,7 @@ void HidbMaker::make_index()
 
 namespace rjson
 {
-    inline namespace v1 {
+    namespace v1 {
                template <> struct content_type<Lineage> { using type = string; };
                template <> struct content_type<Assay> { using type = string; };
                template <> struct content_type<Virus> { using type = string; };

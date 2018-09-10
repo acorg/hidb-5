@@ -172,7 +172,7 @@ namespace hidb
         std::shared_ptr<Table> most_recent(const indexes_t& aTables) const;
         std::shared_ptr<Table> oldest(const indexes_t& aTables) const;
 
-        using iterator = acmacs::chart::internal::iterator<Tables, std::shared_ptr<Table>>;
+        using iterator = acmacs::chart::detail::iterator<Tables, std::shared_ptr<Table>>;
         iterator begin() const { return {*this, 0}; }
         iterator end() const { return {*this, size()}; }
 
