@@ -261,17 +261,17 @@ std::string make_json(const data_t& data_antigens, const data_t& data_sera, cons
 
     for (auto [key, value] : data_antigens) {
         const auto [virus_type, lab, date, continent] = key;
-        data.set("antigens", virus_type, lab, date) = value;
+        data.set("antigens", virus_type, lab, date, continent) = value;
     }
 
     for (auto [key, value] : data_sera) {
         const auto [virus_type, lab, date, continent] = key;
-        data.set("sera", virus_type, lab, date) = value;
+        data.set("sera", virus_type, lab, date, continent) = value;
     }
 
     for (auto [key, value] : data_sera_unique) {
         const auto [virus_type, lab, date, continent] = key;
-        data.set("sera_unique", virus_type, lab, date) = value;
+        data.set("sera_unique", virus_type, lab, date, continent) = value;
     }
 
     return rjson::pretty(data, 1);
