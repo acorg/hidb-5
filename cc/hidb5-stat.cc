@@ -257,39 +257,24 @@ std::pair<data_t, data_t> scan_sera(std::string aStart, std::string aEnd)
 
 std::string make_json(const data_t& data_antigens, const data_t& data_sera, const data_t& data_sera_unique)
 {
-    rjson::v1::object data{{"antigens", rjson::v1::object{}},
-                       {"sera", rjson::v1::object{}},
-                       {"sera_unique", rjson::v1::object{}},
-                       {"date", rjson::v1::string{acmacs::date_format()}}};
+    rjson::value data{rjson::object{{"antigens", rjson::object{}}, {"sera", rjson::object{}}, {"sera_unique", rjson::object{}}, {"date", acmacs::date_format()}}};
 
-    for (auto [key, value]: data_antigens) {
-        auto [virus_type, lab, date, continent] = key;
-        rjson::v1::object& antigens = data["antigens"];
-        rjson::v1::object& for_vt = antigens.get_or_add(virus_type, rjson::v1::object{});
-        rjson::v1::object& for_lab = for_vt.get_or_add(lab, rjson::v1::object{});
-        rjson::v1::object& for_date = for_lab.get_or_add(date, rjson::v1::object{});
-        for_date.set_field(continent, rjson::v1::integer{value});
+    for (auto [key, value] : data_antigens) {
+        const auto [virus_type, lab, date, continent] = key;
+        data.set("antigens", virus_type, lab, date) = value;
     }
 
-    for (auto [key, value]: data_sera) {
-        auto [virus_type, lab, date, continent] = key;
-        rjson::v1::object& sera = data["sera"];
-        rjson::v1::object& for_vt = sera.get_or_add(virus_type, rjson::v1::object{});
-        rjson::v1::object& for_lab = for_vt.get_or_add(lab, rjson::v1::object{});
-        rjson::v1::object& for_date = for_lab.get_or_add(date, rjson::v1::object{});
-        for_date.set_field(continent, rjson::v1::integer{value});
+    for (auto [key, value] : data_sera) {
+        const auto [virus_type, lab, date, continent] = key;
+        data.set("sera", virus_type, lab, date) = value;
     }
 
-    for (auto [key, value]: data_sera_unique) {
-        auto [virus_type, lab, date, continent] = key;
-        rjson::v1::object& sera = data["sera_unique"];
-        rjson::v1::object& for_vt = sera.get_or_add(virus_type, rjson::v1::object{});
-        rjson::v1::object& for_lab = for_vt.get_or_add(lab, rjson::v1::object{});
-        rjson::v1::object& for_date = for_lab.get_or_add(date, rjson::v1::object{});
-        for_date.set_field(continent, rjson::v1::integer{value});
+    for (auto [key, value] : data_sera_unique) {
+        const auto [virus_type, lab, date, continent] = key;
+        data.set("sera_unique", virus_type, lab, date) = value;
     }
 
-    return data.to_json_pp(1);
+    return rjson::pretty(data, 1);
 
 } // make_json
 
