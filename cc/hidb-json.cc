@@ -256,11 +256,11 @@ size_t make_antigen(const rjson::value& aSource, hidb::bin::Antigen* aTarget)
 
 size_t make_serum(const rjson::value& aSource, hidb::bin::Serum* aTarget)
 {
-    if (std::string year = aSource["y"]; year.size() == 4)
+    if (std::string year(aSource["y"]); year.size() == 4)
         std::memmove(aTarget->year_data, static_cast<std::string_view>(year).data(), 4);
     else if (!year.empty())
         throw std::runtime_error("Invalid year in " + rjson::to_string(aSource));
-    if (std::string lineage = aSource["L"]; lineage.size() == 1)
+    if (std::string lineage(aSource["L"]); lineage.size() == 1)
         aTarget->lineage = static_cast<std::string_view>(lineage)[0];
     else if (!lineage.empty())
         throw std::runtime_error("Invalid lineage in " + rjson::to_string(aSource));
@@ -372,7 +372,7 @@ size_t make_serum(const rjson::value& aSource, hidb::bin::Serum* aTarget)
 
 size_t make_table(const rjson::value& aSource, hidb::bin::Table* aTarget)
 {
-    if (std::string lineage = aSource["L"]; lineage.size() == 1)
+    if (std::string lineage(aSource["L"]); lineage.size() == 1)
         aTarget->lineage = static_cast<std::string_view>(lineage)[0];
     else if (!lineage.empty())
         throw std::runtime_error("Invalid lineage in " + rjson::to_string(aSource));
@@ -452,7 +452,7 @@ size_t make_table(const rjson::value& aSource, hidb::bin::Table* aTarget)
     ++target;
     for (size_t ag_no = 0; ag_no < antigens.size(); ++ag_no) {
         for (size_t sr_no = 0; sr_no < sera.size(); ++sr_no) {
-            std::string titer = titers[ag_no][sr_no];
+            std::string titer(titers[ag_no][sr_no]);
             titer.resize(max_titer_size, 0);
             std::memmove(target, titer.data(), titer.size());
             target += titer.size();

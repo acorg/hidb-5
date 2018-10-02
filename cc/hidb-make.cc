@@ -28,7 +28,7 @@ int main(int argc, char* const argv[])
                 auto chart = acmacs::chart::import_from_file(args[arg_no], acmacs::chart::Verify::All, args["--time"] ? report_time::Yes : report_time::No);
                 maker.add(*chart);
             }
-            maker.save(args[0]);
+            maker.save(std::string(args[0]));
         }
     }
     catch (std::exception& err) {

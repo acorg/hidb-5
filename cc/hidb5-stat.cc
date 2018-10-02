@@ -17,13 +17,13 @@ using namespace std::string_literals;
 using data_key_t = std::tuple<std::string, std::string, std::string, std::string>; // virus_type, lab, date, continent
 using data_t = std::map<data_key_t, size_t>;
 
-static void make(std::string aStart, std::string aEnd, std::string aFilename);
+static void make(std::string aStart, std::string aEnd, std::string_view aFilename);
 static data_t scan_antigens(std::string aStart, std::string aEnd);
 static std::pair<data_t, data_t> scan_sera(std::string aStart, std::string aEnd);
 static void update(data_t& data, std::string virus_type, std::string lab, std::string date, std::string continent, acmacs::chart::BLineage lineage, std::string full_name);
 static void report(const data_t& data, std::string name);
 static std::string make_json(const data_t& data_antigens, const data_t& data_sera, const data_t& data_sera_unique);
-static std::string get_date(std::string aDate);
+static std::string get_date(std::string_view aDate);
 
 // ----------------------------------------------------------------------
 
@@ -57,7 +57,7 @@ int main(int argc, char* const argv[])
 
 // ----------------------------------------------------------------------
 
-void make(std::string aStart, std::string aEnd, std::string aFilename)
+void make(std::string aStart, std::string aEnd, std::string_view aFilename)
 {
     auto data_antigens = scan_antigens(aStart, aEnd);
     auto [data_sera, data_sera_unique] = scan_sera(aStart, aEnd);
@@ -280,13 +280,14 @@ std::string make_json(const data_t& data_antigens, const data_t& data_sera, cons
 
 // ----------------------------------------------------------------------
 
-std::string get_date(std::string aDate)
+std::string get_date(std::string_view aDate)
 {
     std::smatch m;
-    if (std::regex_match(aDate, m, std::regex("(19[2-9][0-9]|20[01][0-9]|1000|3000)-?(0[0-9]|1[0-2])?(-?[0-3][0-9])?"))) {
+    std::string date(aDate);
+    if (std::regex_match(date, m, std::regex("(19[2-9][0-9]|20[01][0-9]|1000|3000)-?(0[0-9]|1[0-2])?(-?[0-3][0-9])?"))) {
         return m[1].str() + m[2].str();
     }
-    throw std::runtime_error("unrecognized date " + aDate);
+    throw std::runtime_error("unrecognized date " + date);
 
 } // get_date
 

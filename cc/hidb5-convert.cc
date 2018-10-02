@@ -24,8 +24,8 @@ int main(int argc, char* const argv[])
         }
         // const bool verbose = args["-v"] || args["--verbose"];
 
-        hidb::HiDb hidb(args[0], args["--verbose"]);
-        hidb.save(args[1]);
+        hidb::HiDb hidb(std::string(args[0]), args["--verbose"]);
+        hidb.save(std::string(args[1]));
         return 0;
     }
     catch (std::exception& err) {
