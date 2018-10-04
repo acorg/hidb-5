@@ -23,9 +23,9 @@ struct Record
     acmacs::chart::Passage passage;
     // std::string antigen_name;
 
-    Record(std::string a_subtype, std::string_view a_lab, std::string_view a_date, std::string_view a_assay, std::string_view a_rbc, std::string a_virus_name,
+    Record(std::string a_subtype, acmacs::chart::BLineage a_lineage, std::string_view a_lab, std::string_view a_date, std::string_view a_assay, std::string_view a_rbc, std::string a_virus_name,
            const acmacs::chart::Date& a_collection_date, const acmacs::chart::Passage& a_passage)
-        : subtype(fix_subtype(a_subtype)), lab(fix_lab(a_lab)), date(fix_date(a_date)), test_type(fix_test_type(a_assay, a_rbc)), virus_name(fix_virus_name(a_virus_name)),
+        : subtype(fix_subtype(a_subtype, a_lineage)), lab(fix_lab(a_lab)), date(fix_test_date(a_date, a_lab, a_lineage)), test_type(fix_test_type(a_assay, a_rbc)), virus_name(fix_virus_name(a_virus_name)),
           collection_date(a_collection_date), passage(a_passage)
     {
     }
@@ -33,7 +33,7 @@ struct Record
     bool operator<(const Record& rhs) const
     {
         if (subtype != rhs.subtype)
-            return subtype < rhs.subtype;
+            return less_subtype(subtype, rhs.subtype);
         if (lab != rhs.lab)
             return lab < rhs.lab;
         if (date != rhs.date)
@@ -43,14 +43,54 @@ struct Record
         return passage < rhs.passage;
     }
 
-    static inline std::string fix_subtype(std::string a_subtype)
+    static inline bool less_subtype(std::string s1, std::string s2)
         {
-            return a_subtype;
+            auto rank = [](std::string sb) -> int {
+                if (sb == "H1pdm09")
+                    return 1;
+                if (sb == "H3N2")
+                    return 2;
+                if (sb == "BVIC")
+                    return 3;
+                if (sb == "BYAM")
+                    return 4;
+                if (sb == "B")
+                    return 5;
+                return 0;
+            };
+            return rank(s1) < rank(s2);
         }
 
-    static inline std::string fix_lab(std::string_view a_lab) { return std::string(a_lab); }
+    static inline std::string fix_subtype(std::string subtype, acmacs::chart::BLineage lineage)
+        {
+            if (subtype == "A(H1N1)")
+                return "H1pdm09";
+            if (subtype == "A(H3N2)")
+                return "H3N2";
+            if (subtype == "B") {
+                const std::string lin(lineage);
+                if (lin.empty())
+                    return subtype;
+                return subtype + lin.substr(0, 3);
+            }
+            throw std::runtime_error("Unrecognized subtype: " + subtype);
+        }
 
-    static inline std::string fix_date(std::string_view a_date) { return std::string(a_date); }
+    static inline std::string fix_lab(std::string_view lab)
+        {
+            if (lab == "NIMR")
+                return "Crick";
+            if (lab == "MELB")
+                return "VIDRL";
+            return std::string(lab);
+        }
+
+    static inline std::string fix_test_date(std::string_view a_date, std::string_view a_lab, acmacs::chart::BLineage a_lineage)
+        {
+            if (a_lab != "MELB" && a_lineage == acmacs::chart::BLineage::Yamagata && a_date.size() > 8)
+                return std::string(a_date.data(), 8);
+            return std::string(a_date);
+        }
 
     static inline std::string fix_test_type(std::string_view a_assay, std::string_view a_rbc)
         {
@@ -62,6 +102,8 @@ struct Record
 
     static inline std::string fix_virus_name(std::string_view a_virus_name) { return std::string(a_virus_name); }
 };
+
+// ----------------------------------------------------------------------
 
 int main(int argc, char* const argv[])
 {
@@ -85,13 +127,14 @@ int main(int argc, char* const argv[])
             auto& hidb = hidb::get(virus_type);
             auto tables = hidb.tables();
             auto antigens = hidb.antigens();
-            for (size_t ag_no = 0; ag_no < antigens->size(); ++ag_no) {
-                auto antigen = antigens->at(ag_no);
-                for (auto table_no : antigen->tables()) {
-                    auto table = (*tables)[table_no];
-                    // if (antigen->reference())
-                    records.emplace_back(virus_type, table->lab(), table->date(), table->assay(), table->rbc(),
-                                       string::join(" ", {antigen->name(), string::join(" ", antigen->annotations()), antigen->reassortant()}), antigen->date(), antigen->passage());
+            auto sera = hidb.sera();
+
+            for (auto table : *tables) {
+                // std::cerr << "DEBUG: table " << table->lab() << ' ' << table->date() << ' ' << table->assay() << ' ' << table->rbc() << '\n';
+                for (auto antigen_index : table->reference_antigens(hidb)) {
+                    auto antigen = antigens->at(antigen_index);
+                    records.emplace_back(virus_type, antigen->lineage(), table->lab(), table->date(), table->assay(), table->rbc(),
+                                         string::join(" ", {antigen->name(), string::join(" ", antigen->annotations()), antigen->reassortant()}), antigen->date(), antigen->passage());
                 }
             }
         }
@@ -105,8 +148,8 @@ int main(int argc, char* const argv[])
                 << static_cast<std::string>(record.collection_date)
                 << static_cast<std::string>(record.passage)
                 << string::join("_", {record.lab, record.virus_name, record.passage}) << acmacs::CsvWriter::end_of_row;
-            if (r_no > 100)
-                break;
+            // if (r_no > 100)
+            //     break;
         }
 
         std::cout << csv << '\n';
