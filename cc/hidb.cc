@@ -427,6 +427,51 @@ size_t hidb::Table::number_of_sera() const
 
 // ----------------------------------------------------------------------
 
+hidb::indexes_t hidb::Table::antigens() const
+{
+    return hidb::indexes_t(mTable->antigen_begin(), mTable->antigen_end());
+
+} // hidb::Table::antigens
+
+// ----------------------------------------------------------------------
+
+hidb::indexes_t hidb::Table::sera() const
+{
+    return hidb::indexes_t(mTable->serum_begin(), mTable->serum_end());
+
+} // hidb::Table::sera
+
+// ----------------------------------------------------------------------
+
+hidb::indexes_t hidb::Table::reference_antigens(const HiDb& aHidb) const
+{
+      // antigens with names (without annotations and reassortant) that match serum name (without annotations and reassortant) in the same table are reference
+      // there is minor possibility that test antigen with the same name present, it becomes false positive
+    auto sera = aHidb.sera();
+    std::vector<std::string> serum_names(mTable->number_of_sera());
+    std::transform(mTable->serum_begin(), mTable->serum_end(), serum_names.begin(),
+                   [&sera](size_t serum_index) -> std::string {
+                       auto serum = sera->at(serum_index);
+                       return serum->name();
+                         // return string::join(" ", {serum->name(), string::join(" ", serum->annotations()), serum->reassortant()});
+                   });
+      // std::cerr << "DEBUG: sera: " << serum_names << '\n';
+
+    hidb::indexes_t result;
+    auto antigens = aHidb.antigens();
+    for (const auto* antigen_index = mTable->antigen_begin(); antigen_index != mTable->antigen_end(); ++antigen_index) {
+        auto antigen = antigens->at(*antigen_index);
+        const auto antigen_name = antigen->name();
+          // const auto antigen_name = string::join(" ", {antigen->name(), string::join(" ", antigen->annotations()), antigen->reassortant()});
+        if (std::find(serum_names.begin(), serum_names.end(), antigen_name) != serum_names.end())
+            result.push_back(*antigen_index);
+    }
+    return result;
+
+} // hidb::Table::reference_antigens
+
+// ----------------------------------------------------------------------
+
 std::shared_ptr<hidb::Table> hidb::Tables::most_recent(const indexes_t& aTables) const
 {
     const auto* index = reinterpret_cast<const hidb::bin::ast_offset_t*>(mIndex);

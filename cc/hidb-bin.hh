@@ -172,6 +172,12 @@ namespace hidb::bin
         inline size_t number_of_antigens() const { return static_cast<size_t>(serum_index_offset - antigen_index_offset) / sizeof(antigen_index_t); }
         inline size_t number_of_sera() const { return static_cast<size_t>(titer_offset - serum_index_offset) / sizeof(serum_index_t); }
 
+        inline const antigen_index_t* antigen_begin() const { return reinterpret_cast<const antigen_index_t*>(_start() + antigen_index_offset); }
+        inline const antigen_index_t* antigen_end() const { return reinterpret_cast<const antigen_index_t*>(_start() + serum_index_offset); }
+        inline const antigen_index_t* serum_begin() const { return reinterpret_cast<const antigen_index_t*>(_start() + serum_index_offset); }
+        inline const antigen_index_t* serum_end() const { return reinterpret_cast<const antigen_index_t*>(_start() + titer_offset); }
+
+     private:
         inline const char* _start() const { return reinterpret_cast<const char*>(this) + sizeof(*this); }
 
     }; // struct Table
