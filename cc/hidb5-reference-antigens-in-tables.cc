@@ -15,27 +15,52 @@ using namespace std::string_literals;
 struct Record
 {
     std::string subtype;
-    std::string_view lab;
-    std::string_view date;
-    std::string_view assay;
-    std::string_view rbc;
+    std::string lab;
+    std::string date;
+    std::string test_type;
     std::string virus_name;
     acmacs::chart::Date collection_date;
     acmacs::chart::Passage passage;
-      // std::string antigen_name;
+    // std::string antigen_name;
 
-    bool operator < (const Record& rhs) const
+    Record(std::string a_subtype, std::string_view a_lab, std::string_view a_date, std::string_view a_assay, std::string_view a_rbc, std::string a_virus_name,
+           const acmacs::chart::Date& a_collection_date, const acmacs::chart::Passage& a_passage)
+        : subtype(fix_subtype(a_subtype)), lab(fix_lab(a_lab)), date(fix_date(a_date)), test_type(fix_test_type(a_assay, a_rbc)), virus_name(fix_virus_name(a_virus_name)),
+          collection_date(a_collection_date), passage(a_passage)
+    {
+    }
+
+    bool operator<(const Record& rhs) const
+    {
+        if (subtype != rhs.subtype)
+            return subtype < rhs.subtype;
+        if (lab != rhs.lab)
+            return lab < rhs.lab;
+        if (date != rhs.date)
+            return date > rhs.date; // most recent first
+        if (virus_name != rhs.virus_name)
+            return virus_name < rhs.virus_name;
+        return passage < rhs.passage;
+    }
+
+    static inline std::string fix_subtype(std::string a_subtype)
         {
-            if (subtype != rhs.subtype)
-                return subtype < rhs.subtype;
-            if (lab != rhs.lab)
-                return lab < rhs.lab;
-            if (date != rhs.date)
-                return date > rhs.date; // most recent first
-            if (virus_name != rhs.virus_name)
-                return virus_name < rhs.virus_name;
-            return passage < rhs.passage;
+            return a_subtype;
         }
+
+    static inline std::string fix_lab(std::string_view a_lab) { return std::string(a_lab); }
+
+    static inline std::string fix_date(std::string_view a_date) { return std::string(a_date); }
+
+    static inline std::string fix_test_type(std::string_view a_assay, std::string_view a_rbc)
+        {
+            if (a_rbc.empty())
+                return std::string(a_assay);
+            else
+                return std::string(a_rbc);
+        }
+
+    static inline std::string fix_virus_name(std::string_view a_virus_name) { return std::string(a_virus_name); }
 };
 
 int main(int argc, char* const argv[])
@@ -65,12 +90,26 @@ int main(int argc, char* const argv[])
                 for (auto table_no : antigen->tables()) {
                     auto table = (*tables)[table_no];
                     // if (antigen->reference())
-                    records.push_back({virus_type, table->lab(), table->date(), table->assay(), table->rbc(),
-                                       string::join(" ", {antigen->name(), string::join(" ", antigen->annotations()), antigen->reassortant()}), antigen->date(), antigen->passage()});
+                    records.emplace_back(virus_type, table->lab(), table->date(), table->assay(), table->rbc(),
+                                       string::join(" ", {antigen->name(), string::join(" ", antigen->annotations()), antigen->reassortant()}), antigen->date(), antigen->passage());
                 }
             }
         }
         std::sort(records.begin(), records.end());
+        std::cerr << "DEBUG: records: " << records.size() << '\n';
+
+        acmacs::CsvWriter csv;
+        csv << "Type" << "institution" << "date of test" << "TEST TYPE" << "virus" << "collection date" << "passage" << "antigen" << acmacs::CsvWriter::end_of_row;
+        for (auto [r_no, record] : acmacs::enumerate(records)) {
+            csv << record.subtype << record.lab << record.date << record.test_type << record.virus_name
+                << static_cast<std::string>(record.collection_date)
+                << static_cast<std::string>(record.passage)
+                << string::join("_", {record.lab, record.virus_name, record.passage}) << acmacs::CsvWriter::end_of_row;
+            if (r_no > 100)
+                break;
+        }
+
+        std::cout << csv << '\n';
 
         return 0;
     }
