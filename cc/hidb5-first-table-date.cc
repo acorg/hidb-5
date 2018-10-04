@@ -28,7 +28,7 @@ int main(int argc, char* const argv[])
             throw std::runtime_error("Usage: "s + args.program() + " [options] <output-prefix>\n" + sDesc + '\n' + args.usage_options());
         }
         const bool verbose = args["-v"] || args["--verbose"];
-        hidb::setup(args["--db-dir"], {}, verbose);
+        hidb::setup(std::string(args["--db-dir"]), {}, verbose);
         auto& locdb = get_locdb();
         std::map<std::string, std::vector<std::tuple<std::string, std::string, std::string, std::string, std::string, std::string, std::string>>> data;
         for (auto subtype : {"B", "H1", "H3"}) {

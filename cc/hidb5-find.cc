@@ -41,10 +41,10 @@ int main(int argc, char* const argv[])
             throw std::runtime_error("Usage: "s + args.program() + " [options] <virus-type: B, H1, H3|hidb-file> <name|all> ...\n" + args.usage_options());
         }
         const bool verbose = args["-v"] || args["--verbose"];
-        hidb::setup(args["--db-dir"], {}, verbose);
+        hidb::setup(std::string(args["--db-dir"]), {}, verbose);
 
         if (fs::exists(args[0]))
-            find(hidb::HiDb(args[0], verbose), args);
+            find(hidb::HiDb(std::string(args[0]), verbose), args);
         else
             find(hidb::get(string::upper(args[0]), report_time::Yes), args);
         return 0;
@@ -69,13 +69,13 @@ void find(const hidb::HiDb& hidb, const argc_argv& args)
     }
     else {
         if (args["-s"])
-            find_sera(hidb, args[1], args);
+            find_sera(hidb, std::string{args[1]}, args);
         else if (args["-t"])
-            find_tables(hidb, args[1], args);
+            find_tables(hidb, std::string{args[1]}, args);
         else if (args["--labid"])
-            find_antigens_by_labid(hidb, args[1], args);
+            find_antigens_by_labid(hidb, std::string{args[1]}, args);
         else
-            find_antigens(hidb, args[1], args);
+            find_antigens(hidb, std::string{args[1]}, args);
     }
 
 } // find
@@ -164,7 +164,7 @@ void list_all_antigens(const hidb::HiDb& hidb, const argc_argv& /*args*/)
 
 void list_all_sera(const hidb::HiDb& hidb, const argc_argv& args)
 {
-    const std::string lab = args["--lab"];
+    const std::string lab(args["--lab"]);
     const bool first_table = args["--first-table"];
     auto sera = hidb.sera();
     auto tables = hidb.tables();

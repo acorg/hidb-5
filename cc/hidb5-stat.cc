@@ -43,9 +43,9 @@ int main(int argc, char* const argv[])
             throw std::runtime_error("Usage: "s + args.program() + " [options] <output.json>\n" + args.usage_options());
         }
         const bool verbose = args["-v"] || args["--verbose"];
-        hidb::setup(args["--db-dir"], {}, verbose);
+        hidb::setup(std::string(args["--db-dir"]), {}, verbose);
 
-        make(get_date(args["--start"]), get_date(args["--end"]), args[0]);
+        make(get_date(std::string(args["--start"])), get_date(std::string(args["--end"])), std::string(args[0]));
 
         return 0;
     }

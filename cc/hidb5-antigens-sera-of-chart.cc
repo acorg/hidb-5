@@ -24,7 +24,7 @@ int main(int argc, char* const argv[])
             throw std::runtime_error("Usage: "s + args.program() + " [options] <chart>\n" + args.usage_options());
         }
         const bool verbose = args["-v"] || args["--verbose"];
-        hidb::setup(args["--db-dir"], {}, verbose);
+        hidb::setup(std::string(args["--db-dir"]), {}, verbose);
 
         auto chart = acmacs::chart::import_from_file(args[0], acmacs::chart::Verify::None, args["--time"] ? report_time::Yes : report_time::No);
         auto& hidb = hidb::get(chart->info()->virus_type());
