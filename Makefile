@@ -14,7 +14,8 @@ TARGETS = \
   $(DIST)/hidb5-antigens-sera-of-chart \
   $(DIST)/hidb5-vaccines-of-chart \
   $(DIST)/hidb5-dates \
-  $(DIST)/hidb5-first-table-date
+  $(DIST)/hidb5-first-table-date \
+  $(DIST)/hidb5-reference-antigens-in-tables
 
 HIDB_MAKE_SOURCES = hidb-maker.cc hidb-make.cc
 
