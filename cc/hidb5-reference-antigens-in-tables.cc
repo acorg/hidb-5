@@ -66,7 +66,7 @@ int main(int argc, char* const argv[])
                     auto table = (*tables)[table_no];
                     // if (antigen->reference())
                     records.push_back({virus_type, table->lab(), table->date(), table->assay(), table->rbc(),
-                                       string::join(" ", antigen->name(), string::join(" ", antigen->annotations()), antigen->reassortant()), antigen->date(), antigen->passage()});
+                                       string::join(" ", {antigen->name(), string::join(" ", antigen->annotations()), antigen->reassortant()}), antigen->date(), antigen->passage()});
                 }
             }
         }
