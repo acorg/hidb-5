@@ -155,7 +155,7 @@ void hidb::update_vaccines(acmacs::chart::ChartModify& /*chart*/, const Vaccines
         if (!vacc.empty()) {
             Vaccines::for_each_passage_type([&vacc](Vaccines::PassageType pt) {
                 for (size_t no = 0; no < vacc.size_for_passage_type(pt); ++no) {
-                    const auto* entry = vacc.for_passage_type(pt, no);
+                      // const auto* entry = vacc.for_passage_type(pt, no);
                 }
             });
         }

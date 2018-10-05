@@ -110,6 +110,7 @@ int main(int argc, char* const argv[])
     try {
         argc_argv args(argc, argv,
                        {
+                           {"--start", "", "YYYYMMDD, use only tables on or after that date"},
                            {"--db-dir", ""},
                            {"-v", false},
                            {"--verbose", false},
@@ -120,6 +121,7 @@ int main(int argc, char* const argv[])
             throw std::runtime_error("Usage: "s + args.program() + " [options]\n" + args.usage_options());
         }
         const bool verbose = args["-v"] || args["--verbose"];
+        const std::string_view start_date = args["--start"];
         hidb::setup(std::string(args["--db-dir"]), {}, verbose);
 
         std::vector<Record> records;
@@ -130,11 +132,13 @@ int main(int argc, char* const argv[])
             auto sera = hidb.sera();
 
             for (auto table : *tables) {
-                // std::cerr << "DEBUG: table " << table->lab() << ' ' << table->date() << ' ' << table->assay() << ' ' << table->rbc() << '\n';
-                for (auto antigen_index : table->reference_antigens(hidb)) {
-                    auto antigen = antigens->at(antigen_index);
-                    records.emplace_back(virus_type, antigen->lineage(), table->lab(), table->date(), table->assay(), table->rbc(),
-                                         string::join(" ", {antigen->name(), string::join(" ", antigen->annotations()), antigen->reassortant()}), antigen->date(), antigen->passage());
+                if (start_date.empty() || table->date() >= start_date) {
+                    // std::cerr << "DEBUG: table " << table->lab() << ' ' << table->date() << ' ' << table->assay() << ' ' << table->rbc() << '\n';
+                    for (auto antigen_index : table->reference_antigens(hidb)) {
+                        auto antigen = antigens->at(antigen_index);
+                        records.emplace_back(virus_type, antigen->lineage(), table->lab(), table->date(), table->assay(), table->rbc(),
+                                             string::join(" ", {antigen->name(), string::join(" ", antigen->annotations()), antigen->reassortant()}), antigen->date(), antigen->passage());
+                    }
                 }
             }
         }
@@ -142,11 +146,16 @@ int main(int argc, char* const argv[])
         std::cerr << "DEBUG: records: " << records.size() << '\n';
 
         acmacs::CsvWriter csv;
-        csv << "Type" << "institution" << "date of test" << "TEST TYPE" << "virus" << "collection date" << "passage" << "antigen" << acmacs::CsvWriter::end_of_row;
+        csv << "Type"
+            << "institution"
+            << "date of test"
+            << "TEST TYPE"
+            << "virus"
+            << "collection date"
+            << "passage"
+            << "antigen" << acmacs::CsvWriter::end_of_row;
         for (auto [r_no, record] : acmacs::enumerate(records)) {
-            csv << record.subtype << record.lab << record.date << record.test_type << record.virus_name
-                << static_cast<std::string>(record.collection_date)
-                << static_cast<std::string>(record.passage)
+            csv << record.subtype << record.lab << record.date << record.test_type << record.virus_name << static_cast<std::string>(record.collection_date) << static_cast<std::string>(record.passage)
                 << string::join("_", {record.lab, record.virus_name, record.passage}) << acmacs::CsvWriter::end_of_row;
             // if (r_no > 100)
             //     break;
