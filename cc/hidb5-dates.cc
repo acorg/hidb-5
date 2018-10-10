@@ -20,7 +20,7 @@ int main(int argc, char* const argv[])
         }
         const bool verbose = args["-v"] || args["--verbose"];
 
-        hidb::HiDb hidb(std::string{args[0]}, verbose);
+        hidb::HiDb hidb(std::string(args[0]), verbose);
         auto antigens = hidb.antigens();
         std::vector<std::string> dates;
         std::map<std::string, size_t> years;

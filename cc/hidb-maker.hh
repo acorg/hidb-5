@@ -314,9 +314,9 @@ class HidbMaker
     Tables mTables;
 
     void make_index();
-    void export_antigens(rjson::v1::array& target) const;
-    void export_sera(rjson::v1::array& target) const;
-    void export_tables(rjson::v1::array& target) const;
+    void export_antigens(rjson::value& target) const;
+    void export_sera(rjson::value& target) const;
+    void export_tables(rjson::value& target) const;
 
 }; // class HidbMaker
 

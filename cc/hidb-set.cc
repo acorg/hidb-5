@@ -27,9 +27,10 @@ static std::unique_ptr<HiDbSet> sHiDbSet;
 class HiDbSet
 {
  public:
-    const hidb::HiDb& get(const std::string& aVirusType, report_time timer = report_time::No) const
+    const hidb::HiDb& get(std::string_view aVirusType, report_time timer = report_time::No) const
         {
-            auto h = mPtrs.find(aVirusType);
+            using namespace std::string_literals;
+            auto h = mPtrs.find(std::string(aVirusType));
             if (h == mPtrs.end()) {
                 std::string prefix;
                 if (aVirusType == "A(H1N1)" || aVirusType == "H1")
@@ -39,13 +40,13 @@ class HiDbSet
                 else if (aVirusType == "B")
                     prefix = "hidb5.b";
                 else
-                    throw hidb::get_error("Unrecognized virus type: \"" + aVirusType + '"');
+                    throw hidb::get_error("Unrecognized virus type: \""s + aVirusType + '"');
 
                 fs::path filename = fs::path(sHiDbDir) / (prefix + ".hidb5b");
                 if (!fs::exists(filename))
                     filename = fs::path(sHiDbDir) / (prefix + ".json.xz");
                 if (!fs::exists(filename))
-                    throw hidb::get_error("Cannot find hidb for " + aVirusType + " in " + sHiDbDir);
+                    throw hidb::get_error("Cannot find hidb for "s + aVirusType + " in " + sHiDbDir);
 
                 h = mPtrs.emplace(aVirusType, std::make_unique<hidb::HiDb>(filename, sVerbose || (timer == report_time::Yes))).first;
             }
@@ -62,7 +63,7 @@ class HiDbSet
 
 // ----------------------------------------------------------------------
 
-void hidb::setup(std::string aHiDbDir, std::optional<std::string> /*aLocDbFilename*/, bool aVerbose)
+void hidb::setup(std::string_view aHiDbDir, std::optional<std::string> /*aLocDbFilename*/, bool aVerbose)
 {
     sVerbose = aVerbose;
     if (!aHiDbDir.empty())
@@ -76,7 +77,7 @@ void hidb::setup(std::string aHiDbDir, std::optional<std::string> /*aLocDbFilena
 
 // ----------------------------------------------------------------------
 
-const hidb::HiDb& hidb::get(const std::string& aVirusType, report_time timer)
+const hidb::HiDb& hidb::get(std::string_view aVirusType, report_time timer)
 {
     if (!sHiDbSet)
         sHiDbSet = std::make_unique<HiDbSet>();

@@ -55,85 +55,71 @@ void HidbMaker::make_index()
 
 // ----------------------------------------------------------------------
 
-namespace rjson
-{
-    namespace v1 {
-               template <> struct content_type<Lineage> { using type = string; };
-               template <> struct content_type<Assay> { using type = string; };
-               template <> struct content_type<Virus> { using type = string; };
-                 // template <> struct content_type<std::vector<std::string>> { using type = array; };
-    }
-} // namespace rjson
-
-// ----------------------------------------------------------------------
-
-void HidbMaker::export_antigens(rjson::v1::array& target) const
+void HidbMaker::export_antigens(rjson::value& target) const
 {
     for (auto& antigen: mAntigens) {
-        rjson::v1::object ag;
-        ag.set_field_if_not_empty("V", antigen->virus_type);
-        ag.set_field_if_not_empty("H", antigen->host);
-        ag.set_field_if_not_empty("O", antigen->location);
-        ag.set_field_if_not_empty("i", antigen->isolation);
-        ag.set_field_if_not_empty("y", antigen->year);
-        ag.set_field_if_not_empty("L", antigen->lineage);
-        ag.set_field_if_not_empty("P", antigen->passage);
-        ag.set_field_if_not_empty("R", antigen->reassortant);
-        ag.set_array_field_if_not_empty("a", antigen->annotations.begin(), antigen->annotations.end());
-        ag.set_array_field_if_not_empty("D", antigen->dates.begin(), antigen->dates.end());
-        ag.set_array_field_if_not_empty("l", antigen->lab_ids.begin(), antigen->lab_ids.end());
-        ag.set_array_field_if_not_empty("T", antigen->tables.begin(), antigen->tables.end());
-        target.insert(std::move(ag));
+        rjson::value ag{rjson::object{}};
+        rjson::set_field_if_not_empty(ag, "V", antigen->virus_type);
+        rjson::set_field_if_not_empty(ag, "H", antigen->host);
+        rjson::set_field_if_not_empty(ag, "O", antigen->location);
+        rjson::set_field_if_not_empty(ag, "i", antigen->isolation);
+        rjson::set_field_if_not_empty(ag, "y", antigen->year);
+        rjson::set_field_if_not_empty(ag, "L", antigen->lineage);
+        rjson::set_field_if_not_empty(ag, "P", antigen->passage);
+        rjson::set_field_if_not_empty(ag, "R", antigen->reassortant);
+        rjson::set_array_field_if_not_empty(ag, "a", antigen->annotations.begin(), antigen->annotations.end());
+        rjson::set_array_field_if_not_empty(ag, "D", antigen->dates.begin(), antigen->dates.end());
+        rjson::set_array_field_if_not_empty(ag, "l", antigen->lab_ids.begin(), antigen->lab_ids.end());
+        rjson::set_array_field_if_not_empty(ag, "T", antigen->tables.begin(), antigen->tables.end());
+        target.append(std::move(ag));
     }
 
 } // HidbMaker::export_antigens
 
 // ----------------------------------------------------------------------
 
-void HidbMaker::export_sera(rjson::v1::array& target) const
+void HidbMaker::export_sera(rjson::value& target) const
 {
     for (auto& serum: mSera) {
-        rjson::v1::object sr;
-        sr.set_field_if_not_empty("V", serum->virus_type);
-        sr.set_field_if_not_empty("H", serum->host);
-        sr.set_field_if_not_empty("O", serum->location);
-        sr.set_field_if_not_empty("i", serum->isolation);
-        sr.set_field_if_not_empty("y", serum->year);
-        sr.set_field_if_not_empty("L", serum->lineage);
-        sr.set_field_if_not_empty("P", serum->passage);
-        sr.set_field_if_not_empty("R", serum->reassortant);
-        sr.set_field_if_not_empty("I", serum->serum_id);
-        sr.set_field_if_not_empty("s", serum->serum_species);
-        sr.set_array_field_if_not_empty("a", serum->annotations.begin(), serum->annotations.end());
-        sr.set_array_field_if_not_empty("T", serum->tables.begin(), serum->tables.end());
-        sr.set_array_field_if_not_empty("h", serum->homologous.begin(), serum->homologous.end());
-        target.insert(std::move(sr));
+        rjson::value sr{rjson::object{}};
+        rjson::set_field_if_not_empty(sr, "V", serum->virus_type);
+        rjson::set_field_if_not_empty(sr, "H", serum->host);
+        rjson::set_field_if_not_empty(sr, "O", serum->location);
+        rjson::set_field_if_not_empty(sr, "i", serum->isolation);
+        rjson::set_field_if_not_empty(sr, "y", serum->year);
+        rjson::set_field_if_not_empty(sr, "L", serum->lineage);
+        rjson::set_field_if_not_empty(sr, "P", serum->passage);
+        rjson::set_field_if_not_empty(sr, "R", serum->reassortant);
+        rjson::set_field_if_not_empty(sr, "I", serum->serum_id);
+        rjson::set_field_if_not_empty(sr, "s", serum->serum_species);
+        rjson::set_array_field_if_not_empty(sr, "a", serum->annotations.begin(), serum->annotations.end());
+        rjson::set_array_field_if_not_empty(sr, "T", serum->tables.begin(), serum->tables.end());
+        rjson::set_array_field_if_not_empty(sr, "h", serum->homologous.begin(), serum->homologous.end());
+        target.append(std::move(sr));
     }
 
 } // HidbMaker::export_sera
 
 // ----------------------------------------------------------------------
 
-void HidbMaker::export_tables(rjson::v1::array& target) const
+void HidbMaker::export_tables(rjson::value& target) const
 {
     for (auto& table: mTables) {
-        rjson::v1::object tb;
-        tb.set_field_if_not_empty("v", table->virus);
-        tb.set_field_if_not_empty("V", table->virus_type);
-        tb.set_field_if_not_empty("A", table->assay);
-        tb.set_field_if_not_empty("D", table->date);
-        tb.set_field_if_not_empty("l", table->lab);
-        tb.set_field_if_not_empty("r", table->rbc_species);
-        tb.set_field_if_not_empty("s", table->subset);
-        tb.set_field_if_not_empty("L", table->lineage);
-        tb.set_array_field_if_not_empty("a", table->antigens.begin(), table->antigens.end());
-        tb.set_array_field_if_not_empty("s", table->sera.begin(), table->sera.end());
-        rjson::v1::array titers;
-        for (const auto& row: table->titers) {
-            titers.insert(rjson::v1::array{rjson::v1::array::use_iterator, row.begin(), row.end()});
-        }
-        tb.set_field("t", std::move(titers));
-        target.insert(std::move(tb));
+        rjson::value tb{rjson::object{}};
+        rjson::set_field_if_not_empty(tb, "v", table->virus);
+        rjson::set_field_if_not_empty(tb, "V", table->virus_type);
+        rjson::set_field_if_not_empty(tb, "A", table->assay);
+        rjson::set_field_if_not_empty(tb, "D", table->date);
+        rjson::set_field_if_not_empty(tb, "l", table->lab);
+        rjson::set_field_if_not_empty(tb, "r", table->rbc_species);
+        rjson::set_field_if_not_empty(tb, "s", table->subset);
+        rjson::set_field_if_not_empty(tb, "L", table->lineage);
+        rjson::set_array_field_if_not_empty(tb, "a", table->antigens.begin(), table->antigens.end());
+        rjson::set_array_field_if_not_empty(tb, "s", table->sera.begin(), table->sera.end());
+        auto& titers = tb["t"] = rjson::array{};
+        for (const auto& row: table->titers)
+            titers.append(rjson::array(row.begin(), row.end()));
+        target.append(std::move(tb));
     }
 
 } // HidbMaker::export_tables
@@ -144,12 +130,12 @@ void HidbMaker::save(std::string aFilename)
 {
     make_index();
 
-    rjson::v1::object data{{{"  version", rjson::v1::string{"hidb-v5"}}, {"a", rjson::v1::array{}}, {"s", rjson::v1::array{}}, {"t", rjson::v1::array{}}}};
+    rjson::value data{rjson::object{{"  version", "hidb-v5"}, {"a", rjson::array{}}, {"s", rjson::array{}}, {"t", rjson::array{}}}};
     export_antigens(data["a"]);
     export_sera(data["s"]);
     export_tables(data["t"]);
 
-    acmacs::file::write(aFilename, data.to_json_pp(1, rjson::v1::json_pp_emacs_indent::yes));
+    acmacs::file::write(aFilename, rjson::pretty(data, 1));
 
     std::cerr << "INFO: antigens: " << mAntigens.size() << '\n';
     std::cerr << "INFO: sera:     " << mSera.size() << '\n';

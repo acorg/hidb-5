@@ -23,7 +23,7 @@ struct Record
     acmacs::chart::Passage passage;
     // std::string antigen_name;
 
-    Record(std::string a_subtype, acmacs::chart::BLineage a_lineage, std::string_view a_lab, std::string_view a_date, std::string_view a_assay, std::string_view a_rbc, std::string a_virus_name,
+    Record(std::string_view a_subtype, acmacs::chart::BLineage a_lineage, std::string_view a_lab, std::string_view a_date, std::string_view a_assay, std::string_view a_rbc, std::string a_virus_name,
            const acmacs::chart::Date& a_collection_date, const acmacs::chart::Passage& a_passage)
         : subtype(fix_subtype(a_subtype, a_lineage)), lab(fix_lab(a_lab)), date(fix_test_date(a_date, a_lab, a_lineage)), test_type(fix_test_type(a_assay, a_rbc)), virus_name(fix_virus_name(a_virus_name)),
           collection_date(a_collection_date), passage(a_passage)
@@ -61,7 +61,7 @@ struct Record
             return rank(s1) < rank(s2);
         }
 
-    static inline std::string fix_subtype(std::string subtype, acmacs::chart::BLineage lineage)
+    static inline std::string fix_subtype(std::string_view subtype, acmacs::chart::BLineage lineage)
         {
             if (subtype == "A(H1N1)")
                 return "H1pdm09";
@@ -70,7 +70,7 @@ struct Record
             if (subtype == "B") {
                 const std::string lin(lineage);
                 if (lin.empty())
-                    return subtype;
+                    return "B";
                 return subtype + lin.substr(0, 3);
             }
             throw std::runtime_error("Unrecognized subtype: " + subtype);
@@ -125,7 +125,7 @@ int main(int argc, char* const argv[])
         hidb::setup(std::string(args["--db-dir"]), {}, verbose);
 
         std::vector<Record> records;
-        for (auto virus_type : {"A(H1N1)", "A(H3N2)", "B"}) {
+        for (const std::string_view virus_type : {"A(H1N1)", "A(H3N2)", "B"}) {
             auto& hidb = hidb::get(virus_type);
             auto tables = hidb.tables();
             auto antigens = hidb.antigens();
