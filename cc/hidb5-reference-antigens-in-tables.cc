@@ -137,7 +137,7 @@ int main(int argc, char* const argv[])
                     for (auto antigen_index : table->reference_antigens(hidb)) {
                         auto antigen = antigens->at(antigen_index);
                         records.emplace_back(virus_type, antigen->lineage(), table->lab(), table->date(), table->assay(), table->rbc(),
-                                             string::join(" ", {antigen->name(), string::join(" ", antigen->annotations()), antigen->reassortant()}), antigen->date(), antigen->passage());
+                                             string::join(" ", {antigen->name_without_subtype(), string::join(" ", antigen->annotations()), antigen->reassortant()}), antigen->date(), antigen->passage());
                     }
                 }
             }
