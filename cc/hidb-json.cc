@@ -188,35 +188,31 @@ size_t make_antigen(const rjson::value& aSource, hidb::bin::Antigen* aTarget)
         target += reassortant.size();
     }
 
-    if (const auto& annotations = aSource["a"]; !annotations.empty()) {
-        if (annotations.size() <= sizeof(hidb::bin::Antigen::annotation_offset)) {
-            for (size_t ann_no = 0; ann_no < sizeof(hidb::bin::Antigen::annotation_offset); ++ann_no) {
-                set_offset(aTarget->annotation_offset[ann_no], target);
-                if (ann_no < annotations.size()) {
-                    const std::string_view ann = annotations[ann_no];
-                    std::memmove(target, ann.data(), ann.size());
-                    target += ann.size();
-                }
+    if (const auto& annotations = aSource["a"]; annotations.size() <= sizeof(hidb::bin::Antigen::annotation_offset)) {
+        for (size_t ann_no = 0; ann_no < sizeof(hidb::bin::Antigen::annotation_offset); ++ann_no) {
+            set_offset(aTarget->annotation_offset[ann_no], target);
+            if (ann_no < annotations.size()) {
+                const std::string_view ann = annotations[ann_no];
+                std::memmove(target, ann.data(), ann.size());
+                target += ann.size();
             }
         }
-        else
-            throw std::runtime_error("Too many annotations in " + rjson::to_string(aSource));
     }
+    else
+        throw std::runtime_error("Too many annotations in " + rjson::to_string(aSource));
 
-    if (const auto& lab_ids = aSource["l"]; !lab_ids.empty()) {
-        if (lab_ids.size() <= sizeof(hidb::bin::Antigen::lab_id_offset)) {
-            for (size_t lab_id_no = 0; lab_id_no < sizeof(hidb::bin::Antigen::lab_id_offset); ++lab_id_no) {
-                set_offset(aTarget->lab_id_offset[lab_id_no], target);
-                if (lab_id_no < lab_ids.size()) {
-                    const std::string_view lab_id = lab_ids[lab_id_no];
-                    std::memmove(target, lab_id.data(), lab_id.size());
-                    target += lab_id.size();
-                }
+    if (const auto& lab_ids = aSource["l"]; lab_ids.size() <= sizeof(hidb::bin::Antigen::lab_id_offset)) {
+        for (size_t lab_id_no = 0; lab_id_no < sizeof(hidb::bin::Antigen::lab_id_offset); ++lab_id_no) {
+            set_offset(aTarget->lab_id_offset[lab_id_no], target);
+            if (lab_id_no < lab_ids.size()) {
+                const std::string_view lab_id = lab_ids[lab_id_no];
+                std::memmove(target, lab_id.data(), lab_id.size());
+                target += lab_id.size();
             }
         }
-        else
-            throw std::runtime_error("Too many lab ids in " + rjson::to_string(aSource));
     }
+    else
+        throw std::runtime_error("Too many lab ids in " + rjson::to_string(aSource));
 
     // padding
     if (size_t size = static_cast<size_t>(target - target_base); size % 4)
