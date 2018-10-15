@@ -65,7 +65,7 @@ int main(int argc, char* const argv[])
                 csv.add_field(std::get<6>(entry));
                 csv.new_row();
             }
-            std::ofstream out(args[0] + tag + ".csv");
+            std::ofstream out(string::concat(args[0], tag, ".csv"));
             out << static_cast<std::string_view>(csv);
         }
 

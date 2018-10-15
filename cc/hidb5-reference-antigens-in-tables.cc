@@ -71,9 +71,9 @@ struct Record
                 const std::string lin(lineage);
                 if (lin.empty())
                     return "B";
-                return subtype + lin.substr(0, 3);
+                return string::concat(subtype, lin.substr(0, 3));
             }
-            throw std::runtime_error("Unrecognized subtype: " + subtype);
+            throw std::runtime_error(string::concat("Unrecognized subtype: ", subtype));
         }
 
     static inline std::string fix_lab(std::string_view lab)
