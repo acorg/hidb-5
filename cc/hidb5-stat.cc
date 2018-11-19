@@ -274,7 +274,7 @@ std::string make_json(const data_t& data_antigens, const data_t& data_sera, cons
         data.set("sera_unique", virus_type, lab, date, continent) = value;
     }
 
-    return rjson::pretty(data, 1);
+    return rjson::pretty(data, rjson::emacs_indent::yes, rjson::PrettyHandler(1));
 
 } // make_json
 

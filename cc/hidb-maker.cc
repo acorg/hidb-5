@@ -135,7 +135,7 @@ void HidbMaker::save(std::string aFilename)
     export_sera(data["s"]);
     export_tables(data["t"]);
 
-    acmacs::file::write(aFilename, rjson::pretty(data, 1));
+    acmacs::file::write(aFilename, rjson::pretty(data, rjson::emacs_indent::yes, rjson::PrettyHandler(1)));
 
     std::cerr << "INFO: antigens: " << mAntigens.size() << '\n';
     std::cerr << "INFO: sera:     " << mSera.size() << '\n';
