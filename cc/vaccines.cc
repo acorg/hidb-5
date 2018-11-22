@@ -20,15 +20,16 @@
 static std::map<std::string, std::vector<hidb::Vaccine>> sVaccines = {
     {"A(H1N1)", {
               // Seasonal
-            {"USSR/90/1977",             hidb::Vaccine::Previous}, // 1978
-            {"BRAZIL/11/1978",           hidb::Vaccine::Previous}, // 1980
-            {"CHILE/1/1983",             hidb::Vaccine::Previous}, // 1984
-            {"SINGAPORE/6/1986",         hidb::Vaccine::Previous}, // 1987
-            {"BAYERN/7/1995",            hidb::Vaccine::Previous}, // 1997
-            {"BEIJING/262/1995",         hidb::Vaccine::Previous}, // 1998
-            {"NEW CALEDONIA/20/1999",    hidb::Vaccine::Previous}, // 2000
-            {"SOLOMON ISLANDS/3/2006",   hidb::Vaccine::Previous}, // 2008
-            {"BRISBANE/59/2007",         hidb::Vaccine::Previous}, // 2008
+            // {"USSR/90/1977",             hidb::Vaccine::Previous}, // 1978
+            // {"BRAZIL/11/1978",           hidb::Vaccine::Previous}, // 1980
+            // {"CHILE/1/1983",             hidb::Vaccine::Previous}, // 1984
+            // {"SINGAPORE/6/1986",         hidb::Vaccine::Previous}, // 1987
+            // {"BAYERN/7/1995",            hidb::Vaccine::Previous}, // 1997
+            // {"BEIJING/262/1995",         hidb::Vaccine::Previous}, // 1998
+            // {"NEW CALEDONIA/20/1999",    hidb::Vaccine::Previous}, // 2000
+            // {"SOLOMON ISLANDS/3/2006",   hidb::Vaccine::Previous}, // 2008
+            // {"BRISBANE/59/2007",         hidb::Vaccine::Previous}, // 2008, appears on H1pdm CDC maps as an outlier
+
               // PDM
             {"CALIFORNIA/7/2009",        hidb::Vaccine::Previous},
             {"MICHIGAN/45/2015",         hidb::Vaccine::Current},
@@ -72,6 +73,7 @@ static std::map<std::string, std::vector<hidb::Vaccine>> sVaccines = {
               // {"MARYLAND/15/2016",       hidb::Vaccine::Current},
             {"COLORADO/6/2017",        hidb::Vaccine::Current}, // 2018-03-01 http://www.who.int/influenza/vaccines/virus/recommendations/2018_19_north/en/
               // {"PARIS/1762/2009",          hidb::Vaccine::Current}, // not used by Crick anymore, B/Ireland/3154/2016 is used instead (2017-08-21)
+            {"IOWA/6/2017",              hidb::Vaccine::Surrogate}, // QMC2 2018-11-14 requested to mark by David Wentworth (CDC, NIH)
             {"SOUTH AUSTRALIA/81/2012",  hidb::Vaccine::Surrogate},
             {"IRELAND/3154/2016",        hidb::Vaccine::Surrogate},
         }},
