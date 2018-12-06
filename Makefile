@@ -1,9 +1,4 @@
 # -*- Makefile -*-
-# Eugene Skepner 2017
-# ----------------------------------------------------------------------
-
-MAKEFLAGS = -w
-
 # ----------------------------------------------------------------------
 
 TARGETS = \
@@ -28,51 +23,38 @@ HIDB_LIB = $(DIST)/$(call shared_lib_name,$(HIDB_LIB_NAME),$(HIDB_LIB_MAJOR),$(H
 
 # ----------------------------------------------------------------------
 
-include $(ACMACSD_ROOT)/share/makefiles/Makefile.g++
-include $(ACMACSD_ROOT)/share/makefiles/Makefile.dist-build.vars
+all: install
 
-CXXFLAGS = -MMD -g $(OPTIMIZATION) $(PROFILE) -fPIC -std=$(STD) $(WARNINGS) -Icc -I$(AD_INCLUDE) $(PKG_INCLUDES)
-LDFLAGS = $(OPTIMIZATION) $(PROFILE)
+include $(ACMACSD_ROOT)/share/Makefile.config
+
 LDLIBS = \
   $(AD_LIB)/$(call shared_lib_name,libacmacsbase,1,0) \
   $(AD_LIB)/$(call shared_lib_name,liblocationdb,1,0) \
   $(AD_LIB)/$(call shared_lib_name,libacmacschart,2,0) \
-  $(shell pkg-config --libs liblzma) \
-  -L$(AD_LIB) -lboost_date_time \
-  $(CXX_LIB)
-
-PKG_INCLUDES = $(shell pkg-config --cflags liblzma)
+  $(XZ_LIBS) -L$(BOOST_LIB_PATH) -lboost_date_time $(CXX_LIB)
 
 # ----------------------------------------------------------------------
 
-all: check-acmacsd-root $(TARGETS)
-
-install: check-acmacsd-root install-headers $(TARGETS)
+install: install-headers $(TARGETS)
 	$(call install_lib,$(HIDB_LIB))
-	ln -sf $(abspath dist)/hidb5* $(AD_BIN)
+	$(call symbolic_link_wildcard,$(DIST)/hidb5*,$(AD_BIN))
 
 test: install
 	test/test
 
 # ----------------------------------------------------------------------
 
--include $(BUILD)/*.d
-include $(ACMACSD_ROOT)/share/makefiles/Makefile.dist-build.rules
-include $(ACMACSD_ROOT)/share/makefiles/Makefile.rtags
-
-# ----------------------------------------------------------------------
-
 $(HIDB_LIB): $(patsubst %.cc,$(BUILD)/%.o,$(HIDB_SOURCES)) | $(DIST)
-	@printf "%-16s %s\n" "SHARED" $@
-	@$(call make_shared,$(HIDB_LIB_NAME),$(HIDB_LIB_MAJOR),$(HIDB_LIB_MINOR)) $(LDFLAGS) -o $@ $^ $(LDLIBS)
+	$(call echo_shared_lib,$@)
+	$(call make_shared_lib,$(HIDB_LIB_NAME),$(HIDB_LIB_MAJOR),$(HIDB_LIB_MINOR)) $(LDFLAGS) -o $@ $^ $(LDLIBS)
 
 $(DIST)/hidb5-make: $(patsubst %.cc,$(BUILD)/%.o,$(HIDB_MAKE_SOURCES)) | $(DIST)
-	@printf "%-16s %s\n" "LINK" $@
-	@$(CXX) $(LDFLAGS) -o $@ $^ $(LDLIBS) $(AD_RPATH)
+	$(call echo_link_exe,$@)
+	$(CXX) $(LDFLAGS) -o $@ $^ $(LDLIBS) $(AD_RPATH)
 
 $(DIST)/%: $(BUILD)/%.o | $(HIDB_LIB)
-	@printf "%-16s %s\n" "LINK" $@
-	@$(CXX) $(LDFLAGS) -o $@ $^ $(HIDB_LIB) $(LDLIBS) $(AD_RPATH)
+	$(call echo_link_exe,$@)
+	$(CXX) $(LDFLAGS) -o $@ $^ $(HIDB_LIB) $(LDLIBS) $(AD_RPATH)
 
 # ======================================================================
 ### Local Variables:
