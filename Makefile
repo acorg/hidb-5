@@ -31,7 +31,7 @@ LDLIBS = \
   $(AD_LIB)/$(call shared_lib_name,libacmacsbase,1,0) \
   $(AD_LIB)/$(call shared_lib_name,liblocationdb,1,0) \
   $(AD_LIB)/$(call shared_lib_name,libacmacschart,2,0) \
-  $(XZ_LIBS) -L$(BOOST_LIB_PATH) -lboost_date_time $(CXX_LIB)
+  $(XZ_LIBS) -L$(BOOST_LIB_PATH) -lboost_date_time $(CXX_LIBS)
 
 # ----------------------------------------------------------------------
 
