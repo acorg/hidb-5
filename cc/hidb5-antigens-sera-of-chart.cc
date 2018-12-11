@@ -26,7 +26,7 @@ int main(int argc, char* const argv[])
         const bool verbose = args["-v"] || args["--verbose"];
         hidb::setup(std::string(args["--db-dir"]), {}, verbose);
 
-        auto chart = acmacs::chart::import_from_file(args[0], acmacs::chart::Verify::None, args["--time"] ? report_time::Yes : report_time::No);
+        auto chart = acmacs::chart::import_from_file(args[0], acmacs::chart::Verify::None, do_report_time(args["--time"]));
         auto& hidb = hidb::get(chart->info()->virus_type());
 
         if (!args["--sera-only"]) {

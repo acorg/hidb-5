@@ -32,7 +32,7 @@ int main(int argc, char* const argv[])
         auto& locdb = get_locdb();
         std::map<std::string, std::vector<std::tuple<std::string, std::string, std::string, std::string, std::string, std::string, std::string>>> data;
         for (std::string_view subtype : {"B", "H1", "H3"}) {
-            auto& hidb = hidb::get(subtype, report_time::Yes);
+            auto& hidb = hidb::get(subtype, report_time::yes);
             auto antigens = hidb.antigens();
             auto tables = hidb.tables();
             for (auto ag_no = 0UL; ag_no < antigens->size(); ++ag_no) {

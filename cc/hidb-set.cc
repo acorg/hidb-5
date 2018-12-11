@@ -27,7 +27,7 @@ static std::unique_ptr<HiDbSet> sHiDbSet;
 class HiDbSet
 {
  public:
-    const hidb::HiDb& get(std::string_view aVirusType, report_time timer = report_time::No) const
+    const hidb::HiDb& get(std::string_view aVirusType, report_time timer = report_time::no) const
         {
             using namespace std::string_literals;
             auto h = mPtrs.find(std::string(aVirusType));
@@ -48,7 +48,7 @@ class HiDbSet
                 if (!fs::exists(filename))
                     throw hidb::get_error(string::concat("Cannot find hidb for ", aVirusType, " in ", sHiDbDir));
 
-                h = mPtrs.emplace(aVirusType, std::make_unique<hidb::HiDb>(filename, sVerbose || (timer == report_time::Yes))).first;
+                h = mPtrs.emplace(aVirusType, std::make_unique<hidb::HiDb>(filename, sVerbose || (timer == report_time::yes))).first;
             }
             return *h->second;
         }

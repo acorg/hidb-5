@@ -182,7 +182,7 @@ data_t scan_antigens(std::string aStart, std::string aEnd)
     data_t data_antigens;
     std::string min_date{"3000"}, max_date{"1000"};
     for (std::string virus_type: {"A(H1N1)", "A(H3N2)", "B"}) {
-        const auto& hidb = hidb::get(virus_type, report_time::No);
+        const auto& hidb = hidb::get(virus_type, report_time::no);
         auto antigens = hidb.antigens();
         auto tables = hidb.tables();
         for (size_t ag_no = 0; ag_no < antigens->size(); ++ag_no) {
@@ -216,7 +216,7 @@ std::pair<data_t, data_t> scan_sera(std::string aStart, std::string aEnd)
 
     std::string min_date{"3000"}, max_date{"1000"};
     for (std::string virus_type: {"A(H1N1)", "A(H3N2)", "B"}) {
-        const auto& hidb = hidb::get(virus_type, report_time::No);
+        const auto& hidb = hidb::get(virus_type, report_time::no);
         auto sera = hidb.sera();
         auto antigens = hidb.antigens();
         auto tables = hidb.tables();

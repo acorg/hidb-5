@@ -66,7 +66,7 @@ std::string hidb::json::read(std::string aData, bool verbose)
     std::memset(header_bin->virus_type_, 0, static_cast<size_t>(header_bin->virus_type_size));
     std::memmove(header_bin->virus_type_, estimations.virus_type.data(), static_cast<size_t>(header_bin->virus_type_size));
 
-    Timeit ti_antigens("converting " + acmacs::to_string(estimations.number_of_antigens) + " antigens: ", verbose ? report_time::Yes : report_time::No);
+    Timeit ti_antigens("converting " + acmacs::to_string(estimations.number_of_antigens) + " antigens: ", do_report_time(verbose));
     antigen_index->number_of = static_cast<hidb::bin::ast_number_t>(estimations.number_of_antigens);
     hidb::bin::ast_offset_t* antigen_offset = &antigen_index->offset;
     *antigen_offset = 0;
@@ -85,7 +85,7 @@ std::string hidb::json::read(std::string aData, bool verbose)
     auto* serum_index = reinterpret_cast<hidb::bin::ASTIndex*>(data_start + header_bin->serum_offset);
     auto* serum_data = reinterpret_cast<ptr_t>(reinterpret_cast<ptr_t>(serum_index) + sizeof(hidb::bin::ast_offset_t) * (estimations.number_of_sera + 1) + sizeof(hidb::bin::ast_number_t));
 
-    Timeit ti_sera("converting " + acmacs::to_string(estimations.number_of_sera) + " sera: ", verbose ? report_time::Yes : report_time::No);
+    Timeit ti_sera("converting " + acmacs::to_string(estimations.number_of_sera) + " sera: ", do_report_time(verbose));
     serum_index->number_of = static_cast<hidb::bin::ast_number_t>(estimations.number_of_sera);
     hidb::bin::ast_offset_t* serum_offset = &serum_index->offset;
     *serum_offset = 0;
@@ -104,7 +104,7 @@ std::string hidb::json::read(std::string aData, bool verbose)
     auto* table_index = reinterpret_cast<hidb::bin::ASTIndex*>(data_start + header_bin->table_offset);
     auto* table_data = reinterpret_cast<ptr_t>(reinterpret_cast<ptr_t>(table_index) + sizeof(hidb::bin::ast_offset_t) * (estimations.number_of_tables + 1) + sizeof(hidb::bin::ast_number_t));
 
-    Timeit ti_tables("converting " + acmacs::to_string(estimations.number_of_tables) + " tables: ", verbose ? report_time::Yes : report_time::No);
+    Timeit ti_tables("converting " + acmacs::to_string(estimations.number_of_tables) + " tables: ", do_report_time(verbose));
     table_index->number_of = static_cast<hidb::bin::ast_number_t>(estimations.number_of_tables);
     hidb::bin::ast_offset_t* table_offset = &table_index->offset;
     *table_offset = 0;

@@ -12,8 +12,8 @@ namespace hidb
     class get_error : public std::runtime_error { public: using std::runtime_error::runtime_error; };
 
     void setup(std::string_view aHiDbDir, std::optional<std::string> aLocDbFilename = {}, bool aVerbose = false);
-    [[nodiscard]] const HiDb& get(std::string_view aVirusType, report_time timer = report_time::Yes); // throws get_error
-    [[nodiscard]] inline const HiDb& get(std::string aVirusType, report_time timer = report_time::Yes) { return get(std::string_view(aVirusType), timer); }
+    [[nodiscard]] const HiDb& get(std::string_view aVirusType, report_time timer = report_time::yes); // throws get_error
+    [[nodiscard]] inline const HiDb& get(std::string aVirusType, report_time timer = report_time::yes) { return get(std::string_view(aVirusType), timer); }
 
 } // namespace hidb
 

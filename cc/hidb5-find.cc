@@ -46,7 +46,7 @@ int main(int argc, char* const argv[])
         if (fs::exists(args[0]))
             find(hidb::HiDb(std::string(args[0]), verbose), args);
         else
-            find(hidb::get(string::upper(args[0]), report_time::Yes), args);
+            find(hidb::get(string::upper(args[0]), report_time::yes), args);
         return 0;
     }
     catch (std::exception& err) {
