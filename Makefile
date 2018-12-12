@@ -42,6 +42,7 @@ install: install-headers $(TARGETS)
 
 test: install
 	test/test
+.PHONY: test
 
 # ----------------------------------------------------------------------
 
