@@ -63,7 +63,8 @@ static std::map<std::string, std::vector<hidb::Vaccine>> sVaccines = {
             {"TEXAS/50/2012",            hidb::Vaccine::Previous},  // 2014
             {"SWITZERLAND/9715293/2013", hidb::Vaccine::Previous},  // 2015
             {"HONG KONG/4801/2014",      hidb::Vaccine::Previous},  // 2016
-            {"SINGAPORE/INFIMH-16-0019/2016", hidb::Vaccine::Current},
+            {"SINGAPORE/INFIMH-16-0019/2016", hidb::Vaccine::Previous},
+            {"SWITZERLAND/8060/2017",    hidb::Vaccine::Current}, // 2018
             {"SAITAMA/103/2014",         hidb::Vaccine::Surrogate},
             {"HONG KONG/7295/2014",      hidb::Vaccine::Surrogate},
         }},
