@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <optional>
 
 #include "acmacs-base/string.hh"
 #include "acmacs-base/string-split.hh"
@@ -734,13 +735,18 @@ hidb::AntigenPList hidb::Antigens::find(const acmacs::chart::Antigens& aAntigens
 hidb::SerumPIndex hidb::Sera::find(const acmacs::chart::Serum& aSerum) const
 {
     const auto serum_index_list = find(aSerum.name(), hidb::fix_location::no);
+    std::optional<SerumPIndex> with_unknown_serum_id;
     for (auto serum_index: serum_index_list) {
         const auto& serum = serum_index.first;
-        if (serum->annotations() == aSerum.annotations() && serum->reassortant() == aSerum.reassortant() && serum->serum_id() == aSerum.serum_id())
-            return serum_index;
-        // std::cerr << aSerum.full_name() << " A:" << aSerum.annotations() << " R:" << aSerum.reassortant() << " I:" << aSerum.serum_id() << '\n';
-        // std::cerr << serum->full_name() << " A:" << serum->annotations() << " R:" << serum->reassortant() << " I:" << serum->serum_id() << '\n';
+        if (serum->annotations() == aSerum.annotations() && serum->reassortant() == aSerum.reassortant()) {
+            if (serum->serum_id() == aSerum.serum_id())
+                return serum_index;
+            else if (serum->serum_id().empty() && aSerum.serum_id() == "UNKNOWN") // old tables may have UNKNOWN serum id, but database stores empty serum_id
+                with_unknown_serum_id = serum_index;
+        }
     }
+    if (with_unknown_serum_id.has_value())
+        return *with_unknown_serum_id;
     std::cerr << "WARNING: not in hidb: " << aSerum.full_name() << '\n';
     throw not_found(aSerum.full_name());
 
