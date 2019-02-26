@@ -498,6 +498,47 @@ std::shared_ptr<hidb::Table> hidb::Tables::oldest(const indexes_t& aTables) cons
 
 // ----------------------------------------------------------------------
 
+std::vector<hidb::TableStat> hidb::Tables::stat(const indexes_t& tables) const
+{
+    std::vector<hidb::TableStat> result;
+    for (auto table_no : tables) {
+        auto table = operator[](table_no);
+        const auto assay = table->assay(), lab = table->lab(), rbc = table->rbc();
+        if (auto found = std::find_if(std::begin(result), std::end(result), [assay, lab, rbc](const auto& entry) { return assay == entry.assay && lab == entry.lab && rbc == entry.rbc; }); found != std::end(result)) {
+            ++found->number;
+            if (table->date() > found->most_recent->date())
+                found->most_recent = table;
+            else if (table->date() < found->oldest->date())
+                found->oldest = table;
+        }
+        else
+            result.emplace_back(assay, lab, rbc, table);
+    }
+    return result;
+
+} // hidb::Tables::stat
+
+// ----------------------------------------------------------------------
+
+std::string hidb::TableStat::title() const noexcept
+{
+    std::string result = string::concat(lab, ':', assay);
+    if (assay == "HI") {
+        if (rbc == "turkey")
+            result += ":tu";
+        else if (rbc == "guinea-pig")
+            result += ":gp";
+        else
+            result.append(1, ':').append(rbc);
+    }
+    else
+        result += "   ";
+    return result;
+
+} // hidb::TableStat::title
+
+// ----------------------------------------------------------------------
+
 using offset_t = const hidb::bin::ast_offset_t*;
 
 struct first_last_t

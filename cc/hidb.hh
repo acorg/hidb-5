@@ -164,6 +164,19 @@ namespace hidb
 
     }; // class Table
 
+    struct TableStat
+    {
+        TableStat(std::string_view a_assay, std::string_view a_lab, std::string_view a_rbc, std::shared_ptr<Table> table)
+            : assay{a_assay}, lab{a_lab}, rbc{a_rbc}, number{1}, most_recent{table}, oldest{table} {}
+        std::string title() const noexcept;
+        const std::string_view assay;
+        const std::string_view lab;
+        const std::string_view rbc;
+        size_t number;
+        std::shared_ptr<Table> most_recent;
+        std::shared_ptr<Table> oldest;
+    };
+
     class Tables // : public acmacs::chart::Tables
     {
      public:
@@ -174,6 +187,7 @@ namespace hidb
         std::shared_ptr<Table> operator[](size_t aIndex) const;
         std::shared_ptr<Table> most_recent(const indexes_t& aTables) const;
         std::shared_ptr<Table> oldest(const indexes_t& aTables) const;
+        std::vector<TableStat> stat(const indexes_t& aTables) const;
 
         using iterator = acmacs::chart::detail::iterator<Tables, std::shared_ptr<Table>>;
         iterator begin() const { return {*this, 0}; }
