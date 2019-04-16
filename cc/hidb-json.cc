@@ -621,7 +621,7 @@ void Estimations::table(const rjson::value& tables, bool verbose)
 {
     constexpr const size_t average_titer_length = 5;
 
-    size_t fields_size = 0, antigens = 0, sera = 0;;
+    size_t fields_size = 0, antigens = 0, sera = 0;
 
     number_of_tables = tables.size();
     rjson::for_each(tables, [&](const rjson::value& table) {
