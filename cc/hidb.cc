@@ -3,7 +3,7 @@
 
 #include "acmacs-base/string.hh"
 #include "acmacs-base/string-split.hh"
-#include "acmacs-base/virus-name.hh"
+#include "acmacs-virus/virus-name.hh"
 #include "locationdb/locdb.hh"
 #include "hidb-5/hidb.hh"
 #include "hidb-5/hidb-bin.hh"
