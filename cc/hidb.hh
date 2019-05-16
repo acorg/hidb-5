@@ -32,7 +32,7 @@ namespace hidb
         acmacs::chart::Date date() const override;
         acmacs::chart::Passage passage() const override;
         acmacs::chart::BLineage lineage() const override;
-        acmacs::chart::Reassortant reassortant() const override;
+        acmacs::virus::Reassortant reassortant() const override;
         acmacs::chart::LabIds lab_ids() const override;
         acmacs::chart::Clades clades() const override { return {}; }
         acmacs::chart::Annotations annotations() const override;
@@ -94,7 +94,7 @@ namespace hidb
         acmacs::chart::Name name() const override;
         acmacs::chart::Passage passage() const override;
         acmacs::chart::BLineage lineage() const override;
-        acmacs::chart::Reassortant reassortant() const override;
+        acmacs::virus::Reassortant reassortant() const override;
         acmacs::chart::Annotations annotations() const override;
         acmacs::chart::SerumId serum_id() const override;
         acmacs::chart::SerumSpecies serum_species() const override;

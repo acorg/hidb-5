@@ -137,9 +137,9 @@ acmacs::chart::BLineage hidb::Antigen::lineage() const
 
 // ----------------------------------------------------------------------
 
-acmacs::chart::Reassortant hidb::Antigen::reassortant() const
+acmacs::virus::Reassortant hidb::Antigen::reassortant() const
 {
-    return acmacs::chart::Reassortant{reinterpret_cast<const hidb::bin::Antigen*>(mAntigen)->reassortant()};
+    return acmacs::virus::Reassortant{reinterpret_cast<const hidb::bin::Antigen*>(mAntigen)->reassortant()};
 
 } // hidb::Antigen::reassortant
 
@@ -248,9 +248,9 @@ acmacs::chart::BLineage hidb::Serum::lineage() const
 
 // ----------------------------------------------------------------------
 
-acmacs::chart::Reassortant hidb::Serum::reassortant() const
+acmacs::virus::Reassortant hidb::Serum::reassortant() const
 {
-    return acmacs::chart::Reassortant{reinterpret_cast<const hidb::bin::Serum*>(mSerum)->reassortant()};
+    return acmacs::virus::Reassortant{reinterpret_cast<const hidb::bin::Serum*>(mSerum)->reassortant()};
 
 } // hidb::Serum::reassortant
 
