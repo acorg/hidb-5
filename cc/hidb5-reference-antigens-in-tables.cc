@@ -40,7 +40,7 @@ struct Record
             return date > rhs.date; // most recent first
         if (virus_name != rhs.virus_name)
             return virus_name < rhs.virus_name;
-        return passage < rhs.passage;
+        return passage.compare(rhs.passage) < 0;
     }
 
     static inline bool less_subtype(std::string s1, std::string s2)

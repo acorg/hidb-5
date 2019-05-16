@@ -123,7 +123,7 @@ std::string hidb::Antigen::date_compact() const
 
 acmacs::chart::Passage hidb::Antigen::passage() const
 {
-    return reinterpret_cast<const hidb::bin::Antigen*>(mAntigen)->passage();
+    return acmacs::chart::Passage{reinterpret_cast<const hidb::bin::Antigen*>(mAntigen)->passage()};
 
 } // hidb::Antigen::passage
 
@@ -139,7 +139,7 @@ acmacs::chart::BLineage hidb::Antigen::lineage() const
 
 acmacs::chart::Reassortant hidb::Antigen::reassortant() const
 {
-    return reinterpret_cast<const hidb::bin::Antigen*>(mAntigen)->reassortant();
+    return acmacs::chart::Reassortant{reinterpret_cast<const hidb::bin::Antigen*>(mAntigen)->reassortant()};
 
 } // hidb::Antigen::reassortant
 
@@ -234,7 +234,7 @@ acmacs::chart::Name hidb::Serum::name() const
 
 acmacs::chart::Passage hidb::Serum::passage() const
 {
-    return reinterpret_cast<const hidb::bin::Serum*>(mSerum)->passage();
+    return acmacs::chart::Passage{reinterpret_cast<const hidb::bin::Serum*>(mSerum)->passage()};
 
 } // hidb::Serum::passsre
 
@@ -250,7 +250,7 @@ acmacs::chart::BLineage hidb::Serum::lineage() const
 
 acmacs::chart::Reassortant hidb::Serum::reassortant() const
 {
-    return reinterpret_cast<const hidb::bin::Serum*>(mSerum)->reassortant();
+    return acmacs::chart::Reassortant{reinterpret_cast<const hidb::bin::Serum*>(mSerum)->reassortant()};
 
 } // hidb::Serum::reassortant
 
