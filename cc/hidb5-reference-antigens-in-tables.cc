@@ -20,11 +20,11 @@ struct Record
     std::string test_type;
     std::string virus_name;
     acmacs::chart::Date collection_date;
-    acmacs::chart::Passage passage;
+    acmacs::virus::Passage passage;
     // std::string antigen_name;
 
     Record(std::string_view a_subtype, acmacs::chart::BLineage a_lineage, std::string_view a_lab, std::string_view a_date, std::string_view a_assay, std::string_view a_rbc, std::string a_virus_name,
-           const acmacs::chart::Date& a_collection_date, const acmacs::chart::Passage& a_passage)
+           const acmacs::chart::Date& a_collection_date, const acmacs::virus::Passage& a_passage)
         : subtype(fix_subtype(a_subtype, a_lineage)), lab(fix_lab(a_lab)), date(fix_test_date(a_date, a_lab, a_lineage)), test_type(fix_test_type(a_assay, a_rbc)), virus_name(fix_virus_name(a_virus_name)),
           collection_date(a_collection_date), passage(a_passage)
     {

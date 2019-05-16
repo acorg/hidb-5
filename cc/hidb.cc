@@ -121,9 +121,9 @@ std::string hidb::Antigen::date_compact() const
 
 // ----------------------------------------------------------------------
 
-acmacs::chart::Passage hidb::Antigen::passage() const
+acmacs::virus::Passage hidb::Antigen::passage() const
 {
-    return acmacs::chart::Passage{reinterpret_cast<const hidb::bin::Antigen*>(mAntigen)->passage()};
+    return acmacs::virus::Passage{reinterpret_cast<const hidb::bin::Antigen*>(mAntigen)->passage()};
 
 } // hidb::Antigen::passage
 
@@ -232,9 +232,9 @@ acmacs::chart::Name hidb::Serum::name() const
 
 // ----------------------------------------------------------------------
 
-acmacs::chart::Passage hidb::Serum::passage() const
+acmacs::virus::Passage hidb::Serum::passage() const
 {
-    return acmacs::chart::Passage{reinterpret_cast<const hidb::bin::Serum*>(mSerum)->passage()};
+    return acmacs::virus::Passage{reinterpret_cast<const hidb::bin::Serum*>(mSerum)->passage()};
 
 } // hidb::Serum::passsre
 

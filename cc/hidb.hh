@@ -30,7 +30,7 @@ namespace hidb
 
         acmacs::chart::Name name() const override;
         acmacs::chart::Date date() const override;
-        acmacs::chart::Passage passage() const override;
+        acmacs::virus::Passage passage() const override;
         acmacs::chart::BLineage lineage() const override;
         acmacs::virus::Reassortant reassortant() const override;
         acmacs::chart::LabIds lab_ids() const override;
@@ -92,7 +92,7 @@ namespace hidb
         Serum(const char* aSerum, const HiDb& aHiDb) : mSerum(aSerum), mHiDb(aHiDb) {}
 
         acmacs::chart::Name name() const override;
-        acmacs::chart::Passage passage() const override;
+        acmacs::virus::Passage passage() const override;
         acmacs::chart::BLineage lineage() const override;
         acmacs::virus::Reassortant reassortant() const override;
         acmacs::chart::Annotations annotations() const override;
