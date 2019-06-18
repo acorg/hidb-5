@@ -190,11 +190,11 @@ std::string hidb::Antigen::country(const LocDb& locdb) const
 {
     const std::string loc{location()};
     try {
-        return locdb.country(loc);
+        return std::string(locdb.country(loc));
     }
     catch (LocationNotFound&) {
         if (loc.size() == 2) {
-            return locdb.find_cdc_abbreviation(loc).country();
+            return std::string(locdb.find_cdc_abbreviation(loc).country());
         }
     }
     return "UNKNOWN";
