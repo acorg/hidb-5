@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <optional>
 
+#include "acmacs-base/fmt.hh"
 #include "acmacs-base/string.hh"
 #include "acmacs-base/string-split.hh"
 #include "acmacs-virus/virus-name.hh"
@@ -665,11 +666,11 @@ hidb::SerumPIndexList hidb::Sera::find(std::string aName, fix_location aFixLocat
 
 // ----------------------------------------------------------------------
 
-hidb::AntigenPList hidb::Antigens::find_labid(std::string labid) const
+hidb::AntigenPList hidb::Antigens::find_labid(std::string_view labid) const
 {
     AntigenPList result;
 
-    auto find = [&result,this](std::string look_for) -> void {
+    auto find = [&result, this](std::string look_for) -> void {
         const first_last_t all_antigens(reinterpret_cast<const hidb::bin::ast_offset_t*>(this->mIndex), this->mNumberOfAntigens);
         for (auto ag = all_antigens.first; ag != all_antigens.last; ++ag) {
             const auto lab_ids = reinterpret_cast<const hidb::bin::Antigen*>(this->mAntigen0 + *ag)->lab_ids();
@@ -678,18 +679,15 @@ hidb::AntigenPList hidb::Antigens::find_labid(std::string labid) const
         }
     };
 
-    if (labid.find('#') == std::string::npos) {
-        find("CDC#" + labid);
+    if (labid.find('#') == std::string_view::npos) {
+        find(fmt::format("CDC#{}", labid));
         if (result.empty())
-            find("MELB#" + labid);
+            find(fmt::format("MELB#{}", labid));
         if (result.empty())
-            find("NIID#" + labid);
-        if (result.empty())
-            find(labid);
+            find(fmt::format("NIID#{}", labid));
     }
-    else {
-        find(labid);
-    }
+    if (result.empty())
+        find(std::string{labid});
 
     return result;
 

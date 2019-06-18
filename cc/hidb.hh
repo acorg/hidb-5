@@ -69,7 +69,7 @@ namespace hidb
         std::shared_ptr<acmacs::chart::Antigen> operator[](size_t aIndex) const override { return at(aIndex); }
         AntigenP at(size_t aIndex) const;
         AntigenPIndexList find(std::string aName, fix_location aFixLocation, find_fuzzy fuzzy = find_fuzzy::no) const;
-        AntigenPList find_labid(std::string labid) const;
+        AntigenPList find_labid(std::string_view labid) const;
         AntigenPIndex find(const acmacs::chart::Antigen& aAntigen, passage_strictness aPassageStrictness = passage_strictness::yes) const; // hidb::vaccines_for_name
         AntigenPList find(const acmacs::chart::Antigens& aAntigens) const;
         AntigenPList date_range(std::string_view first, std::string_view after_last) const;
