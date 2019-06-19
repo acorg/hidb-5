@@ -545,11 +545,13 @@ using offset_t = const hidb::bin::ast_offset_t*;
 
 struct first_last_t
 {
-    inline first_last_t() : first{nullptr}, last{nullptr} {}
-    inline first_last_t(offset_t a, offset_t b) : first(a), last(b) {}
-    inline first_last_t(offset_t aFirst, size_t aNumber) : first(aFirst), last(aFirst + aNumber) {}
-    inline size_t size() const { return static_cast<size_t>(last - first); }
-    inline bool empty() const { return first == last; }
+    first_last_t() : first{nullptr}, last{nullptr} {}
+    first_last_t(offset_t a, offset_t b) : first(a), last(b) {}
+    first_last_t(offset_t aFirst, size_t aNumber) : first(aFirst), last(aFirst + aNumber) {}
+    constexpr size_t size() const { return static_cast<size_t>(last - first); }
+    constexpr bool empty() const { return first == last; }
+    constexpr auto begin() const { return first; }
+    constexpr auto end() const { return last; }
     offset_t first;
     offset_t last;
 
@@ -692,6 +694,23 @@ hidb::AntigenPList hidb::Antigens::find_labid(std::string_view labid) const
     return result;
 
 } // hidb::Antigens::find_labid
+
+// ----------------------------------------------------------------------
+
+// for seqdb-3, to speed up looking by lab_id
+std::vector<std::pair<std::string_view, const hidb::bin::Antigen*>> hidb::Antigens::sorted_by_labid() const
+{
+    std::vector<std::pair<std::string_view, const hidb::bin::Antigen*>> result;
+    const first_last_t all_antigens(reinterpret_cast<const hidb::bin::ast_offset_t*>(mIndex), mNumberOfAntigens);
+    for (const auto& ag : all_antigens) {
+        const auto* antigen = reinterpret_cast<const hidb::bin::Antigen*>(mAntigen0 + ag);
+        for (const auto& lab_id : antigen->lab_ids())
+            result.emplace_back(lab_id, antigen);
+    }
+    std::sort(std::begin(result), std::end(result), [](const auto& e1, const auto& e2) { return e1.first < e2.first; });
+    return result;
+
+} // hidb::Antigens::sorted_by_labid
 
 // ----------------------------------------------------------------------
 

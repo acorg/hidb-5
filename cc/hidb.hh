@@ -12,7 +12,7 @@ class LocDb;
 
 namespace hidb
 {
-    namespace bin { struct Table; }
+    namespace bin { struct Table; struct Antigen; }
 
     using indexes_t = std::vector<size_t>;
     class not_found : public std::runtime_error { public: using std::runtime_error::runtime_error; };
@@ -73,6 +73,9 @@ namespace hidb
         AntigenPIndex find(const acmacs::chart::Antigen& aAntigen, passage_strictness aPassageStrictness = passage_strictness::yes) const; // hidb::vaccines_for_name
         AntigenPList find(const acmacs::chart::Antigens& aAntigens) const;
         AntigenPList date_range(std::string_view first, std::string_view after_last) const;
+
+        std::vector<std::pair<std::string_view, const hidb::bin::Antigen*>> sorted_by_labid() const; // for seqdb-3, to speed up looking by lab_id
+        AntigenP make(const hidb::bin::Antigen* antigen_bin) const { return std::make_shared<Antigen>(reinterpret_cast<const char*>(antigen_bin), mHiDb); }
 
      private:
         size_t mNumberOfAntigens;
