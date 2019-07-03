@@ -1,6 +1,6 @@
 #include <fstream>
 
-#include "acmacs-base/argc-argv.hh"
+#include "acmacs-base/argv.hh"
 #include "acmacs-base/date.hh"
 #include "acmacs-base/csv.hh"
 #include "locationdb/locdb.hh"
@@ -9,26 +9,27 @@
 
 using namespace std::string_literals;
 
-static const char* sDesc = "for each subtype, each antigen make a table with isolation date, first table date, country, cdcid; separate files for subtype, lab, HI and Neut;";
+// static const char* sDesc = "for each subtype, each antigen make a table with isolation date, first table date, country, cdcid; separate files for subtype, lab, HI and Neut;";
 
 // ----------------------------------------------------------------------
+
+using namespace acmacs::argv;
+struct Options : public argv
+{
+    Options(int a_argc, const char* const a_argv[], on_error on_err = on_error::exit) : argv() { parse(a_argc, a_argv, on_err); }
+
+    option<bool> verbose{*this, 'v', "verbose"};
+    option<str>  db_dir{*this, "db-dir", dflt{""}};
+
+    argument<str> output_prefix{*this, mandatory};
+
+};
 
 int main(int argc, char* const argv[])
 {
     try {
-        argc_argv args(argc, argv,
-                       {
-                           {"--db-dir", ""},
-                           {"-v", false},
-                           {"--verbose", false},
-                           {"-h", false},
-                           {"--help", false},
-                       });
-        if (args["-h"] || args["--help"] || args.number_of_arguments() != 1) {
-            throw std::runtime_error("Usage: "s + args.program() + " [options] <output-prefix>\n" + sDesc + '\n' + args.usage_options());
-        }
-        const bool verbose = args["-v"] || args["--verbose"];
-        hidb::setup(std::string(args["--db-dir"]), {}, verbose);
+        Options opt(argc, argv);
+        hidb::setup(opt.db_dir, {}, *opt.verbose);
         auto& locdb = get_locdb();
         std::map<std::string, std::vector<std::tuple<std::string, std::string, std::string, std::string, std::string, std::string, std::string>>> data;
         for (std::string_view subtype : {"B", "H1", "H3"}) {
@@ -37,7 +38,7 @@ int main(int argc, char* const argv[])
             auto tables = hidb.tables();
             for (auto ag_no = 0UL; ag_no < antigens->size(); ++ag_no) {
                 auto antigen = antigens->at(ag_no);
-                const Date date = antigen->date_compact();
+                const auto date = date::from_string(antigen->date_compact());
                 const auto lineage = antigen->lineage();
                 const auto country = antigen->country(locdb);
                 std::string lab_id;
@@ -45,9 +46,9 @@ int main(int argc, char* const argv[])
                     lab_id = lab_ids[0];
                 auto first_table = tables->oldest(antigen->tables());
                 const auto first_table_date = first_table->date().substr(0, 8);
-                const int days = date.empty() ? -1 : days_between_dates(date, Date(first_table_date));
-                const std::string tag = std::string(subtype) + '-' + std::string(first_table->lab()) + '-' + std::string(first_table->assay());
-                data[tag].emplace_back(antigen->name(), date, first_table_date, days >= 0 ? std::to_string(days) : std::string{}, country, lab_id, lineage);
+                const int days = date.ok() ? -1 : date::days_between_dates(date, date::from_string(first_table_date));
+                const auto tag = fmt::format("{}-{}-{}", subtype, first_table->lab(), first_table->assay());
+                data[tag].emplace_back(antigen->name(), date::display(date), first_table_date, days >= 0 ? std::to_string(days) : std::string{}, country, lab_id, lineage);
             }
         }
         for (auto [tag, entries] : data) {
@@ -65,7 +66,7 @@ int main(int argc, char* const argv[])
                 csv.add_field(std::get<6>(entry));
                 csv.new_row();
             }
-            std::ofstream out(string::concat(args[0], tag, ".csv"));
+            std::ofstream out(string::concat(*opt.output_prefix, tag, ".csv"));
             out << static_cast<std::string_view>(csv);
         }
 
