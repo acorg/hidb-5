@@ -14,7 +14,6 @@
 
 hidb::HiDb::HiDb(std::string aFilename, bool verbose)
 {
-    // Timeit ti("reading hidb from " + aFilename + ": ", timer);
     acmacs::file::read_access access(aFilename);
     if (hidb::bin::has_signature(access.data())) {
         mAccess = std::move(access);

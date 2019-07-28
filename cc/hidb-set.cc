@@ -48,6 +48,7 @@ class HiDbSet
                 if (!fs::exists(filename))
                     throw hidb::get_error(string::concat("Cannot find hidb for ", aVirusType, " in ", sHiDbDir));
 
+                Timeit ti("DEBUG: HiDb loading from " + static_cast<std::string>(filename) + ": ", timer);
                 h = mPtrs.emplace(aVirusType, std::make_unique<hidb::HiDb>(filename, sVerbose || (timer == report_time::yes))).first;
             }
             return *h->second;
