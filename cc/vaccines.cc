@@ -16,6 +16,7 @@
 #endif
 
 // https://www.fludb.org/brc/vaccineRecommend.spg?decorator=influenza
+// https://www.who.int/influenza/vaccines/virus/recommendations/en/
 
 static std::map<std::string, std::vector<hidb::Vaccine>> sVaccines = {
     {"A(H1N1)", {
@@ -32,7 +33,8 @@ static std::map<std::string, std::vector<hidb::Vaccine>> sVaccines = {
 
               // PDM
             {"CALIFORNIA/7/2009",        hidb::Vaccine::Previous},
-            {"MICHIGAN/45/2015",         hidb::Vaccine::Current},
+            {"MICHIGAN/45/2015",         hidb::Vaccine::Previous},
+            {"BRISBANE/2/2018",          hidb::Vaccine::Current}, // 2019-02
         }},
     {"A(H3N2)", {
             {"PORT CHALMERS/1/1973",     hidb::Vaccine::Previous}, // 1974?
@@ -65,7 +67,7 @@ static std::map<std::string, std::vector<hidb::Vaccine>> sVaccines = {
             {"HONG KONG/4801/2014",      hidb::Vaccine::Previous},  // 2016
             {"SINGAPORE/INFIMH-16-0019/2016", hidb::Vaccine::Previous},
             {"SWITZERLAND/8060/2017",    hidb::Vaccine::Current}, // 2018-09
-            {"KANSAS/14/2017",           hidb::Vaccine::Current}, // ? 2019-02
+            {"KANSAS/14/2017",           hidb::Vaccine::Current}, // 2019-02
             {"SAITAMA/103/2014",         hidb::Vaccine::Surrogate},
             {"HONG KONG/7295/2014",      hidb::Vaccine::Surrogate},
         }},
