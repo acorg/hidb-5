@@ -31,8 +31,8 @@ int main(int argc, char* const argv[])
 {
     try {
         argc_argv args(argc, argv, {
-                {"--start", "1000"},
-                {"--end", "3000"},
+                {"--start", "1000-01-01"},
+                {"--end", "3000-01-01"},
                 {"--db-dir", ""},
                 {"-v", false},
                 {"--verbose", false},
