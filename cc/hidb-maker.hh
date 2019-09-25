@@ -8,6 +8,7 @@
 #include "acmacs-base/string.hh"
 #include "acmacs-base/enumerate.hh"
 #include "acmacs-base/rjson-forward.hh"
+#include "acmacs-chart-2/chart.hh"
 
 namespace acmacs::chart
 {
@@ -70,7 +71,8 @@ template <typename T> class set_unique_ptr : public std::set<std::unique_ptr<T>,
 class Virus : public std::string
 {
  public:
-    inline Virus(std::string aSource) : std::string{aSource == "influenza" ? std::string{} : aSource} {}
+    inline Virus(const std::string& aSource) : std::string{aSource == "influenza" ? std::string{} : aSource} {}
+    inline Virus(const acmacs::chart::Virus& aSource) : std::string{*aSource == "influenza" ? std::string{} : *aSource} {}
 
 }; // class Virus
 
