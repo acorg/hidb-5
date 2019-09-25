@@ -106,7 +106,7 @@ void HidbMaker::export_tables(rjson::value& target) const
 {
     for (auto& table: mTables) {
         rjson::value tb{rjson::object{}};
-        rjson::set_field_if_not_empty(tb, "v", table->virus);
+        rjson::set_field_if_not_empty(tb, "v", *table->virus == "influenza" ? std::string{} : *table->virus);
         rjson::set_field_if_not_empty(tb, "V", table->virus_type);
         rjson::set_field_if_not_empty(tb, "A", table->assay);
         rjson::set_field_if_not_empty(tb, "D", table->date);
@@ -332,7 +332,7 @@ void Serum::make_indexes()
 
 std::string acmacs::to_string(const Table& aTable)
 {
-    return string::join(":", {aTable.virus, aTable.virus_type, aTable.subset, aTable.lineage, aTable.assay, aTable.lab, aTable.rbc_species, aTable.date});
+    return string::join(":", {*aTable.virus == "influenza" ? std::string{} : *aTable.virus, aTable.virus_type, aTable.subset, aTable.lineage, aTable.assay, aTable.lab, aTable.rbc_species, aTable.date});
 
 } // acmacs::to_string
 

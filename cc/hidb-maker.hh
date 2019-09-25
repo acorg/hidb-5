@@ -68,13 +68,7 @@ template <typename T> class set_unique_ptr : public std::set<std::unique_ptr<T>,
 
 // ----------------------------------------------------------------------
 
-class Virus : public std::string
-{
- public:
-    inline Virus(const std::string& aSource) : std::string{aSource == "influenza" ? std::string{} : aSource} {}
-    inline Virus(const acmacs::chart::Virus& aSource) : std::string{*aSource == "influenza" ? std::string{} : *aSource} {}
-
-}; // class Virus
+using Virus = acmacs::chart::Virus;
 
 // ----------------------------------------------------------------------
 
@@ -131,12 +125,12 @@ class Table
     Table(const acmacs::chart::Info& aInfo);
 
     inline bool operator==(const Table& rhs) const { return string::compare(
-        {    virus,     virus_type,     subset,     lineage, assay,     lab,     rbc_species,     date},
-        {rhs.virus, rhs.virus_type, rhs.subset, rhs.lineage, rhs.assay, rhs.lab, rhs.rbc_species, rhs.date}) == 0; }
+        {    *virus,     virus_type,     subset,     lineage, assay,     lab,     rbc_species,     date},
+        {*rhs.virus, rhs.virus_type, rhs.subset, rhs.lineage, rhs.assay, rhs.lab, rhs.rbc_species, rhs.date}) == 0; }
 
     inline bool operator<(const Table& rhs) const { return string::compare(
-        {    virus,     virus_type,     subset,     lineage,     assay,     lab,     rbc_species,     date},
-        {rhs.virus, rhs.virus_type, rhs.subset, rhs.lineage, rhs.assay, rhs.lab, rhs.rbc_species, rhs.date}) < 0; }
+        {    *virus,     virus_type,     subset,     lineage,     assay,     lab,     rbc_species,     date},
+        {*rhs.virus, rhs.virus_type, rhs.subset, rhs.lineage, rhs.assay, rhs.lab, rhs.rbc_species, rhs.date}) < 0; }
 
     void set_titers(const acmacs::chart::Titers& aTiters);
     inline void add_antigen(Antigen* aAntigen) { antigen_ptrs.insert(aAntigen); }
