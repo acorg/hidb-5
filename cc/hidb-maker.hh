@@ -72,10 +72,10 @@ using Virus = acmacs::chart::Virus;
 
 // ----------------------------------------------------------------------
 
-class Assay : public std::string
+class Assay : public acmacs::chart::Assay
 {
  public:
-    inline Assay(std::string aSource) : std::string{aSource}
+    inline Assay(const acmacs::chart::Assay& aSource) : acmacs::chart::Assay{aSource}
         {
             if (aSource == "PLAQUE REDUCTION NEUTRALISATION")
                 assign("PRN");
@@ -107,12 +107,12 @@ class Table
 {
  public:
     Virus virus;
-    std::string virus_type;
+    acmacs::chart::VirusType virus_type;
     std::string subset;
-    Assay assay;
+    acmacs::chart::Assay assay;
     std::string date;
-    std::string lab;
-    std::string rbc_species;
+    acmacs::chart::Lab lab;
+    acmacs::chart::RbcSpecies rbc_species;
     Lineage lineage;
     Indexes antigens;
     Indexes sera;
@@ -125,12 +125,12 @@ class Table
     Table(const acmacs::chart::Info& aInfo);
 
     inline bool operator==(const Table& rhs) const { return string::compare(
-        {    *virus,     virus_type,     subset,     lineage, assay,     lab,     rbc_species,     date},
-        {*rhs.virus, rhs.virus_type, rhs.subset, rhs.lineage, rhs.assay, rhs.lab, rhs.rbc_species, rhs.date}) == 0; }
+        {    *virus,     *virus_type,     subset,     lineage, *assay,     *lab,     *rbc_species,     date},
+        {*rhs.virus, *rhs.virus_type, rhs.subset, rhs.lineage, *rhs.assay, *rhs.lab, *rhs.rbc_species, rhs.date}) == 0; }
 
     inline bool operator<(const Table& rhs) const { return string::compare(
-        {    *virus,     virus_type,     subset,     lineage,     assay,     lab,     rbc_species,     date},
-        {*rhs.virus, rhs.virus_type, rhs.subset, rhs.lineage, rhs.assay, rhs.lab, rhs.rbc_species, rhs.date}) < 0; }
+        {    *virus,     *virus_type,     subset,     lineage,     *assay,     *lab,     *rbc_species,     date},
+        {*rhs.virus, *rhs.virus_type, rhs.subset, rhs.lineage, *rhs.assay, *rhs.lab, *rhs.rbc_species, rhs.date}) < 0; }
 
     void set_titers(const acmacs::chart::Titers& aTiters);
     inline void add_antigen(Antigen* aAntigen) { antigen_ptrs.insert(aAntigen); }

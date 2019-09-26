@@ -129,7 +129,7 @@ namespace hidb
         Vaccine mNameType;
         std::vector<Entry> mEntries[PassageTypeSize];
 
-        friend void vaccines_for_name(Vaccines& aVaccines, std::string aName, const acmacs::chart::Chart& aChart, bool aVerbose);
+        friend void vaccines_for_name(Vaccines& aVaccines, std::string_view aName, const acmacs::chart::Chart& aChart, bool aVerbose);
 
         static inline PassageType passage_type(const acmacs::chart::Antigen& aAntigen)
             {
@@ -177,10 +177,10 @@ namespace hidb
 
 // ----------------------------------------------------------------------
 
-    const std::vector<Vaccine>& vaccine_names(std::string aSubtype, std::string aLineage);
+    const std::vector<Vaccine>& vaccine_names(const acmacs::chart::VirusType& aSubtype, std::string aLineage);
     inline const std::vector<Vaccine>& vaccine_names(const acmacs::chart::Chart& aChart) { return vaccine_names(aChart.info()->virus_type(acmacs::chart::Info::Compute::Yes), aChart.lineage()); }
     // Vaccines* find_vaccines_in_chart(std::string aName, const Chart& aChart);
-    void vaccines_for_name(Vaccines& aVaccines, std::string aName, const acmacs::chart::Chart& aChart, bool aVerbose = false);
+    void vaccines_for_name(Vaccines& aVaccines, std::string_view aName, const acmacs::chart::Chart& aChart, bool aVerbose = false);
     VaccinesOfChart vaccines(const acmacs::chart::Chart& aChart, bool aVerbose = false);
     void update_vaccines(acmacs::chart::ChartModify& aChart, const VaccinesOfChart& vaccines, bool aVerbose = false);
     void update_vaccines(acmacs::chart::ChartModify& aChart, bool aVerbose = false);

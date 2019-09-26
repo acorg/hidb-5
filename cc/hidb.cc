@@ -73,9 +73,9 @@ acmacs::chart::Name hidb::Antigen::name() const
 {
     auto antigen = reinterpret_cast<const hidb::bin::Antigen*>(mAntigen);
     if (antigen->cdc_name())
-        return antigen->name();
+        return acmacs::chart::Name{antigen->name()};
     else
-        return std::string(mHiDb.virus_type()) + "/" + antigen->name();
+        return acmacs::chart::Name{std::string(mHiDb.virus_type()) + "/" + antigen->name()};
 
 } // hidb::Antigen::name
 
@@ -226,7 +226,7 @@ hidb::SerumP hidb::Sera::at(size_t aIndex) const
 
 acmacs::chart::Name hidb::Serum::name() const
 {
-    return std::string(mHiDb.virus_type()) + "/" + reinterpret_cast<const hidb::bin::Serum*>(mSerum)->name();
+    return acmacs::chart::Name{std::string(mHiDb.virus_type()) + "/" + reinterpret_cast<const hidb::bin::Serum*>(mSerum)->name()};
 
 } // hidb::Serum::name
 
@@ -453,7 +453,7 @@ hidb::indexes_t hidb::Table::reference_antigens(const HiDb& aHidb) const
     std::transform(mTable->serum_begin(), mTable->serum_end(), serum_names.begin(),
                    [&sera](size_t serum_index) -> std::string {
                        auto serum = sera->at(serum_index);
-                       return serum->name();
+                       return *serum->name();
                          // return string::join(" ", {serum->name(), string::join(" ", serum->annotations()), serum->reassortant()});
                    });
       // std::cerr << "DEBUG: sera: " << serum_names << '\n';
@@ -464,7 +464,7 @@ hidb::indexes_t hidb::Table::reference_antigens(const HiDb& aHidb) const
         auto antigen = antigens->at(*antigen_index);
         const auto antigen_name = antigen->name();
           // const auto antigen_name = string::join(" ", {antigen->name(), string::join(" ", antigen->annotations()), antigen->reassortant()});
-        if (std::find(serum_names.begin(), serum_names.end(), antigen_name) != serum_names.end())
+        if (std::find(serum_names.begin(), serum_names.end(), *antigen_name) != serum_names.end())
             result.push_back(*antigen_index);
     }
     return result;
@@ -584,7 +584,7 @@ template <typename AgSr, typename S> inline first_last_t find_by(first_last_t fi
 
 // ----------------------------------------------------------------------
 
-hidb::AntigenPIndexList hidb::Antigens::find(std::string aName, fix_location aFixLocation, find_fuzzy fuzzy) const
+hidb::AntigenPIndexList hidb::Antigens::find(std::string_view aName, fix_location aFixLocation, find_fuzzy fuzzy) const
 {
     const first_last_t all_antigens(reinterpret_cast<const hidb::bin::ast_offset_t*>(mIndex), mNumberOfAntigens);
     first_last_t first_last;
@@ -626,7 +626,7 @@ hidb::AntigenPIndexList hidb::Antigens::find(std::string aName, fix_location aFi
 
 // ----------------------------------------------------------------------
 
-hidb::SerumPIndexList hidb::Sera::find(std::string aName, fix_location aFixLocation, find_fuzzy fuzzy) const
+hidb::SerumPIndexList hidb::Sera::find(std::string_view aName, fix_location aFixLocation, find_fuzzy fuzzy) const
 {
     const first_last_t all_sera(reinterpret_cast<const hidb::bin::ast_offset_t*>(mIndex), mNumberOfSera);
     first_last_t first_last;

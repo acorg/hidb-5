@@ -68,7 +68,7 @@ namespace hidb
         size_t size() const override { return mNumberOfAntigens; }
         std::shared_ptr<acmacs::chart::Antigen> operator[](size_t aIndex) const override { return at(aIndex); }
         AntigenP at(size_t aIndex) const;
-        AntigenPIndexList find(std::string aName, fix_location aFixLocation, find_fuzzy fuzzy = find_fuzzy::no) const;
+        AntigenPIndexList find(std::string_view aName, fix_location aFixLocation, find_fuzzy fuzzy = find_fuzzy::no) const;
         AntigenPList find_labid(std::string_view labid) const;
         AntigenPIndex find(const acmacs::chart::Antigen& aAntigen, passage_strictness aPassageStrictness = passage_strictness::yes) const; // hidb::vaccines_for_name
         AntigenPList find(const acmacs::chart::Antigens& aAntigens) const;
@@ -131,7 +131,7 @@ namespace hidb
         size_t size() const override { return mNumberOfSera; }
         std::shared_ptr<acmacs::chart::Serum> operator[](size_t aIndex) const override { return at(aIndex); }
         SerumP at(size_t aIndex) const;
-        SerumPIndexList find(std::string aName, fix_location aFixLocation, find_fuzzy fuzzy = find_fuzzy::no) const;
+        SerumPIndexList find(std::string_view aName, fix_location aFixLocation, find_fuzzy fuzzy = find_fuzzy::no) const;
         SerumPIndex find(const acmacs::chart::Serum& aSerum) const; // find_serum_of_chart
         SerumPList find(const acmacs::chart::Sera& aSera) const;
         SerumPList find_homologous(size_t aAntigenIndex, const Antigen& aAntigen) const; // for vaccines

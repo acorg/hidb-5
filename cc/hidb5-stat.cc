@@ -238,8 +238,8 @@ std::pair<data_t, data_t> scan_sera(std::string aStart, std::string aEnd)
             if (date >= aStart && date < aEnd) {
                 update(data_sera_unique, virus_type, std::string(hidb.lab(*serum, *tables)), date, std::string(locdb.continent(std::string(serum->location()), "UNKNOWN")), serum->lineage(), serum->full_name());
                 const auto name = serum->name();
-                if (names.find(name) == names.end()) {
-                    names.insert(name);
+                if (names.find(*name) == names.end()) {
+                    names.insert(*name);
                     update(data_sera, virus_type, std::string(hidb.lab(*serum, *tables)), date, std::string(locdb.continent(std::string(serum->location()), "UNKNOWN")), serum->lineage(), serum->full_name());
                 }
                 min_date = std::min(min_date, date);
