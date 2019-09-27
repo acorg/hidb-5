@@ -17,7 +17,7 @@ void hidb::report_antigen(const hidb::HiDb& hidb, const hidb::Antigen& aAntigen,
     if (const auto annotations = aAntigen.annotations(); !annotations.empty())
         std::cout << ' ' << annotations;
     if (const auto reassortant = aAntigen.reassortant(); !reassortant.empty())
-        std::cout << ' ' << reassortant;
+        std::cout << ' ' << *reassortant;
     if (const auto passage = aAntigen.passage(); !passage.empty())
         std::cout << ' ' << *passage;
     if (const auto date = aAntigen.date(); !date.empty())
@@ -53,7 +53,7 @@ void hidb::report_serum(const hidb::HiDb& hidb, const hidb::Serum& aSerum, enum 
     if (const auto annotations = aSerum.annotations(); !annotations.empty())
         std::cout << ' ' << annotations;
     if (const auto reassortant = aSerum.reassortant(); !reassortant.empty())
-        std::cout << ' ' << reassortant;
+        std::cout << ' ' << *reassortant;
     if (const auto serum_id = aSerum.serum_id(); !serum_id.empty())
         std::cout << ' ' << serum_id;
     if (const auto serum_species = aSerum.serum_species(); !serum_species.empty())
