@@ -66,20 +66,24 @@ static std::map<std::string, std::vector<hidb::Vaccine>> sVaccines = {
             {"SWITZERLAND/9715293/2013", hidb::Vaccine::Previous},  // 2015
             {"HONG KONG/4801/2014",      hidb::Vaccine::Previous},  // 2016
             {"SINGAPORE/INFIMH-16-0019/2016", hidb::Vaccine::Previous},
-            {"SWITZERLAND/8060/2017",    hidb::Vaccine::Current}, // 2018-09
-            {"KANSAS/14/2017",           hidb::Vaccine::Current}, // 2019-02
-            {"SAITAMA/103/2014",         hidb::Vaccine::Surrogate},
-            {"HONG KONG/7295/2014",      hidb::Vaccine::Surrogate},
+            {"SWITZERLAND/8060/2017",    hidb::Vaccine::Previous}, // 2018-09
+            {"KANSAS/14/2017",           hidb::Vaccine::Previous}, // 2019-02
+            //{"SAITAMA/103/2014",         hidb::Vaccine::Surrogate},
+            //{"HONG KONG/7295/2014",      hidb::Vaccine::Surrogate},
+            {"SOUTH AUSTRALIA/34/2019",  hidb::Vaccine::Current}, // 2019-09
+            // {"IOWA/60/2018",  hidb::Vaccine::Current}, // 2019-09
         }},
     {"BVICTORIA", {
             {"MALAYSIA/2506/2004",       hidb::Vaccine::Previous}, // 2006
             {"BRISBANE/60/2008",         hidb::Vaccine::Previous},  // 2009
               // {"MARYLAND/15/2016",       hidb::Vaccine::Current},
-            {"COLORADO/6/2017",        hidb::Vaccine::Current}, // 2018-03-01 http://www.who.int/influenza/vaccines/virus/recommendations/2018_19_north/en/
+            {"COLORADO/6/2017",        hidb::Vaccine::Previous}, // 2018-03-01 http://www.who.int/influenza/vaccines/virus/recommendations/2018_19_north/en/
               // {"PARIS/1762/2009",          hidb::Vaccine::Current}, // not used by Crick anymore, B/Ireland/3154/2016 is used instead (2017-08-21)
-            {"IOWA/6/2017",              hidb::Vaccine::Surrogate}, // QMC2 2018-11-14 requested to mark by David Wentworth (CDC, NIH)
-            {"SOUTH AUSTRALIA/81/2012",  hidb::Vaccine::Surrogate},
-            {"IRELAND/3154/2016",        hidb::Vaccine::Surrogate},
+            // {"IOWA/6/2017",              hidb::Vaccine::Surrogate}, // QMC2 2018-11-14 requested to mark by David Wentworth (CDC, NIH)
+            // {"SOUTH AUSTRALIA/81/2012",  hidb::Vaccine::Surrogate},
+            // {"IRELAND/3154/2016",        hidb::Vaccine::Surrogate},
+            {"WASHINGTON/2/2019",        hidb::Vaccine::Current}, // 2019-09
+            {"SICHUAN GAOXIN/531/2018",  hidb::Vaccine::Current}, // 2019-09
         }},
     {"BYAMAGATA", {
             {"FLORIDA/4/2006",           hidb::Vaccine::Previous}, // 2008
