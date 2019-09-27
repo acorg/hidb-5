@@ -21,7 +21,7 @@ void hidb::report_antigen(const hidb::HiDb& hidb, const hidb::Antigen& aAntigen,
     if (const auto passage = aAntigen.passage(); !passage.empty())
         std::cout << ' ' << *passage;
     if (const auto date = aAntigen.date(); !date.empty())
-        std::cout << " [" << date << ']';
+        std::cout << fmt::format(" [{}]", date);
     if (const auto lab_ids = aAntigen.lab_ids(); !lab_ids.empty())
         std::cout << ' ' << lab_ids;
     if (const auto lineage = aAntigen.lineage(); lineage != acmacs::chart::BLineage::Unknown)
@@ -55,9 +55,9 @@ void hidb::report_serum(const hidb::HiDb& hidb, const hidb::Serum& aSerum, enum 
     if (const auto reassortant = aSerum.reassortant(); !reassortant.empty())
         std::cout << ' ' << *reassortant;
     if (const auto serum_id = aSerum.serum_id(); !serum_id.empty())
-        std::cout << ' ' << serum_id;
+        std::cout << ' ' << *serum_id;
     if (const auto serum_species = aSerum.serum_species(); !serum_species.empty())
-        std::cout << ' ' << serum_species;
+        std::cout << ' ' << *serum_species;
     if (const auto passage = aSerum.passage(); !passage.empty())
         std::cout << ' ' << *passage;
     if (const auto lineage = aSerum.lineage(); lineage != acmacs::chart::BLineage::Unknown)

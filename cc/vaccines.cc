@@ -279,12 +279,12 @@ std::string hidb::Vaccines::report(PassageType aPassageType, const Vaccines::Rep
             << "\" tables:" << entry.hidb_antigen->number_of_tables()
             << " recent:" << entry.most_recent_table->name() << '\n';
         for (const auto& hs: entry.homologous_sera)
-            out << indent << "      " << hs.chart_serum->serum_id() << ' ' << hs.chart_serum->annotations().join() << " tables:" << hs.hidb_serum->number_of_tables() << " recent:" << hs.most_recent_table->name() << std::endl;
+            out << fmt::format("{}      {} {} tables:{} recent:{}\n", indent, hs.chart_serum->serum_id(), hs.chart_serum->annotations().join(), hs.hidb_serum->number_of_tables(), hs.most_recent_table->name());
     };
 
     const auto& entry = mEntries[aPassageType];
     if (!entry.empty()) {
-        out << indent << passage_type_name(aPassageType) << " (" << entry.size() << ')' << std::endl;
+        out << fmt::format("{}{} ({})\n", indent, passage_type_name(aPassageType), entry.size());
         // const auto me = std::max_element(entry.begin(), entry.end(), [](const auto& e1, const auto& e2) { return e1.chart_antigen_index < e2.chart_antigen_index; });
           // const auto num_digits = static_cast<int>(std::log10(me->chart_antigen_index)) + 1;
         for (size_t no = 0; no < entry.size(); ++no)

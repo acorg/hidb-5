@@ -107,7 +107,7 @@ std::string hidb::Antigen::year() const
 
 acmacs::chart::Date hidb::Antigen::date() const
 {
-    return reinterpret_cast<const hidb::bin::Antigen*>(mAntigen)->date(false);
+    return acmacs::chart::Date{reinterpret_cast<const hidb::bin::Antigen*>(mAntigen)->date(false)};
 
 } // hidb::Antigen::date
 
@@ -269,7 +269,7 @@ acmacs::chart::Annotations hidb::Serum::annotations() const
 
 acmacs::chart::SerumId hidb::Serum::serum_id() const
 {
-    return reinterpret_cast<const hidb::bin::Serum*>(mSerum)->serum_id();
+    return acmacs::chart::SerumId{reinterpret_cast<const hidb::bin::Serum*>(mSerum)->serum_id()};
 
 } // hidb::Serum::serum_id
 
@@ -277,7 +277,7 @@ acmacs::chart::SerumId hidb::Serum::serum_id() const
 
 acmacs::chart::SerumSpecies hidb::Serum::serum_species() const
 {
-    return reinterpret_cast<const hidb::bin::Serum*>(mSerum)->serum_species();
+    return acmacs::chart::SerumSpecies{reinterpret_cast<const hidb::bin::Serum*>(mSerum)->serum_species()};
 
 } // hidb::Serum::serum_species
 

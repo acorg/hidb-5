@@ -206,7 +206,7 @@ Antigen* Antigens::add(const acmacs::chart::Antigen& aAntigen)
     // else {
     //     std::cerr << "DEBUG: AG " << antigen->to_string() << " already here as " + (*insert_at)->to_string() << '\n';
     // }
-    (*insert_at)->add_date(aAntigen.date());
+    (*insert_at)->add_date(*aAntigen.date());
     const auto lab_ids{aAntigen.lab_ids()};
     (*insert_at)->add_lab_id(lab_ids.begin(), lab_ids.end());
     (*insert_at)->update_lineage(aAntigen.lineage());
