@@ -42,8 +42,8 @@ int main(int argc, char* const argv[])
                 const auto lineage = antigen->lineage();
                 const auto country = antigen->country(locdb);
                 std::string lab_id;
-                if (const auto lab_ids = antigen->lab_ids(); !lab_ids.empty())
-                    lab_id = lab_ids[0];
+                if (const auto lab_ids = antigen->lab_ids(); !lab_ids->empty())
+                    lab_id = (*lab_ids)[0];
                 auto first_table = tables->oldest(antigen->tables());
                 const auto first_table_date = first_table->date().substr(0, 8);
                 const int days = date.ok() ? -1 : date::days_between_dates(date, date::from_string(first_table_date));

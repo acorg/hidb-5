@@ -14,16 +14,16 @@ void hidb::report_antigens(const hidb::HiDb& hidb, const indexes_t& aIndexes, bo
 void hidb::report_antigen(const hidb::HiDb& hidb, const hidb::Antigen& aAntigen, bool aReportTables, std::string aPrefix)
 {
     std::cout << aPrefix << *aAntigen.name();
-    if (const auto annotations = aAntigen.annotations(); !annotations.empty())
-        std::cout << ' ' << annotations;
+    if (const auto annotations = aAntigen.annotations(); !annotations->empty())
+        std::cout << ' ' << *annotations;
     if (const auto reassortant = aAntigen.reassortant(); !reassortant.empty())
         std::cout << ' ' << *reassortant;
     if (const auto passage = aAntigen.passage(); !passage.empty())
         std::cout << ' ' << *passage;
     if (const auto date = aAntigen.date(); !date.empty())
         std::cout << fmt::format(" [{}]", date);
-    if (const auto lab_ids = aAntigen.lab_ids(); !lab_ids.empty())
-        std::cout << ' ' << lab_ids;
+    if (const auto lab_ids = aAntigen.lab_ids(); !lab_ids->empty())
+        std::cout << ' ' << *lab_ids;
     if (const auto lineage = aAntigen.lineage(); lineage != acmacs::chart::BLineage::Unknown)
         std::cout << ' ' << static_cast<std::string>(lineage);
     if (aReportTables) {
@@ -50,8 +50,8 @@ void hidb::report_sera(const hidb::HiDb& hidb, const indexes_t& aIndexes, enum h
 void hidb::report_serum(const hidb::HiDb& hidb, const hidb::Serum& aSerum, enum hidb::report_tables aReportTables, std::string aPrefix)
 {
     std::cout << aPrefix << *aSerum.name();
-    if (const auto annotations = aSerum.annotations(); !annotations.empty())
-        std::cout << ' ' << annotations;
+    if (const auto annotations = aSerum.annotations(); !annotations->empty())
+        std::cout << ' ' << *annotations;
     if (const auto reassortant = aSerum.reassortant(); !reassortant.empty())
         std::cout << ' ' << *reassortant;
     if (const auto serum_id = aSerum.serum_id(); !serum_id.empty())

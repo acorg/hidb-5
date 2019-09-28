@@ -260,7 +260,7 @@ void AntigenSerum::make_indexes()
 // ----------------------------------------------------------------------
 
 Antigen::Antigen(const acmacs::chart::Antigen& aAntigen)
-    : reassortant{aAntigen.reassortant()}, passage{aAntigen.passage()}, annotations{aAntigen.annotations()},
+    : reassortant{aAntigen.reassortant()}, passage{aAntigen.passage()}, annotations{*aAntigen.annotations()},
       lineage{aAntigen.lineage()}
 {
     const std::string name{aAntigen.name()};
@@ -293,7 +293,7 @@ Antigen::Antigen(const acmacs::chart::Antigen& aAntigen)
 // ----------------------------------------------------------------------
 
 Serum::Serum(const acmacs::chart::Serum& aSerum)
-    : reassortant{aSerum.reassortant()}, passage{aSerum.passage()}, annotations{aSerum.annotations()},
+    : reassortant{aSerum.reassortant()}, passage{aSerum.passage()}, annotations{*aSerum.annotations()},
       serum_id{aSerum.serum_id()}, serum_species{aSerum.serum_species()}, lineage{aSerum.lineage()}
 {
     const std::string name{aSerum.name()};
