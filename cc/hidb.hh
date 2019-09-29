@@ -192,7 +192,7 @@ namespace hidb
         std::shared_ptr<Table> oldest(const indexes_t& aTables) const;
         std::vector<TableStat> stat(const indexes_t& aTables) const;
 
-        using iterator = acmacs::chart::detail::iterator<Tables, std::shared_ptr<Table>>;
+        using iterator = acmacs::iterator<Tables, std::shared_ptr<Table>>;
         iterator begin() const { return {*this, 0}; }
         iterator end() const { return {*this, size()}; }
 
