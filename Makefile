@@ -25,7 +25,6 @@ HIDB_LIB = $(DIST)/$(call shared_lib_name,$(HIDB_LIB_NAME),$(HIDB_LIB_MAJOR),$(H
 
 all: install
 
-CONFIGURE_BOOST = 1
 include $(ACMACSD_ROOT)/share/Makefile.config
 
 LDLIBS = \
@@ -33,7 +32,7 @@ LDLIBS = \
   $(AD_LIB)/$(call shared_lib_name,liblocationdb,1,0) \
   $(AD_LIB)/$(call shared_lib_name,libacmacsvirus,1,0) \
   $(AD_LIB)/$(call shared_lib_name,libacmacschart,2,0) \
-  $(XZ_LIBS) $(L_BOOST) -lboost_date_time $(CXX_LIBS)
+  $(XZ_LIBS) $(CXX_LIBS)
 
 # ----------------------------------------------------------------------
 
