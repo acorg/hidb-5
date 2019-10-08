@@ -164,7 +164,7 @@ size_t make_antigen(const rjson::value& aSource, hidb::bin::Antigen* aTarget)
         target += location.size();
     }
     else {
-        std::cerr << "WARNING: empty location in " << aSource << '\n';
+        std::cerr << "WARNING: empty location in " << rjson::to_string(aSource) << '\n';
     }
 
     set_offset(aTarget->isolation_offset, target);
@@ -173,7 +173,7 @@ size_t make_antigen(const rjson::value& aSource, hidb::bin::Antigen* aTarget)
         target += isolation.size();
     }
     else {
-        std::cerr << "WARNING: empty isolation in " << aSource << '\n';
+        std::cerr << "WARNING: empty isolation in " << rjson::to_string(aSource) << '\n';
     }
 
     set_offset(aTarget->passage_offset, target);
@@ -296,7 +296,7 @@ size_t make_serum(const rjson::value& aSource, hidb::bin::Serum* aTarget)
         target += isolation.size();
     }
     else {
-        std::cerr << "WARNING: empty isolation in " << aSource << '\n';
+        std::cerr << "WARNING: empty isolation in " << rjson::to_string(aSource) << '\n';
     }
 
     set_offset(aTarget->passage_offset, target);
