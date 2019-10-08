@@ -192,7 +192,7 @@ size_t make_antigen(const rjson::value& aSource, hidb::bin::Antigen* aTarget)
         for (size_t ann_no = 0; ann_no < sizeof(hidb::bin::Antigen::annotation_offset); ++ann_no) {
             set_offset(aTarget->annotation_offset[ann_no], target);
             if (ann_no < annotations.size()) {
-                const std::string_view ann = annotations[ann_no];
+                const std::string_view ann{annotations[ann_no]};
                 std::memmove(target, ann.data(), ann.size());
                 target += ann.size();
             }
@@ -205,7 +205,7 @@ size_t make_antigen(const rjson::value& aSource, hidb::bin::Antigen* aTarget)
         for (size_t lab_id_no = 0; lab_id_no < sizeof(hidb::bin::Antigen::lab_id_offset); ++lab_id_no) {
             set_offset(aTarget->lab_id_offset[lab_id_no], target);
             if (lab_id_no < lab_ids.size()) {
-                const std::string_view lab_id = lab_ids[lab_id_no];
+                const std::string_view lab_id{lab_ids[lab_id_no]};
                 std::memmove(target, lab_id.data(), lab_id.size());
                 target += lab_id.size();
             }
@@ -222,7 +222,7 @@ size_t make_antigen(const rjson::value& aSource, hidb::bin::Antigen* aTarget)
     if (const auto& dates = aSource["D"]; !dates.empty()) {
         for (size_t date_no = 0; date_no < dates.size(); ++date_no) {
             try {
-                const auto date = hidb::bin::Antigen::make_date(dates[date_no]);
+                const auto date = hidb::bin::Antigen::make_date(static_cast<std::string_view>(dates[date_no]));
                 std::memmove(target, &date, sizeof(date));
                 target += sizeof(date);
             }
@@ -315,7 +315,7 @@ size_t make_serum(const rjson::value& aSource, hidb::bin::Serum* aTarget)
         for (size_t ann_no = 0; ann_no < sizeof(hidb::bin::Serum::annotation_offset); ++ann_no) {
             set_offset(aTarget->annotation_offset[ann_no], target);
             if (ann_no < annotations.size()) {
-                const std::string_view ann = annotations[ann_no];
+                const std::string_view ann{annotations[ann_no]};
                 std::memmove(target, ann.data(), ann.size());
                 target += ann.size();
             }
