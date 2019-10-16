@@ -77,9 +77,9 @@ class Assay : public acmacs::chart::Assay
  public:
     inline Assay(const acmacs::chart::Assay& aSource) : acmacs::chart::Assay{aSource}
         {
-            if (aSource == "PLAQUE REDUCTION NEUTRALISATION")
+            if (aSource == acmacs::chart::Assay{"PLAQUE REDUCTION NEUTRALISATION"})
                 assign("PRN");
-            else if (aSource == "FOCUS REDUCTION")
+            else if (aSource == acmacs::chart::Assay{"FOCUS REDUCTION"})
                 assign("FR");
         }
 

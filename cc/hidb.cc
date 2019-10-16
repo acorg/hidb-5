@@ -757,7 +757,7 @@ hidb::SerumPIndex hidb::Sera::find(const acmacs::chart::Serum& aSerum) const
         if (serum->annotations() == aSerum.annotations() && serum->reassortant() == aSerum.reassortant()) {
             if (serum->serum_id() == aSerum.serum_id())
                 return serum_index;
-            else if (serum->serum_id().empty() && aSerum.serum_id() == "UNKNOWN") // old tables may have UNKNOWN serum id, but database stores empty serum_id
+            else if (serum->serum_id().empty() && aSerum.serum_id() == acmacs::chart::SerumId{"UNKNOWN"}) // old tables may have UNKNOWN serum id, but database stores empty serum_id
                 with_unknown_serum_id = serum_index;
         }
     }

@@ -232,7 +232,7 @@ inline bool hidb::Vaccines::Entry::operator < (const hidb::Vaccines::Entry& a) c
 bool hidb::Vaccines::HomologousSerum::operator < (const hidb::Vaccines::HomologousSerum& a) const
 {
     bool result = true;
-    if (chart_serum->serum_species() == "SHEEP") { // avoid using sheep serum as homologous (NIMR)
+    if (chart_serum->serum_species() == acmacs::chart::SerumSpecies{"SHEEP"}) { // avoid using sheep serum as homologous (NIMR)
         result = false;
     }
     else {
