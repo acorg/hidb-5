@@ -87,6 +87,25 @@ const hidb::HiDb& hidb::get(std::string_view aVirusType, report_time timer)
 } // hidb::get
 
 // ----------------------------------------------------------------------
+
+void hidb::load_all(report_time timer)
+{
+    using namespace std::string_view_literals;
+
+#pragma GCC diagnostic push
+#ifdef __clang__
+#pragma GCC diagnostic ignored "-Wunused-result"
+#endif
+
+    get("A(H1N1)"sv, timer);
+    get("A(H3N2)"sv, timer);
+    get("B"sv, timer);
+
+#pragma GCC diagnostic pop
+
+} // hidb::load_all
+
+// ----------------------------------------------------------------------
 /// Local Variables:
 /// eval: (if (fboundp 'eu-rename-buffer) (eu-rename-buffer))
 /// End:

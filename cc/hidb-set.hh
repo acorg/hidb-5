@@ -12,6 +12,7 @@ namespace hidb
     class get_error : public std::runtime_error { public: using std::runtime_error::runtime_error; };
 
     void setup(std::string_view aHiDbDir, std::optional<std::string> aLocDbFilename = {}, bool aVerbose = false);
+    void load_all(report_time timer = report_time::no); // pre-load all hidbs (e.g. for acmacs-api-server)
     [[nodiscard]] const HiDb& get(std::string_view aVirusType, report_time timer = report_time::no); // throws get_error
     [[nodiscard]] inline const HiDb& get(std::string aVirusType, report_time timer = report_time::no) { return get(std::string_view(aVirusType), timer); }
 
