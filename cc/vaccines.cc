@@ -1,112 +1,93 @@
 #include <algorithm>
 #include <functional>
-#include <iomanip>
-// #include <cmath>
+#include <memory>
+#include <mutex>
 
+#include "acmacs-base/acmacsd.hh"
+#include "acmacs-base/settings.hh"
 #include "acmacs-chart-2/chart-modify.hh"
 #include "hidb-5/hidb.hh"
 #include "hidb-5/vaccines.hh"
+
+// see ~/AD/share/conf/vaccines.json
+
+// ----------------------------------------------------------------------
+
+class VaccineData : public acmacs::settings::Settings
+{
+  public:
+    VaccineData()
+    {
+        using namespace std::string_literals;
+        using namespace std::string_view_literals;
+
+        if (const auto filename = fmt::format("{}/share/conf/vaccines.json", acmacs::acmacsd_root()); fs::exists(filename))
+            acmacs::settings::Settings::load(filename);
+        else
+            throw hidb::error{fmt::format("WARNING: cannot load \"{}\": file not found\n", filename)};
+
+        using pp = std::pair<std::string, std::string_view>;
+        for (const auto& [virus_type, tag] : {pp{"A(H1N1)"s, "vaccines-A(H1N1)PDM09"sv}, pp{"A(H3N2)"s, "vaccines-A(H3N2)"sv}, pp{"BVICTORIA"s, "vaccines-BVICTORIA"sv}, pp{"BYAMAGATA"s, "vaccines-BYAMAGATA"sv}}) {
+            current_virus_type_ = virus_type;
+            apply(tag, acmacs::verbose::no);
+        }
+    }
+
+    bool apply_built_in(std::string_view name) override // returns true if built-in command with that name found and applied
+    {
+        if (name == "vaccine")
+            data_[current_virus_type_].emplace_back(getenv("name", ""), vaccine_type(getenv("vaccine_type", "")));
+        else
+            return acmacs::settings::Settings::apply_built_in(name);
+        return true;
+    }
+
+    const auto& find(std::string_view virus_type) const
+    {
+        if (const auto found = data_.find(virus_type); found != data_.end())
+            return found->second;
+        throw hidb::error(fmt::format("No vaccines defined for \"{}\"", virus_type));
+    }
+
+  private:
+    std::string current_virus_type_;
+    std::map<std::string, std::vector<hidb::Vaccine>, std::less<>> data_;
+
+    hidb::Vaccine::Type vaccine_type(std::string_view type_s) const
+    {
+        if (type_s == "previous")
+            return hidb::Vaccine::Previous;
+        else if (type_s == "current")
+            return hidb::Vaccine::Current;
+        else if (type_s == "surrogate")
+            return hidb::Vaccine::Surrogate;
+        else
+            throw hidb::error(fmt::format("Unrecognized vaccine type: \"{}\" (loaded from vaccines.json)", type_s));
+    }
+};
 
 // ----------------------------------------------------------------------
 
 #pragma GCC diagnostic push
 #ifdef __clang__
-#pragma GCC diagnostic ignored "-Wexit-time-destructors"
 #pragma GCC diagnostic ignored "-Wglobal-constructors"
+#pragma GCC diagnostic ignored "-Wexit-time-destructors"
 #endif
-
-// https://www.fludb.org/brc/vaccineRecommend.spg?decorator=influenza
-// https://www.who.int/influenza/vaccines/virus/recommendations/en/
-
-static std::map<std::string, std::vector<hidb::Vaccine>> sVaccines = {
-    {"A(H1N1)", {
-              // Seasonal
-            // {"USSR/90/1977",             hidb::Vaccine::Previous}, // 1978
-            // {"BRAZIL/11/1978",           hidb::Vaccine::Previous}, // 1980
-            // {"CHILE/1/1983",             hidb::Vaccine::Previous}, // 1984
-            // {"SINGAPORE/6/1986",         hidb::Vaccine::Previous}, // 1987
-            // {"BAYERN/7/1995",            hidb::Vaccine::Previous}, // 1997
-            // {"BEIJING/262/1995",         hidb::Vaccine::Previous}, // 1998
-            // {"NEW CALEDONIA/20/1999",    hidb::Vaccine::Previous}, // 2000
-            // {"SOLOMON ISLANDS/3/2006",   hidb::Vaccine::Previous}, // 2008
-            // {"BRISBANE/59/2007",         hidb::Vaccine::Previous}, // 2008, appears on H1pdm CDC maps as an outlier
-
-              // PDM
-            {"CALIFORNIA/7/2009",        hidb::Vaccine::Previous},
-            {"MICHIGAN/45/2015",         hidb::Vaccine::Previous},
-            {"BRISBANE/2/2018",          hidb::Vaccine::Current}, // 2019-02
-        }},
-    {"A(H3N2)", {
-            {"PORT CHALMERS/1/1973",     hidb::Vaccine::Previous}, // 1974?
-            {"VICTORIA/3/1975",          hidb::Vaccine::Previous}, // 1976
-            {"TEXAS/1/1977",             hidb::Vaccine::Previous}, // 1978
-            {"BANGKOK/1/1979",           hidb::Vaccine::Previous}, // 1980
-            {"PHILIPPINES/2/1982",       hidb::Vaccine::Previous}, // 1983
-            {"MISSISSIPPI/1/1985",       hidb::Vaccine::Previous}, // 1986
-            {"CHRISTCHURCH/4/1985",      hidb::Vaccine::Previous}, // 1986
-            {"LENINGRAD/360/1986",       hidb::Vaccine::Previous}, // 1987
-            {"SICHUAN/2/1987",           hidb::Vaccine::Previous}, // 1988
-            {"SHANGHAI/11/1987",         hidb::Vaccine::Previous}, // 1989
-            {"GUIZHOU/54/1989",          hidb::Vaccine::Previous}, // 1990
-            {"BEIJING/353/1989",         hidb::Vaccine::Previous}, // 1991
-            {"BEIJING/32/1992",          hidb::Vaccine::Previous}, // 1993
-            {"SHANGDONG/9/1993",         hidb::Vaccine::Previous}, // 1994
-            {"JOHANNESBURG/33/1994",     hidb::Vaccine::Previous}, // 1995
-            {"WUHAN/359/1995",           hidb::Vaccine::Previous}, // 1996
-            {"SYDNEY/5/1997",            hidb::Vaccine::Previous}, // 1998-2000
-            {"MOSCOW/10/1999",           hidb::Vaccine::Previous}, // 2000-2004
-            {"FUJIAN/411/2002",          hidb::Vaccine::Previous}, // 2004-2005
-            {"WELLINGTON/1/2004",        hidb::Vaccine::Previous}, // 2005
-            {"CALIFORNIA/7/2004",        hidb::Vaccine::Previous}, // 2005-2006
-            {"WISCONSIN/67/2005",        hidb::Vaccine::Previous}, // 2006-2008
-            {"BRISBANE/10/2007",         hidb::Vaccine::Previous}, // 2008-2010
-            {"PERTH/16/2009",            hidb::Vaccine::Previous},  // 2010
-            {"VICTORIA/361/2011",        hidb::Vaccine::Previous},  // 2012
-            {"TEXAS/50/2012",            hidb::Vaccine::Previous},  // 2014
-            {"SWITZERLAND/9715293/2013", hidb::Vaccine::Previous},  // 2015
-            {"HONG KONG/4801/2014",      hidb::Vaccine::Previous},  // 2016
-            {"SINGAPORE/INFIMH-16-0019/2016", hidb::Vaccine::Previous},
-            {"SWITZERLAND/8060/2017",    hidb::Vaccine::Previous}, // 2018-09
-            {"KANSAS/14/2017",           hidb::Vaccine::Previous}, // 2019-02
-            //{"SAITAMA/103/2014",         hidb::Vaccine::Surrogate},
-            //{"HONG KONG/7295/2014",      hidb::Vaccine::Surrogate},
-            {"SOUTH AUSTRALIA/34/2019",  hidb::Vaccine::Current}, // 2019-09
-            // {"IOWA/60/2018",  hidb::Vaccine::Current}, // 2019-09
-        }},
-    {"BVICTORIA", {
-            {"MALAYSIA/2506/2004",       hidb::Vaccine::Previous}, // 2006
-            {"BRISBANE/60/2008",         hidb::Vaccine::Previous},  // 2009
-              // {"MARYLAND/15/2016",       hidb::Vaccine::Current},
-            {"COLORADO/6/2017",        hidb::Vaccine::Previous}, // 2018-03-01 http://www.who.int/influenza/vaccines/virus/recommendations/2018_19_north/en/
-              // {"PARIS/1762/2009",          hidb::Vaccine::Current}, // not used by Crick anymore, B/Ireland/3154/2016 is used instead (2017-08-21)
-            // {"IOWA/6/2017",              hidb::Vaccine::Surrogate}, // QMC2 2018-11-14 requested to mark by David Wentworth (CDC, NIH)
-            // {"SOUTH AUSTRALIA/81/2012",  hidb::Vaccine::Surrogate},
-            // {"IRELAND/3154/2016",        hidb::Vaccine::Surrogate},
-            {"WASHINGTON/2/2019",        hidb::Vaccine::Current}, // 2019-09
-            {"SICHUAN GAOXIN/531/2018",  hidb::Vaccine::Current}, // 2019-09
-        }},
-    {"BYAMAGATA", {
-            {"FLORIDA/4/2006",           hidb::Vaccine::Previous}, // 2008
-            {"WISCONSIN/1/2010",         hidb::Vaccine::Previous}, // 2012
-            {"MASSACHUSETTS/2/2012",     hidb::Vaccine::Previous}, // 2013
-            {"PHUKET/3073/2013",         hidb::Vaccine::Current}, // 2015
-        }},
-    {"B", {
-            {"HONG KONG/5/1972",         hidb::Vaccine::Previous}, // 1974?
-            {"SINGAPORE/222/1979",       hidb::Vaccine::Previous}, // 1980
-            {"USSR/100/83",              hidb::Vaccine::Previous}, // 1984
-            {"ANN ARBOR/1/1986",         hidb::Vaccine::Previous}, // 1986
-            {"BEIJING/1/1987",           hidb::Vaccine::Previous}, // 1988
-            {"YAMAGATA/16/1988",         hidb::Vaccine::Previous}, // 1989
-            {"PANAMA/45/1990",           hidb::Vaccine::Previous}, // 1993
-            {"BEIJING/184/1993",         hidb::Vaccine::Previous}, // 1995
-            {"SICHUAN/379/1999",         hidb::Vaccine::Previous}, // 2001
-            {"HONG KONG/330/2001",       hidb::Vaccine::Previous}, // 2002
-            {"SHANGHAI/361/2002",        hidb::Vaccine::Previous}, // 2004
-        }},
-};
-
+static std::mutex sVaccineMutex;
+static std::unique_ptr<VaccineData> sVaccines;
 #pragma GCC diagnostic pop
+
+const std::vector<hidb::Vaccine>& hidb::vaccine_names(const acmacs::chart::VirusType& aSubtype, std::string aLineage)
+{
+    {
+        std::lock_guard<std::mutex> vaccine_guard{sVaccineMutex};
+        if (!sVaccines)
+            sVaccines = std::make_unique<VaccineData>();
+    }
+
+    return sVaccines->find(fmt::format("{}{}", *aSubtype, aLineage));
+
+} // hidb::vaccines
 
 // ----------------------------------------------------------------------
 
@@ -148,14 +129,6 @@ void hidb::vaccines_for_name(Vaccines& aVaccines, std::string_view aName, const 
     aVaccines.sort();
 
 } // hidb::vaccines_for_name
-
-// ----------------------------------------------------------------------
-
-const std::vector<hidb::Vaccine>& hidb::vaccine_names(const acmacs::chart::VirusType& aSubtype, std::string aLineage)
-{
-    return sVaccines.at(*aSubtype + aLineage);
-
-} // hidb::vaccines
 
 // ----------------------------------------------------------------------
 
@@ -255,13 +228,13 @@ size_t hidb::Vaccines::HomologousSerum::number_of_tables() const
 
 std::string hidb::Vaccines::report(const Vaccines::ReportConfig& config) const
 {
-    std::ostringstream out;
+    fmt::memory_buffer out;
     if (!empty()) {
-        out << std::string(config.indent_, ' ') << "Vaccine " << type_as_string() << " [" << mNameType.name << "]\n";
-        for_each_passage_type([this,&config,&out](PassageType pt) { out << this->report(pt, config); });
-        out << config.vaccine_sep_;
+        fmt::format_to(out, "{:{}c}Vaccine {} [{}]\n", ' ', config.indent_, type_as_string(), mNameType.name);
+        for_each_passage_type([this, &config, &out](PassageType pt) { fmt::format_to(out, "{}", this->report(pt, config)); });
+        fmt::format_to(out, "{}", config.vaccine_sep_);
     }
-    return out.str();
+    return fmt::to_string(out);
 
 } // hidb::Vaccines::report
 
@@ -269,29 +242,26 @@ std::string hidb::Vaccines::report(const Vaccines::ReportConfig& config) const
 
 std::string hidb::Vaccines::report(PassageType aPassageType, const Vaccines::ReportConfig& config, size_t aMark) const
 {
-    std::ostringstream out;
-    const std::string indent(config.indent_ + 2, ' ');
+    fmt::memory_buffer out;
     auto entry_report = [&](size_t aNo, const auto& entry, bool aMarkIt) {
-        out << indent << (aMarkIt ? ">>" : "  ");
+        fmt::format_to(out, "{:{}c}{}", ' ', config.indent_ + 2, aMarkIt ? ">>" : "  ");
         if (config.show_no_)
-            out << std::setw(2) << aNo << ' ';
-        out << std::setw(4) << entry.chart_antigen_index << " \"" << entry.chart_antigen->full_name()
-            << "\" tables:" << entry.hidb_antigen->number_of_tables()
-            << " recent:" << entry.most_recent_table->name() << '\n';
+            fmt::format_to(out, "{:2d} ", aNo);
+        fmt::format_to(out, "{:4d} \"{}\" tables:{} recent:{}\n", entry.chart_antigen_index, entry.chart_antigen->full_name(), entry.hidb_antigen->number_of_tables(), entry.most_recent_table->name());
         for (const auto& hs: entry.homologous_sera)
-            out << fmt::format("{}      {} {} tables:{} recent:{}\n", indent, hs.chart_serum->serum_id(), hs.chart_serum->annotations().join(), hs.hidb_serum->number_of_tables(), hs.most_recent_table->name());
+            fmt::format_to(out, "{:{}c}      {} {} tables:{} recent:{}\n", ' ', config.indent_ + 2, hs.chart_serum->serum_id(), hs.chart_serum->annotations().join(), hs.hidb_serum->number_of_tables(), hs.most_recent_table->name());
     };
 
     const auto& entry = mEntries[aPassageType];
     if (!entry.empty()) {
-        out << fmt::format("{}{} ({})\n", indent, passage_type_name(aPassageType), entry.size());
+        fmt::format_to(out, "{:{}c}{} ({})\n", ' ', config.indent_ + 2, passage_type_name(aPassageType), entry.size());
         // const auto me = std::max_element(entry.begin(), entry.end(), [](const auto& e1, const auto& e2) { return e1.chart_antigen_index < e2.chart_antigen_index; });
           // const auto num_digits = static_cast<int>(std::log10(me->chart_antigen_index)) + 1;
         for (size_t no = 0; no < entry.size(); ++no)
             entry_report(no, entry[no], aMark == no);
-        out << config.passage_type_sep_;
+        fmt::format_to(out, "{}", config.passage_type_sep_);
     }
-    return out.str();
+    return fmt::to_string(out);
 
 } // hidb::Vaccines::report
 

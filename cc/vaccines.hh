@@ -18,7 +18,7 @@ namespace hidb
      public:
         enum Type { Previous, Current, Surrogate };
 
-        Vaccine(std::string aName, Type aType) : name(aName), type(aType) {}
+        Vaccine(std::string_view aName, Type aType) : name{aName}, type{aType} {}
 
         std::string name;
         Type type;
@@ -122,7 +122,7 @@ namespace hidb
                 else if (pt.empty())
                     return PassageTypeSize;
                 else
-                    throw std::runtime_error("Unrecognized passage type: " + pt);
+                    throw error("Unrecognized passage type: " + pt);
             }
 
      private:

@@ -15,7 +15,8 @@ namespace hidb
     namespace bin { struct Table; struct Antigen; }
 
     using indexes_t = std::vector<size_t>;
-    class not_found : public std::runtime_error { public: using std::runtime_error::runtime_error; };
+    class error : public std::runtime_error { public: using std::runtime_error::runtime_error; };
+    class not_found : public error { public: using error::error; };
 
     enum class find_fuzzy { no, yes };
     enum class fix_location { no, yes };
@@ -70,7 +71,7 @@ namespace hidb
         AntigenP at(size_t aIndex) const;
         AntigenPIndexList find(std::string_view aName, fix_location aFixLocation, find_fuzzy fuzzy = find_fuzzy::no) const;
         AntigenPList find_labid(std::string_view labid) const;
-        AntigenPIndex find(const acmacs::chart::Antigen& aAntigen, passage_strictness aPassageStrictness = passage_strictness::yes) const; // hidb::vaccines_for_name
+        AntigenPIndex find(const acmacs::chart::Antigen& aAntigen, passage_strictness aPassageStrictness = passage_strictness::yes) const;
         AntigenPList find(const acmacs::chart::Antigens& aAntigens) const;
         AntigenPList date_range(std::string_view first, std::string_view after_last) const;
 
