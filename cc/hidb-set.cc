@@ -27,26 +27,26 @@ static std::unique_ptr<HiDbSet> sHiDbSet;
 class HiDbSet
 {
  public:
-    const hidb::HiDb& get(std::string_view aVirusType, report_time timer = report_time::no) const
+    const hidb::HiDb& get(const acmacs::virus::type_subtype_t& aVirusType, report_time timer = report_time::no) const
         {
             using namespace std::string_literals;
-            auto h = mPtrs.find(std::string(aVirusType));
+            auto h = mPtrs.find(aVirusType);
             if (h == mPtrs.end()) {
                 std::string prefix;
-                if (aVirusType == "A(H1N1)" || aVirusType == "H1")
+                if (aVirusType == acmacs::virus::type_subtype_t{"A(H1N1)"} || aVirusType == acmacs::virus::type_subtype_t{"H1"})
                     prefix = "hidb5.h1";
-                else if (aVirusType == "A(H3N2)" || aVirusType == "H3")
+                else if (aVirusType == acmacs::virus::type_subtype_t{"A(H3N2)"} || aVirusType == acmacs::virus::type_subtype_t{"H3"})
                     prefix = "hidb5.h3";
-                else if (aVirusType == "B")
+                else if (aVirusType == acmacs::virus::type_subtype_t{"B"})
                     prefix = "hidb5.b";
                 else
-                    throw hidb::get_error(string::concat("Unrecognized virus type: \"", aVirusType, '"'));
+                    throw hidb::get_error(fmt::format("Unrecognized virus type: \"{}\"", aVirusType));
 
                 fs::path filename = fs::path(sHiDbDir) / (prefix + ".hidb5b");
                 if (!fs::exists(filename))
                     filename = fs::path(sHiDbDir) / (prefix + ".json.xz");
                 if (!fs::exists(filename))
-                    throw hidb::get_error(string::concat("Cannot find hidb for ", aVirusType, " in ", sHiDbDir));
+                    throw hidb::get_error(fmt::format("Cannot find hidb for {} in {}", aVirusType, sHiDbDir));
 
                 Timeit ti("DEBUG: HiDb loading from " + static_cast<std::string>(filename) + ": ", timer);
                 h = mPtrs.emplace(aVirusType, std::make_unique<hidb::HiDb>(filename, sVerbose || (timer == report_time::yes))).first;
@@ -55,7 +55,7 @@ class HiDbSet
         }
 
  private:
-    using Ptrs = std::map<std::string, std::unique_ptr<hidb::HiDb>>;
+    using Ptrs = std::map<acmacs::virus::type_subtype_t, std::unique_ptr<hidb::HiDb>>;
 
     mutable Ptrs mPtrs;
 
@@ -78,7 +78,7 @@ void hidb::setup(std::string_view aHiDbDir, std::optional<std::string> /*aLocDbF
 
 // ----------------------------------------------------------------------
 
-const hidb::HiDb& hidb::get(std::string_view aVirusType, report_time timer)
+const hidb::HiDb& hidb::get(const acmacs::virus::type_subtype_t& aVirusType, report_time timer)
 {
     if (!sHiDbSet)
         sHiDbSet = std::make_unique<HiDbSet>();
@@ -97,9 +97,9 @@ void hidb::load_all(report_time timer)
 #pragma GCC diagnostic ignored "-Wunused-result"
 #endif
 
-    get("A(H1N1)"sv, timer);
-    get("A(H3N2)"sv, timer);
-    get("B"sv, timer);
+    get(acmacs::virus::type_subtype_t{"A(H1N1)"}, timer);
+    get(acmacs::virus::type_subtype_t{"A(H3N2)"}, timer);
+    get(acmacs::virus::type_subtype_t{"B"}, timer);
 
 #pragma GCC diagnostic pop
 

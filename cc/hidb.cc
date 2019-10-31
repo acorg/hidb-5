@@ -69,13 +69,13 @@ hidb::AntigenP hidb::Antigens::at(size_t aIndex) const
 
 // ----------------------------------------------------------------------
 
-acmacs::chart::Name hidb::Antigen::name() const
+acmacs::virus::name_t hidb::Antigen::name() const
 {
     auto antigen = reinterpret_cast<const hidb::bin::Antigen*>(mAntigen);
     if (antigen->cdc_name())
-        return acmacs::chart::Name{antigen->name()};
+        return acmacs::virus::name_t{antigen->name()};
     else
-        return acmacs::chart::Name{std::string(mHiDb.virus_type()) + "/" + antigen->name()};
+        return acmacs::virus::name_t{std::string(mHiDb.virus_type()) + "/" + antigen->name()};
 
 } // hidb::Antigen::name
 
@@ -224,9 +224,9 @@ hidb::SerumP hidb::Sera::at(size_t aIndex) const
 
 // ----------------------------------------------------------------------
 
-acmacs::chart::Name hidb::Serum::name() const
+acmacs::virus::name_t hidb::Serum::name() const
 {
-    return acmacs::chart::Name{std::string(mHiDb.virus_type()) + "/" + reinterpret_cast<const hidb::bin::Serum*>(mSerum)->name()};
+    return acmacs::virus::name_t{std::string(mHiDb.virus_type()) + "/" + reinterpret_cast<const hidb::bin::Serum*>(mSerum)->name()};
 
 } // hidb::Serum::name
 
@@ -373,8 +373,7 @@ std::shared_ptr<hidb::Table> hidb::Tables::operator[](size_t aIndex) const
 
 std::string hidb::Table::name() const
 {
-    const std::string lineage = acmacs::chart::BLineage(mTable->lineage);
-    return string::join(":", {lab(), assay(), lineage, rbc(), date()});
+    return string::join(":", {lab(), assay(), acmacs::chart::BLineage{mTable->lineage}.to_string(), rbc(), date()});
 
 } // hidb::Table::name
 

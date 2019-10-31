@@ -181,8 +181,8 @@ data_t scan_antigens(std::string aStart, std::string aEnd)
 
     data_t data_antigens;
     std::string min_date{"3000"}, max_date{"1000"};
-    for (std::string virus_type: {"A(H1N1)", "A(H3N2)", "B"}) {
-        const auto& hidb = hidb::get(virus_type, report_time::no);
+    for (const std::string_view virus_type: {"A(H1N1)", "A(H3N2)", "B"}) {
+        const auto& hidb = hidb::get(acmacs::virus::type_subtype_t{virus_type}, report_time::no);
         auto antigens = hidb.antigens();
         auto tables = hidb.tables();
         for (size_t ag_no = 0; ag_no < antigens->size(); ++ag_no) {
@@ -193,7 +193,7 @@ data_t scan_antigens(std::string aStart, std::string aEnd)
             else if (date.size() == 4)
                 date += "99";
             if (date >= aStart && date < aEnd) {
-                update(data_antigens, virus_type, std::string(hidb.lab(*antigen, *tables)), date, std::string(locdb.continent(std::string(antigen->location()), "UNKNOWN")), antigen->lineage(), antigen->full_name());
+                update(data_antigens, std::string{virus_type}, std::string(hidb.lab(*antigen, *tables)), date, std::string(locdb.continent(std::string(antigen->location()), "UNKNOWN")), antigen->lineage(), antigen->full_name());
                 min_date = std::min(min_date, date);
                 max_date = std::max(max_date, date);
             }
@@ -215,8 +215,8 @@ std::pair<data_t, data_t> scan_sera(std::string aStart, std::string aEnd)
     data_t data_sera, data_sera_unique;
 
     std::string min_date{"3000"}, max_date{"1000"};
-    for (std::string virus_type: {"A(H1N1)", "A(H3N2)", "B"}) {
-        const auto& hidb = hidb::get(virus_type, report_time::no);
+    for (const std::string_view virus_type: {"A(H1N1)", "A(H3N2)", "B"}) {
+        const auto& hidb = hidb::get(acmacs::virus::type_subtype_t{virus_type}, report_time::no);
         auto sera = hidb.sera();
         auto antigens = hidb.antigens();
         auto tables = hidb.tables();
@@ -236,11 +236,11 @@ std::pair<data_t, data_t> scan_sera(std::string aStart, std::string aEnd)
                 date += "99";
 
             if (date >= aStart && date < aEnd) {
-                update(data_sera_unique, virus_type, std::string(hidb.lab(*serum, *tables)), date, std::string(locdb.continent(std::string(serum->location()), "UNKNOWN")), serum->lineage(), serum->full_name());
+                update(data_sera_unique, std::string{virus_type}, std::string(hidb.lab(*serum, *tables)), date, std::string(locdb.continent(std::string(serum->location()), "UNKNOWN")), serum->lineage(), serum->full_name());
                 const auto name = serum->name();
                 if (names.find(*name) == names.end()) {
                     names.insert(*name);
-                    update(data_sera, virus_type, std::string(hidb.lab(*serum, *tables)), date, std::string(locdb.continent(std::string(serum->location()), "UNKNOWN")), serum->lineage(), serum->full_name());
+                    update(data_sera, std::string{virus_type}, std::string(hidb.lab(*serum, *tables)), date, std::string(locdb.continent(std::string(serum->location()), "UNKNOWN")), serum->lineage(), serum->full_name());
                 }
                 min_date = std::min(min_date, date);
                 max_date = std::max(max_date, date);

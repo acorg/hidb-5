@@ -29,7 +29,7 @@ namespace hidb
      public:
         Antigen(const char* aAntigen, const HiDb& aHiDb) : mAntigen(aAntigen), mHiDb(aHiDb) {}
 
-        acmacs::chart::Name name() const override;
+        acmacs::virus::name_t name() const override;
         acmacs::chart::Date date() const override;
         acmacs::virus::Passage passage() const override;
         acmacs::chart::BLineage lineage() const override;
@@ -95,7 +95,7 @@ namespace hidb
      public:
         Serum(const char* aSerum, const HiDb& aHiDb) : mSerum(aSerum), mHiDb(aHiDb) {}
 
-        acmacs::chart::Name name() const override;
+        acmacs::virus::name_t name() const override;
         acmacs::virus::Passage passage() const override;
         acmacs::chart::BLineage lineage() const override;
         acmacs::virus::Reassortant reassortant() const override;

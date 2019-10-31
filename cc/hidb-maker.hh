@@ -87,16 +87,6 @@ class Assay : public acmacs::chart::Assay
 
 // ----------------------------------------------------------------------
 
-class Lineage : public std::string
-{
- public:
-    inline Lineage() = default;
-    inline Lineage(std::string aSource) : std::string{aSource == "UNKNOWN" ? std::string{} : aSource.substr(0, 1)} {}
-
-}; // class Lineage
-
-// ----------------------------------------------------------------------
-
 class Titers : public std::vector<std::vector<std::string>>
 {
 }; // class Titers
@@ -107,13 +97,13 @@ class Table
 {
  public:
     Virus virus;
-    acmacs::chart::VirusType virus_type;
+    acmacs::virus::type_subtype_t virus_type;
     std::string subset;
     acmacs::chart::Assay assay;
     std::string date;
     acmacs::chart::Lab lab;
     acmacs::chart::RbcSpecies rbc_species;
-    Lineage lineage;
+    acmacs::virus::lineage_t lineage;
     Indexes antigens;
     Indexes sera;
     Titers titers;
@@ -209,7 +199,7 @@ class Antigen : public AntigenSerum
     Annotations annotations;
     Dates dates;
     LabIds lab_ids;
-    Lineage lineage;
+    acmacs::virus::lineage_t lineage;
 
     Antigen(const acmacs::chart::Antigen& aAntigen);
 
@@ -225,13 +215,13 @@ class Antigen : public AntigenSerum
     template <typename Iter> inline void add_lab_id(Iter first, Iter last) { for (; first != last; ++first) lab_ids.insert(*first); }
     inline void add_date(std::string aSource) { if (!aSource.empty()) dates.insert(aSource); }
 
-    inline void update_lineage(std::string aLineage)
+    inline void update_lineage(const acmacs::virus::lineage_t& aLineage)
         {
             if (!aLineage.empty()) {
                 if (lineage.empty())
                     lineage = aLineage;
-                else if (lineage != Lineage(aLineage))
-                    std::cerr << "WARNING: conflicting lineages for " << virus_type << '/' << location << '/' << isolation << '/' << year << ": " << lineage << " vs. " << aLineage << '\n';
+                else if (lineage != acmacs::virus::lineage_t(aLineage))
+                    std::cerr << "WARNING: conflicting lineages for " << virus_type << '/' << location << '/' << isolation << '/' << year << ": " << *lineage << " vs. " << *aLineage << '\n';
             }
         }
 
@@ -264,7 +254,7 @@ class Serum : public AntigenSerum
     Annotations annotations;
     std::string serum_id;
     std::string serum_species;
-    Lineage lineage;
+    acmacs::virus::lineage_t lineage;
     Indexes homologous;
     AntigenPtrs homologous_ptrs;
 

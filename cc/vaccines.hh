@@ -4,33 +4,36 @@
 #include <vector>
 #include <algorithm>
 
-#include "acmacs-chart-2/chart.hh"
+// #include "acmacs-chart-2/chart.hh"
+#include "acmacs-whocc-data/vaccines.hh"
 #include "hidb-5/hidb.hh"
 
 // ----------------------------------------------------------------------
 
-namespace acmacs::chart { class ChartModify; }
+namespace acmacs::chart { class Chart; }
 
 namespace hidb
 {
-    class Vaccine
-    {
-     public:
-        enum Type { Previous, Current, Surrogate };
+    // class Vaccine
+    // {
+    //  public:
+    //     enum Type { Previous, Current, Surrogate };
 
-        Vaccine(std::string_view aName, Type aType) : name{aName}, type{aType} {}
+    //     Vaccine(std::string_view aName, Type aType) : name{aName}, type{aType} {}
 
-        std::string name;
-        Type type;
+    //     std::string name;
+    //     Type type;
 
-        std::string type_as_string() const;
+    //     std::string type_as_string() const;
 
-        static std::string type_as_string(Type aType);
-        static Type type_from_string(std::string aType);
+    //     static std::string type_as_string(Type aType);
+    //     static Type type_from_string(std::string aType);
 
-    }; // class Vaccine
+    // }; // class Vaccine
 
 // ----------------------------------------------------------------------
+
+    class VaccinesOfChart;
 
     class Vaccines
     {
@@ -84,7 +87,7 @@ namespace hidb
         enum PassageType : int { Cell, Egg, Reassortant, PassageTypeSize };
         template <typename UnaryFunction> static void for_each_passage_type(UnaryFunction f) { f(Cell); f(Egg); f(Reassortant); }
 
-        Vaccines(const Vaccine& aNameType) : mNameType(aNameType) {}
+        Vaccines(const acmacs::whocc::Vaccine& aNameType) : mNameType(aNameType) {}
 
         size_t number_of(PassageType pt) const { return mEntries[pt].size(); }
         size_t number_of_eggs() const { return number_of(Egg); }
@@ -105,7 +108,7 @@ namespace hidb
 
         bool match(std::string aName, std::string aType) const
             {
-                return (aName.empty() || mNameType.name.find(aName) != std::string::npos) && (aType.empty() || mNameType.type == Vaccine::type_from_string(aType));
+                return (aName.empty() || mNameType.name.find(aName) != std::string::npos) && (aType.empty() || mNameType.type == acmacs::whocc::Vaccine::type_from_string(aType));
             }
 
         std::string type() const { return mNameType.type_as_string(); }
@@ -126,10 +129,10 @@ namespace hidb
             }
 
      private:
-        Vaccine mNameType;
+        acmacs::whocc::Vaccine mNameType;
         std::vector<Entry> mEntries[PassageTypeSize];
 
-        friend void vaccines_for_name(Vaccines& aVaccines, std::string_view aName, const acmacs::chart::Chart& aChart, bool aVerbose);
+        friend VaccinesOfChart vaccines(const acmacs::chart::Chart&);
 
         static inline PassageType passage_type(const acmacs::chart::Antigen& aAntigen)
             {
@@ -177,13 +180,13 @@ namespace hidb
 
 // ----------------------------------------------------------------------
 
-    const std::vector<Vaccine>& vaccine_names(const acmacs::chart::VirusType& aSubtype, std::string aLineage);
-    inline const std::vector<Vaccine>& vaccine_names(const acmacs::chart::Chart& aChart) { return vaccine_names(aChart.info()->virus_type(acmacs::chart::Info::Compute::Yes), aChart.lineage()); }
-    // Vaccines* find_vaccines_in_chart(std::string aName, const Chart& aChart);
-    void vaccines_for_name(Vaccines& aVaccines, std::string_view aName, const acmacs::chart::Chart& aChart, bool aVerbose = false);
-    VaccinesOfChart vaccines(const acmacs::chart::Chart& aChart, bool aVerbose = false);
-    void update_vaccines(acmacs::chart::ChartModify& aChart, const VaccinesOfChart& vaccines, bool aVerbose = false);
-    void update_vaccines(acmacs::chart::ChartModify& aChart, bool aVerbose = false);
+    // const std::vector<Vaccine>& vaccine_names(const acmacs::virus::type_subtype_t& aSubtype, std::string aLineage);
+
+    VaccinesOfChart vaccines(const acmacs::chart::Chart& aChart);
+
+    Vaccines* find_vaccines_in_chart(std::string aName, const acmacs::chart::Chart& aChart);
+    void update_vaccines(const VaccinesOfChart& vaccines);
+    inline void update_vaccines(const acmacs::chart::Chart& aChart) { update_vaccines(vaccines(aChart)); }
 
 } // namespace hidb
 

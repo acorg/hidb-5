@@ -31,9 +31,9 @@ int main(int argc, char* const argv[])
         Options opt(argc, argv);
         hidb::setup(opt.db_dir, {}, *opt.verbose);
         auto& locdb = get_locdb();
-        std::map<std::string, std::vector<std::tuple<std::string, std::string, std::string, std::string, std::string, std::string, std::string>>> data;
-        for (std::string_view subtype : {"B", "H1", "H3"}) {
-            auto& hidb = hidb::get(subtype, report_time::yes);
+        std::map<std::string, std::vector<std::tuple<std::string, std::string, std::string, std::string, std::string, std::string, acmacs::virus::lineage_t>>> data;
+        for (const std::string_view subtype : {"B", "H1", "H3"}) {
+            auto& hidb = hidb::get(acmacs::virus::type_subtype_t{subtype}, report_time::yes);
             auto antigens = hidb.antigens();
             auto tables = hidb.tables();
             for (auto ag_no = 0UL; ag_no < antigens->size(); ++ag_no) {
@@ -48,7 +48,7 @@ int main(int argc, char* const argv[])
                 const auto first_table_date = first_table->date().substr(0, 8);
                 const int days = date.ok() ? -1 : date::days_between_dates(date, date::from_string(first_table_date));
                 const auto tag = fmt::format("{}-{}-{}", subtype, first_table->lab(), first_table->assay());
-                data[tag].emplace_back(antigen->name(), date::display(date), first_table_date, days >= 0 ? std::to_string(days) : std::string{}, country, lab_id, lineage);
+                data[tag].emplace_back(antigen->name(), date::display(date), first_table_date, days >= 0 ? std::to_string(days) : std::string{}, country, lab_id, acmacs::virus::lineage_t{lineage.to_string()});
             }
         }
         for (auto [tag, entries] : data) {
@@ -63,7 +63,7 @@ int main(int argc, char* const argv[])
                 csv.add_field(std::get<3>(entry));
                 csv.add_field(std::get<4>(entry));
                 csv.add_field(std::get<5>(entry));
-                csv.add_field(std::get<6>(entry));
+                csv.add_field(*std::get<6>(entry));
                 csv.new_row();
             }
             std::ofstream out(string::concat(*opt.output_prefix, tag, ".csv"));

@@ -68,10 +68,9 @@ struct Record
             if (subtype == "A(H3N2)")
                 return "H3N2";
             if (subtype == "B") {
-                const std::string lin(lineage);
-                if (lin.empty())
+                if (lineage == acmacs::chart::BLineage::Unknown)
                     return "B";
-                return string::concat(subtype, lin.substr(0, 3));
+                return fmt::format("B{}", lineage.to_string().substr(0, 3));
             }
             throw std::runtime_error(string::concat("Unrecognized subtype: ", subtype));
         }
@@ -126,7 +125,7 @@ int main(int argc, char* const argv[])
 
         std::vector<Record> records;
         for (const std::string_view virus_type : {"A(H1N1)", "A(H3N2)", "B"}) {
-            auto& hidb = hidb::get(virus_type);
+            auto& hidb = hidb::get(acmacs::virus::type_subtype_t{virus_type});
             auto tables = hidb.tables();
             auto antigens = hidb.antigens();
             auto sera = hidb.sera();

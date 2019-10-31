@@ -4,6 +4,7 @@
 #include <optional>
 
 #include "acmacs-base/timeit.hh"
+#include "acmacs-virus/virus-name.hh"
 
 namespace hidb
 {
@@ -13,8 +14,7 @@ namespace hidb
 
     void setup(std::string_view aHiDbDir, std::optional<std::string> aLocDbFilename = {}, bool aVerbose = false);
     void load_all(report_time timer = report_time::no); // pre-load all hidbs (e.g. for acmacs-api-server)
-    [[nodiscard]] const HiDb& get(std::string_view aVirusType, report_time timer = report_time::no); // throws get_error
-    [[nodiscard]] inline const HiDb& get(std::string aVirusType, report_time timer = report_time::no) { return get(std::string_view(aVirusType), timer); }
+    [[nodiscard]] const HiDb& get(const acmacs::virus::type_subtype_t& aVirusType, report_time timer = report_time::no); // throws get_error
 
 } // namespace hidb
 

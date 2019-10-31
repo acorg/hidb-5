@@ -25,7 +25,7 @@ void hidb::report_antigen(const hidb::HiDb& hidb, const hidb::Antigen& aAntigen,
     if (const auto lab_ids = aAntigen.lab_ids(); !lab_ids->empty())
         std::cout << ' ' << *lab_ids;
     if (const auto lineage = aAntigen.lineage(); lineage != acmacs::chart::BLineage::Unknown)
-        std::cout << ' ' << static_cast<std::string>(lineage);
+        std::cout << fmt::format(" {}", lineage);
     if (aReportTables) {
         std::cout << '\n';
         report_tables(std::cout, hidb, aAntigen.tables(), report_tables::all, aPrefix + "    ");
@@ -61,7 +61,7 @@ void hidb::report_serum(const hidb::HiDb& hidb, const hidb::Serum& aSerum, enum 
     if (const auto passage = aSerum.passage(); !passage.empty())
         std::cout << ' ' << *passage;
     if (const auto lineage = aSerum.lineage(); lineage != acmacs::chart::BLineage::Unknown)
-        std::cout << ' ' << static_cast<std::string>(lineage);
+        std::cout << fmt::format(" {}", lineage);
     std::cout << '\n';
     for (size_t ag_no: aSerum.homologous_antigens())
         report_antigen(hidb, ag_no, false, aPrefix + "    ");
