@@ -1,31 +1,30 @@
 #include <cstdlib>
 #include <cmath>
 
-#include "acmacs-base/argc-argv.hh"
+#include "acmacs-base/argv.hh"
 #include "acmacs-base/string.hh"
 #include "acmacs-base/enumerate.hh"
 #include "hidb-5/hidb.hh"
 
-using namespace std::string_literals;
-
 // ----------------------------------------------------------------------
+
+using namespace acmacs::argv;
+struct Options : public argv
+{
+    Options(int a_argc, const char* const a_argv[], on_error on_err = on_error::exit) : argv() { parse(a_argc, a_argv, on_err); }
+
+    option<bool> report_time{*this, "time", desc{"report time of loading chart"}};
+
+    argument<str> source{*this, arg_name{"hidb5.json.xz"}, mandatory};
+    argument<str> output{*this, arg_name{"output.hidb5b"}, mandatory};
+};
 
 int main(int argc, char* const argv[])
 {
     try {
-        argc_argv args(argc, argv, {
-                {"-v", false},
-                {"--verbose", false},
-                {"-h", false},
-                {"--help", false},
-            });
-        if (args["-h"] || args["--help"] || args.number_of_arguments() != 2) {
-            throw std::runtime_error("Usage: "s + args.program() + " [options] <source.json.xz> <target.bin>\n" + args.usage_options());
-        }
-        // const bool verbose = args["-v"] || args["--verbose"];
-
-        hidb::HiDb hidb(std::string{args[0]}, args["--verbose"]);
-        hidb.save(std::string{args[1]});
+        Options opt(argc, argv);
+        hidb::HiDb hidb(opt.source);
+        hidb.save(opt.output);
         return 0;
     }
     catch (std::exception& err) {

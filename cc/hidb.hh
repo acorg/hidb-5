@@ -209,7 +209,7 @@ namespace hidb
     class HiDb
     {
      public:
-        HiDb(std::string aFilename, bool verbose);
+        HiDb(std::string_view aFilename, bool verbose=false);
 
         std::shared_ptr<Antigens> antigens() const;
         std::shared_ptr<Sera> sera() const;
@@ -225,7 +225,7 @@ namespace hidb
         // void stat_antigens(HiDbStat& aStat, std::string aStart, std::string aEnd) const;
         // void stat_sera(HiDbStat& aStat, HiDbStat* aStatUnique, std::string aStart, std::string aEnd) const;
 
-        void save(std::string aFilename) const;
+        void save(std::string_view aFilename) const;
 
      private:
         const char* mData = nullptr;

@@ -12,7 +12,7 @@
 
 // ----------------------------------------------------------------------
 
-hidb::HiDb::HiDb(std::string aFilename, bool verbose)
+hidb::HiDb::HiDb(std::string_view aFilename, bool verbose)
 {
     acmacs::file::read_access access(aFilename);
     if (hidb::bin::has_signature(access.data())) {
@@ -24,13 +24,13 @@ hidb::HiDb::HiDb(std::string aFilename, bool verbose)
         mData = mDataStorage.data();
     }
     else
-        throw std::runtime_error("[hidb] unrecognized file: " + aFilename);
+        throw std::runtime_error(fmt::format("[hidb] unrecognized file: {}", aFilename));
 
 } // hidb::HiDb::HiDb
 
 // ----------------------------------------------------------------------
 
-void hidb::HiDb::save(std::string aFilename) const
+void hidb::HiDb::save(std::string_view aFilename) const
 {
     if (!mDataStorage.empty())
         acmacs::file::write(aFilename, mDataStorage);

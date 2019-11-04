@@ -37,7 +37,7 @@ using TablePtrs = std::set<const Table*>;
 template <typename T> class less_unique_ptr
 {
  public:
-    constexpr inline bool operator()(const std::unique_ptr<T>& lhs, const std::unique_ptr<T>& rhs) const
+    constexpr bool operator()(const std::unique_ptr<T>& lhs, const std::unique_ptr<T>& rhs) const
         {
             return *lhs < *rhs;
         }
@@ -46,23 +46,20 @@ template <typename T> class less_unique_ptr
 
 template <typename T> class set_unique_ptr : public std::set<std::unique_ptr<T>, less_unique_ptr<T>>
 {
- public:
-    inline void make_index()
-        {
-#pragma GCC diagnostic push
-#ifdef __clang__
-#pragma GCC diagnostic ignored "-Wunused-variable" // bug in clang 5.0?
-#endif
-            for (auto [index, entry]: acmacs::enumerate(*this))
-                entry->index = index;
-#pragma GCC diagnostic pop
-        }
+  public:
+    void make_index()
+    {
+        for (auto [index, entry] : acmacs::enumerate(*this))
+            entry->index = index;
+    }
 
-    inline void make_indexes()
-        {
-            for (auto& entry: *this)
-                entry->make_indexes();
-        }
+    void make_indexes()
+    {
+        for (auto& entry : *this)
+            entry->make_indexes();
+    }
+
+    const T* operator[](size_t index) const { return std::next(this->begin(), static_cast<ssize_t>(index))->get(); }
 
 }; // class set_unique_ptr <>
 
@@ -75,7 +72,7 @@ using Virus = acmacs::chart::Virus;
 class Assay : public acmacs::chart::Assay
 {
  public:
-    inline Assay(const acmacs::chart::Assay& aSource) : acmacs::chart::Assay{aSource}
+    Assay(const acmacs::chart::Assay& aSource) : acmacs::chart::Assay{aSource}
         {
             if (aSource == acmacs::chart::Assay{"PLAQUE REDUCTION NEUTRALISATION"})
                 assign("PRN");
@@ -114,17 +111,17 @@ class Table
 
     Table(const acmacs::chart::Info& aInfo);
 
-    inline bool operator==(const Table& rhs) const { return string::compare(
+    bool operator==(const Table& rhs) const { return string::compare(
         {    *virus,     *virus_type,     subset,     lineage, *assay,     *lab,     *rbc_species,     date},
         {*rhs.virus, *rhs.virus_type, rhs.subset, rhs.lineage, *rhs.assay, *rhs.lab, *rhs.rbc_species, rhs.date}) == 0; }
 
-    inline bool operator<(const Table& rhs) const { return string::compare(
+    bool operator<(const Table& rhs) const { return string::compare(
         {    *virus,     *virus_type,     subset,     lineage,     *assay,     *lab,     *rbc_species,     date},
         {*rhs.virus, *rhs.virus_type, rhs.subset, rhs.lineage, *rhs.assay, *rhs.lab, *rhs.rbc_species, rhs.date}) < 0; }
 
     void set_titers(const acmacs::chart::Titers& aTiters);
-    inline void add_antigen(Antigen* aAntigen) { antigen_ptrs.insert(aAntigen); }
-    inline void add_serum(Serum* aSerum) { serum_ptrs.insert(aSerum); }
+    void add_antigen(Antigen* aAntigen) { antigen_ptrs.insert(aAntigen); }
+    void add_serum(Serum* aSerum) { serum_ptrs.insert(aSerum); }
     void make_indexes();
 
 }; // class Table
@@ -170,12 +167,35 @@ class AntigenSerum
     TablePtrs table_ptrs;
     size_t index;
 
+    std::string host;          // empty if HUMAN
+    std::string virus_type;    // empty for cdc name
+    std::string location;      // cdc_abbreviation in case of cdc name
+    std::string isolation;     // name in case of cdc name
+    std::string year;          // empty for cdc name
+    std::string reassortant;
+    std::string passage;
+    Annotations annotations;
+    acmacs::virus::lineage_t lineage{};
+
+    AntigenSerum(std::string_view a_reassortant, std::string_view a_passage, const std::vector<std::string>& a_annotations, std::string_view aLineage)
+        : reassortant{a_reassortant}, passage{a_passage}, annotations{a_annotations} { update_lineage(acmacs::virus::lineage_t{aLineage}); }
     virtual ~AntigenSerum();
     virtual std::string to_string() const = 0;
     virtual std::string type_name() const = 0;
 
     void add_table(Table *aTable);
     virtual void make_indexes();
+
+    void update_lineage(const acmacs::virus::lineage_t& aLineage)
+        {
+            if (!aLineage.empty()) {
+                const acmacs::virus::lineage_t new_lineage{aLineage->substr(0, 1)};
+                if (lineage.empty())
+                    lineage = new_lineage;
+                else if (lineage != new_lineage)
+                    fmt::print(stderr, "WARNING: conflicting lineages for {}/{}/{}/{}: {} vs. {}\n", virus_type, location, isolation , year, lineage, aLineage);
+            }
+        }
 
 }; // class AntigenSerum
 
@@ -189,43 +209,24 @@ namespace acmacs
 class Antigen : public AntigenSerum
 {
  public:
-    std::string virus_type;    // empty for cdc name
-    std::string host;          // empty if HUMAN
-    std::string location;      // cdc_abbreviation in case of cdc name
-    std::string isolation;     // name in case of cdc name
-    std::string year;          // empty for cdc name
-    std::string reassortant;
-    std::string passage;
-    Annotations annotations;
     Dates dates;
     LabIds lab_ids;
-    acmacs::virus::lineage_t lineage;
 
     Antigen(const acmacs::chart::Antigen& aAntigen);
 
-    inline bool operator==(const Antigen& rhs) const { return string::compare(
+    bool operator==(const Antigen& rhs) const { return string::compare(
         {    virus_type,     host,     location,     isolation,     year, string::join(" ",     annotations),     reassortant,     passage},
         {rhs.virus_type, rhs.host, rhs.location, rhs.isolation, rhs.year, string::join(" ", rhs.annotations), rhs.reassortant, rhs.passage}) == 0; }
-    inline bool operator!=(const Antigen& rhs) const { return !operator==(rhs); }
+    bool operator!=(const Antigen& rhs) const { return !operator==(rhs); }
 
-    inline bool operator<(const Antigen& rhs) const { return string::compare(
+    bool operator<(const Antigen& rhs) const { return string::compare(
         {    location,     isolation,     year,     host, string::join(" ",     annotations),     reassortant,     passage},
         {rhs.location, rhs.isolation, rhs.year, rhs.host, string::join(" ", rhs.annotations), rhs.reassortant, rhs.passage}) < 0; }
 
-    template <typename Iter> inline void add_lab_id(Iter first, Iter last) { for (; first != last; ++first) lab_ids.insert(*first); }
-    inline void add_date(std::string aSource) { if (!aSource.empty()) dates.insert(aSource); }
+    template <typename Iter> void add_lab_id(Iter first, Iter last) { for (; first != last; ++first) lab_ids.insert(*first); }
+    void add_date(std::string aSource) { if (!aSource.empty()) dates.insert(aSource); }
 
-    inline void update_lineage(const acmacs::virus::lineage_t& aLineage)
-        {
-            if (!aLineage.empty()) {
-                if (lineage.empty())
-                    lineage = aLineage;
-                else if (lineage != acmacs::virus::lineage_t(aLineage))
-                    std::cerr << "WARNING: conflicting lineages for " << virus_type << '/' << location << '/' << isolation << '/' << year << ": " << *lineage << " vs. " << *aLineage << '\n';
-            }
-        }
-
-    inline std::string type_name() const override { return "Antigen"; }
+    std::string type_name() const override { return "Antigen"; }
     std::string to_string() const override;
 
 }; // class Antigen
@@ -244,32 +245,23 @@ class Antigens : public set_unique_ptr<Antigen>
 class Serum : public AntigenSerum
 {
  public:
-    std::string virus_type;
-    std::string host;          // empty if HUMAN
-    std::string location;
-    std::string isolation;
-    std::string year;
-    std::string reassortant;
-    std::string passage;
-    Annotations annotations;
     std::string serum_id;
     std::string serum_species;
-    acmacs::virus::lineage_t lineage;
     Indexes homologous;
     AntigenPtrs homologous_ptrs;
 
     Serum(const acmacs::chart::Serum& aSerum);
 
-    inline bool operator==(const Serum& rhs) const { return string::compare(
+    bool operator==(const Serum& rhs) const { return string::compare(
         {    virus_type,     host,     location,     isolation,     year, string::join(" ",     annotations),     reassortant,     serum_id},
         {rhs.virus_type, rhs.host, rhs.location, rhs.isolation, rhs.year, string::join(" ", rhs.annotations), rhs.reassortant, rhs.serum_id}) == 0; }
-    inline bool operator!=(const Serum& rhs) const { return !operator==(rhs); }
+    bool operator!=(const Serum& rhs) const { return !operator==(rhs); }
 
-    inline bool operator<(const Serum& rhs) const { return string::compare(
+    bool operator<(const Serum& rhs) const { return string::compare(
         {    location,     isolation,     year,     host, string::join(" ",     annotations),     reassortant,     serum_id},
         {rhs.location, rhs.isolation, rhs.year, rhs.host, string::join(" ", rhs.annotations), rhs.reassortant, rhs.serum_id}) < 0; }
 
-    inline std::string type_name() const override { return "Serum"; }
+    std::string type_name() const override { return "Serum"; }
     std::string to_string() const override;
     void make_indexes() override;
 
@@ -289,10 +281,10 @@ class Sera : public set_unique_ptr<Serum>
 class HidbMaker
 {
  public:
-    inline HidbMaker() = default;
+    HidbMaker() = default;
 
     void add(const acmacs::chart::Chart& aChart);
-    void save(std::string aFilename);
+    void save(std::string_view aFilename);
 
  private:
     Antigens mAntigens;

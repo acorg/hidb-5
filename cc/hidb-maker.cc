@@ -59,7 +59,10 @@ void HidbMaker::export_antigens(rjson::value& target) const
 {
     for (auto& antigen: mAntigens) {
         rjson::value ag{rjson::object{}};
-        rjson::set_field_if_not_empty(ag, "V", antigen->virus_type);
+        if (!antigen->virus_type.empty())
+            ag["V"] = antigen->virus_type;
+        else
+            ag["V"] = *mTables[antigen->tables.front()]->virus_type;
         rjson::set_field_if_not_empty(ag, "H", antigen->host);
         rjson::set_field_if_not_empty(ag, "O", antigen->location);
         rjson::set_field_if_not_empty(ag, "i", antigen->isolation);
@@ -126,7 +129,7 @@ void HidbMaker::export_tables(rjson::value& target) const
 
 // ----------------------------------------------------------------------
 
-void HidbMaker::save(std::string aFilename)
+void HidbMaker::save(std::string_view aFilename)
 {
     make_index();
 
@@ -187,8 +190,9 @@ Table* Tables::add(const acmacs::chart::Chart& aChart)
     const auto insert_at = lower_bound(table);
     if (insert_at != end() && **insert_at == *table)
         throw std::runtime_error("Table " + acmacs::to_string(*table) + " is already in hidb");
-    table->lineage = aChart.lineage();
-    std::cerr << "DEBUG: adding " << acmacs::to_string(*table) << '\n';
+    if (const auto lineage = aChart.lineage(); !lineage.empty())
+        table->lineage = acmacs::virus::lineage_t{lineage->substr(0, 1)};
+    fmt::print(stderr, "DEBUG: adding  {}\n", acmacs::to_string(*table));
     return insert(insert_at, std::move(table))->get();
 
 } // Tables::add
@@ -260,8 +264,7 @@ void AntigenSerum::make_indexes()
 // ----------------------------------------------------------------------
 
 Antigen::Antigen(const acmacs::chart::Antigen& aAntigen)
-    : reassortant{aAntigen.reassortant()}, passage{aAntigen.passage()}, annotations{*aAntigen.annotations()},
-      lineage{aAntigen.lineage().to_string()}
+    : AntigenSerum(aAntigen.reassortant(), aAntigen.passage(), *aAntigen.annotations(), aAntigen.lineage().to_string())
 {
     const std::string name{aAntigen.name()};
     try {
@@ -293,8 +296,8 @@ Antigen::Antigen(const acmacs::chart::Antigen& aAntigen)
 // ----------------------------------------------------------------------
 
 Serum::Serum(const acmacs::chart::Serum& aSerum)
-    : reassortant{aSerum.reassortant()}, passage{aSerum.passage()}, annotations{*aSerum.annotations()},
-      serum_id{aSerum.serum_id()}, serum_species{aSerum.serum_species()}, lineage{aSerum.lineage().to_string()}
+    : AntigenSerum(aSerum.reassortant(), aSerum.passage(), *aSerum.annotations(), aSerum.lineage().to_string()),
+      serum_id{aSerum.serum_id()}, serum_species{aSerum.serum_species()}
 {
     const std::string name{aSerum.name()};
     try {

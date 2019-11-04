@@ -1,38 +1,37 @@
 #include <iostream>
 
-#include "acmacs-base/argc-argv.hh"
+#include "acmacs-base/argv.hh"
 #include "acmacs-chart-2/factory-import.hh"
 
 #include "hidb-maker.hh"
 
 // ----------------------------------------------------------------------
 
+using namespace acmacs::argv;
+struct Options : public argv
+{
+    Options(int a_argc, const char* const a_argv[], on_error on_err = on_error::exit) : argv() { parse(a_argc, a_argv, on_err); }
+
+    option<bool> report_time{*this, "time", desc{"report time of loading chart"}};
+
+    argument<str> output_hidb{*this, arg_name{"hidb5.json.xz"}, mandatory};
+    argument<str_array> charts{*this, arg_name{"input-chart-file"}, mandatory};
+};
+
 int main(int argc, char* const argv[])
 {
     int exit_code = 0;
     try {
-        argc_argv args(argc, argv, {
-                {"-h", false},
-                {"--help", false},
-                {"--time", false, "report time of loading chart"},
-                {"-v", false},
-                {"--verbose", false}
-        });
-        if (args["-h"] || args["--help"] || args.number_of_arguments() < 2) {
-            std::cerr << "Usage: " << args.program() << " [options] <hidb5.json.xz> <input-chart-file> ...\n" << args.usage_options() << '\n';
-            exit_code = 1;
+        Options opt(argc, argv);
+        HidbMaker maker;
+        for (const auto& source : *opt.charts) {
+            auto chart = acmacs::chart::import_from_file(source, acmacs::chart::Verify::All, do_report_time(opt.report_time));
+            maker.add(*chart);
         }
-        else {
-            HidbMaker maker;
-            for (size_t arg_no = 1; arg_no < args.number_of_arguments(); ++arg_no) {
-                auto chart = acmacs::chart::import_from_file(args[arg_no], acmacs::chart::Verify::All, do_report_time(args["--time"]));
-                maker.add(*chart);
-            }
-            maker.save(std::string(args[0]));
-        }
+        maker.save(opt.output_hidb);
     }
     catch (std::exception& err) {
-        std::cerr << "ERROR: " << err.what() << '\n';
+        fmt::print(stderr, "ERROR: {}\n", err);
         exit_code = 2;
     }
     return exit_code;

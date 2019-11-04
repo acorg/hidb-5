@@ -49,7 +49,7 @@ class HiDbSet
                     throw hidb::get_error(fmt::format("Cannot find hidb for {} in {}", aVirusType, sHiDbDir));
 
                 Timeit ti("DEBUG: HiDb loading from " + static_cast<std::string>(filename) + ": ", timer);
-                h = mPtrs.emplace(aVirusType, std::make_unique<hidb::HiDb>(filename, sVerbose || (timer == report_time::yes))).first;
+                h = mPtrs.emplace(aVirusType, std::make_unique<hidb::HiDb>(static_cast<std::string>(filename), sVerbose || (timer == report_time::yes))).first;
             }
             return *h->second;
         }
