@@ -71,14 +71,16 @@ void find(const hidb::HiDb& hidb, const Options& opt)
             list_all_antigens(hidb);
     }
     else {
-        if (opt.find_sera)
-            find_sera(hidb, opt.names->at(0));
-        else if (opt.find_table)
-            find_tables(hidb, opt.names->at(0));
-        else if (opt.find_by_lab_id)
-            find_antigens_by_labid(hidb, opt.names->at(0));
-        else
-            find_antigens(hidb, opt.names->at(0));
+        for (const auto& name : *opt.names) {
+            if (opt.find_sera)
+                find_sera(hidb, name);
+            else if (opt.find_table)
+                find_tables(hidb, name);
+            else if (opt.find_by_lab_id)
+                find_antigens_by_labid(hidb, name);
+            else
+                find_antigens(hidb, name);
+        }
     }
 
 } // find
