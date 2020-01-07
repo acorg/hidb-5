@@ -97,9 +97,9 @@ void hidb::load_all(report_time timer)
 #pragma GCC diagnostic ignored "-Wunused-result"
 #endif
 
-    get(acmacs::virus::type_subtype_t{"A(H1N1)"}, timer);
-    get(acmacs::virus::type_subtype_t{"A(H3N2)"}, timer);
-    get(acmacs::virus::type_subtype_t{"B"}, timer);
+    (void)get(acmacs::virus::type_subtype_t{"A(H1N1)"}, timer);
+    (void)get(acmacs::virus::type_subtype_t{"A(H3N2)"}, timer);
+    (void)get(acmacs::virus::type_subtype_t{"B"}, timer);
 
 #pragma GCC diagnostic pop
 
