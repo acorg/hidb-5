@@ -4,7 +4,7 @@
 #include <set>
 #include <regex>
 
-#include "acmacs-base/argc-argv.hh"
+#include "acmacs-base/argv.hh"
 #include "acmacs-base/string.hh"
 #include "acmacs-base/rjson.hh"
 #include "acmacs-base/read-file.hh"
@@ -12,40 +12,39 @@
 #include "locationdb/locdb.hh"
 #include "hidb-5/hidb.hh"
 
-using namespace std::string_literals;
-
 using data_key_t = std::tuple<std::string, std::string, std::string, std::string>; // virus_type, lab, date, continent
 using data_t = std::map<data_key_t, size_t>;
 
-static void make(std::string aStart, std::string aEnd, std::string_view aFilename);
-static data_t scan_antigens(std::string aStart, std::string aEnd);
-static std::pair<data_t, data_t> scan_sera(std::string aStart, std::string aEnd);
-static void update(data_t& data, std::string virus_type, std::string lab, std::string date, std::string continent, acmacs::chart::BLineage lineage, std::string full_name);
-static void report(const data_t& data, std::string name);
+static void make(std::string_view aStart, std::string_view aEnd, std::string_view aFilename);
+static data_t scan_antigens(std::string_view aStart, std::string_view aEnd);
+static std::pair<data_t, data_t> scan_sera(std::string_view aStart, std::string_view aEnd);
+static void update(data_t& data, std::string_view virus_type, std::string_view lab, std::string_view date, std::string_view continent, acmacs::chart::BLineage lineage, std::string_view full_name);
+static void report(const data_t& data, std::string_view name);
 static std::string make_json(const data_t& data_antigens, const data_t& data_sera, const data_t& data_sera_unique);
 static std::string get_date(std::string_view aDate);
 
 // ----------------------------------------------------------------------
 
+using namespace acmacs::argv;
+struct Options : public argv
+{
+    Options(int a_argc, const char* const a_argv[], on_error on_err = on_error::exit) : argv() { parse(a_argc, a_argv, on_err); }
+
+    option<str> start{*this, "start", dflt{"1000-01-01"}};
+    option<str> end{*this, "end", dflt{"3000-01-01"}};
+    option<str> db_dir{*this, "db-dir"};
+    option<bool> verbose{*this, 'v', "verbose"};
+
+    argument<str> output{*this, arg_name{"output.json"}, mandatory};
+};
+
 int main(int argc, char* const argv[])
 {
     try {
-        argc_argv args(argc, argv, {
-                {"--start", "1000-01-01"},
-                {"--end", "3000-01-01"},
-                {"--db-dir", ""},
-                {"-v", false},
-                {"--verbose", false},
-                {"-h", false},
-                {"--help", false},
-            });
-        if (args["-h"] || args["--help"] || args.number_of_arguments() != 1) {
-            throw std::runtime_error("Usage: "s + args.program() + " [options] <output.json>\n" + args.usage_options());
-        }
-        const bool verbose = args["-v"] || args["--verbose"];
-        hidb::setup(std::string(args["--db-dir"]), {}, verbose);
+        Options opt(argc, argv);
+        hidb::setup(opt.db_dir, {}, opt.verbose);
 
-        make(get_date(std::string(args["--start"])), get_date(std::string(args["--end"])), std::string(args[0]));
+        make(get_date(opt.start), get_date(opt.end), opt.output);
 
         return 0;
     }
@@ -57,7 +56,7 @@ int main(int argc, char* const argv[])
 
 // ----------------------------------------------------------------------
 
-void make(std::string aStart, std::string aEnd, std::string_view aFilename)
+void make(std::string_view aStart, std::string_view aEnd, std::string_view aFilename)
 {
     auto data_antigens = scan_antigens(aStart, aEnd);
     auto [data_sera, data_sera_unique] = scan_sera(aStart, aEnd);
@@ -93,16 +92,17 @@ void make(std::string aStart, std::string aEnd, std::string_view aFilename)
 
 // ----------------------------------------------------------------------
 
-void report(const data_t& data, std::string name)
+void report(const data_t& data, std::string_view name)
 {
+    using namespace std::string_view_literals;
     std::cout << '\n' << name << ":\n";
-    for (std::string virus_type: {"A(H1N1)", "A(H3N2)", "B"}) {
-        if (const auto found = data.find(std::make_tuple(virus_type, "all",  "all",   "all")); found != data.end()) {
+    for (auto virus_type : {"A(H1N1)"sv, "A(H3N2)"sv, "B"sv}) {
+        if (const auto found = data.find(data_key_t{virus_type, "all",  "all",   "all"}); found != data.end()) {
             std::cout << "  " << std::setw(9) << std::left << virus_type << ": " << found->second << '\n';
             if (virus_type == "B") {
-                for (std::string lineage: {"VICTORIA", "YAMAGATA", "UNKNOWN"}) {
-                    const auto vtl = virus_type + lineage;
-                    if (const auto found2 = data.find(std::make_tuple(vtl, "all",  "all",   "all")); found2 != data.end())
+                for (auto lineage : {"VICTORIA"sv, "YAMAGATA"sv, "UNKNOWN"sv}) {
+                    const auto vtl = fmt::format("{}{}", virus_type, lineage);
+                    if (const auto found2 = data.find(data_key_t{vtl, "all",  "all",   "all"}); found2 != data.end())
                         std::cout << "  " << std::setw(9) << std::left << vtl << ": " << found2->second << '\n';
                 }
             }
@@ -113,69 +113,71 @@ void report(const data_t& data, std::string name)
 
 // ----------------------------------------------------------------------
 
-void update(data_t& data, std::string virus_type, std::string lab, std::string date, std::string continent, acmacs::chart::BLineage lineage, std::string full_name)
+void update(data_t& data, std::string_view virus_type, std::string_view lab, std::string_view date, std::string_view continent, acmacs::chart::BLineage lineage, std::string_view full_name)
 {
-    const std::string all = "all";
-    std::string year = date.substr(0, 4);
+    using namespace std::string_view_literals;
 
-    ++data[std::make_tuple(virus_type, lab, date, continent)];
-    ++data[std::make_tuple(virus_type, lab, year, continent)];
-    ++data[std::make_tuple(virus_type, lab, date, all)];
-    ++data[std::make_tuple(virus_type, lab, year, all)];
-    ++data[std::make_tuple(virus_type, lab, all,  continent)];
-    ++data[std::make_tuple(virus_type, lab, all,  all)];
-    ++data[std::make_tuple(virus_type, all, date, continent)];
-    ++data[std::make_tuple(virus_type, all, year, continent)];
-    ++data[std::make_tuple(virus_type, all, date, all)];
-    ++data[std::make_tuple(virus_type, all, year, all)];
-    ++data[std::make_tuple(virus_type, all, all,  continent)];
-    ++data[std::make_tuple(virus_type, all, all,  all)];
-    ++data[std::make_tuple(all,        lab, date, continent)];
-    ++data[std::make_tuple(all,        lab, year, continent)];
-    ++data[std::make_tuple(all,        lab, date, all)];
-    ++data[std::make_tuple(all,        lab, year, all)];
-    ++data[std::make_tuple(all,        lab, all,  continent)];
-    ++data[std::make_tuple(all,        lab, all,  all)];
-    ++data[std::make_tuple(all,        all, date, continent)];
-    ++data[std::make_tuple(all,        all, year, continent)];
-    ++data[std::make_tuple(all,        all, date, all)];
-    ++data[std::make_tuple(all,        all, year, all)];
-    ++data[std::make_tuple(all,        all, all,  continent)];
-    ++data[std::make_tuple(all,        all, all,  all)];
+    const auto all = "all"sv;
+    const auto year = date.substr(0, 4);
+
+    ++data[data_key_t{virus_type, lab, date, continent}];
+    ++data[data_key_t{virus_type, lab, year, continent}];
+    ++data[data_key_t{virus_type, lab, date, all}];
+    ++data[data_key_t{virus_type, lab, year, all}];
+    ++data[data_key_t{virus_type, lab, all, continent}];
+    ++data[data_key_t{virus_type, lab, all, all}];
+    ++data[data_key_t{virus_type, all, date, continent}];
+    ++data[data_key_t{virus_type, all, year, continent}];
+    ++data[data_key_t{virus_type, all, date, all}];
+    ++data[data_key_t{virus_type, all, year, all}];
+    ++data[data_key_t{virus_type, all, all, continent}];
+    ++data[data_key_t{virus_type, all, all, all}];
+    ++data[data_key_t{all, lab, date, continent}];
+    ++data[data_key_t{all, lab, year, continent}];
+    ++data[data_key_t{all, lab, date, all}];
+    ++data[data_key_t{all, lab, year, all}];
+    ++data[data_key_t{all, lab, all, continent}];
+    ++data[data_key_t{all, lab, all, all}];
+    ++data[data_key_t{all, all, date, continent}];
+    ++data[data_key_t{all, all, year, continent}];
+    ++data[data_key_t{all, all, date, all}];
+    ++data[data_key_t{all, all, year, all}];
+    ++data[data_key_t{all, all, all, continent}];
+    ++data[data_key_t{all, all, all, all}];
 
     if (virus_type == "B") {
         std::string vtl;
         switch (lineage) {
-          case acmacs::chart::BLineage::Victoria:
-              vtl = "BVICTORIA";
-              break;
-          case acmacs::chart::BLineage::Yamagata:
-              vtl = "BYAMAGATA";
-              break;
-          case acmacs::chart::BLineage::Unknown:
-              vtl = "BUNKNOWN";
-              std::cerr << "WARNING: no lineage for " << full_name << '\n';
-              break;
+            case acmacs::chart::BLineage::Victoria:
+                vtl = "BVICTORIA";
+                break;
+            case acmacs::chart::BLineage::Yamagata:
+                vtl = "BYAMAGATA";
+                break;
+            case acmacs::chart::BLineage::Unknown:
+                vtl = "BUNKNOWN";
+                std::cerr << "WARNING: no lineage for " << full_name << '\n';
+                break;
         }
-        ++data[std::make_tuple(vtl, lab, date, continent)];
-        ++data[std::make_tuple(vtl, lab, year, continent)];
-        ++data[std::make_tuple(vtl, lab, date, all)];
-        ++data[std::make_tuple(vtl, lab, year, all)];
-        ++data[std::make_tuple(vtl, lab, all,  continent)];
-        ++data[std::make_tuple(vtl, lab, all,  all)];
-        ++data[std::make_tuple(vtl, all, date, continent)];
-        ++data[std::make_tuple(vtl, all, year, continent)];
-        ++data[std::make_tuple(vtl, all, date, all)];
-        ++data[std::make_tuple(vtl, all, year, all)];
-        ++data[std::make_tuple(vtl, all, all,  continent)];
-        ++data[std::make_tuple(vtl, all, all,  all)];
+        ++data[data_key_t{vtl, lab, date, continent}];
+        ++data[data_key_t{vtl, lab, year, continent}];
+        ++data[data_key_t{vtl, lab, date, all}];
+        ++data[data_key_t{vtl, lab, year, all}];
+        ++data[data_key_t{vtl, lab, all, continent}];
+        ++data[data_key_t{vtl, lab, all, all}];
+        ++data[data_key_t{vtl, all, date, continent}];
+        ++data[data_key_t{vtl, all, year, continent}];
+        ++data[data_key_t{vtl, all, date, all}];
+        ++data[data_key_t{vtl, all, year, all}];
+        ++data[data_key_t{vtl, all, all, continent}];
+        ++data[data_key_t{vtl, all, all, all}];
     }
 
 } // update
 
 // ----------------------------------------------------------------------
 
-data_t scan_antigens(std::string aStart, std::string aEnd)
+data_t scan_antigens(std::string_view aStart, std::string_view aEnd)
 {
     auto& locdb = get_locdb();
 
@@ -207,7 +209,7 @@ data_t scan_antigens(std::string aStart, std::string aEnd)
 
 // ----------------------------------------------------------------------
 
-std::pair<data_t, data_t> scan_sera(std::string aStart, std::string aEnd)
+std::pair<data_t, data_t> scan_sera(std::string_view aStart, std::string_view aEnd)
 {
     auto& locdb = get_locdb();
     const std::string all = "all";
@@ -284,7 +286,7 @@ std::string get_date(std::string_view aDate)
 {
     std::smatch m;
     std::string date(aDate);
-    if (std::regex_match(date, m, std::regex("(19[2-9][0-9]|20[01][0-9]|1000|3000)-?(0[0-9]|1[0-2])?(-?[0-3][0-9])?"))) {
+    if (std::regex_match(date, m, std::regex("(19[2-9][0-9]|20[0-2][0-9]|1000|3000)-?(0[0-9]|1[0-2])?(-?[0-3][0-9])?"))) {
         return m[1].str() + m[2].str();
     }
     throw std::runtime_error("unrecognized date " + date);

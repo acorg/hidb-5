@@ -1,35 +1,33 @@
-#include "acmacs-base/argc-argv.hh"
+#include "acmacs-base/argv.hh"
 #include "acmacs-chart-2/factory-import.hh"
 #include "hidb-5/hidb.hh"
 #include "hidb-5/report.hh"
 
-using namespace std::string_literals;
-
 // ----------------------------------------------------------------------
+
+using namespace acmacs::argv;
+struct Options : public argv
+{
+    Options(int a_argc, const char* const a_argv[], on_error on_err = on_error::exit) : argv() { parse(a_argc, a_argv, on_err); }
+
+    option<bool> sera_only{*this, "sera-only"};
+    option<bool> first_table{*this, "first-table"};
+    option<str> db_dir{*this, "db-dir"};
+    option<bool> verbose{*this, 'v', "verbose"};
+
+    argument<str> chart{*this, arg_name{"chart"}, mandatory};
+};
 
 int main(int argc, char* const argv[])
 {
     try {
-        argc_argv args(argc, argv, {
-                {"--sera-only", false},
-                {"--first-table", false},
-                {"--db-dir", ""},
-                {"--time", false, "report time of loading chart"},
-                {"-v", false},
-                {"--verbose", false},
-                {"-h", false},
-                {"--help", false},
-            });
-        if (args["-h"] || args["--help"] || args.number_of_arguments() != 1) {
-            throw std::runtime_error("Usage: "s + args.program() + " [options] <chart>\n" + args.usage_options());
-        }
-        const bool verbose = args["-v"] || args["--verbose"];
-        hidb::setup(std::string(args["--db-dir"]), {}, verbose);
+        Options opt(argc, argv);
+        hidb::setup(opt.db_dir, {}, opt.verbose);
 
-        auto chart = acmacs::chart::import_from_file(args[0], acmacs::chart::Verify::None, do_report_time(args["--time"]));
+        auto chart = acmacs::chart::import_from_file(opt.chart);
         auto& hidb = hidb::get(chart->info()->virus_type());
 
-        if (!args["--sera-only"]) {
+        if (!opt.sera_only) {
             auto antigens = hidb.antigens()->find(*chart->antigens());
             for (auto ag: antigens) {
                 if (ag)
@@ -41,7 +39,7 @@ int main(int argc, char* const argv[])
         auto sera = hidb.sera()->find(*chart->sera());
         for (auto sr: sera) {
             if (sr)
-                hidb::report_serum(hidb, *sr, args["--first-table"] ? hidb::report_tables::oldest : hidb::report_tables::all);
+                hidb::report_serum(hidb, *sr, opt.first_table ? hidb::report_tables::oldest : hidb::report_tables::all);
         }
 
         return 0;

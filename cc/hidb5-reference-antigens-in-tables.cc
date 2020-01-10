@@ -2,13 +2,11 @@
 // for all subtype, for all tables, all reference antigens in the table:
 // Type (subtype), institution (lab), date of test, TEST TYPE (turkey, GP, FR, FRA, PRNT), virus (name), collection date, passage, antigen (lab_name_passage)
 
-#include "acmacs-base/argc-argv.hh"
+#include "acmacs-base/argv.hh"
 #include "acmacs-base/enumerate.hh"
 #include "acmacs-base/string.hh"
 #include "acmacs-base/csv.hh"
 #include "hidb-5/hidb.hh"
-
-using namespace std::string_literals;
 
 // ----------------------------------------------------------------------
 
@@ -104,39 +102,39 @@ struct Record
 
 // ----------------------------------------------------------------------
 
+using namespace acmacs::argv;
+struct Options : public argv
+{
+    Options(int a_argc, const char* const a_argv[], on_error on_err = on_error::exit) : argv() { parse(a_argc, a_argv, on_err); }
+
+    option<str> start{*this, "start", desc{"YYYYMMDD, use only tables on or after that date"}};
+    option<str> db_dir{*this, "db-dir"};
+    option<bool> verbose{*this, 'v', "verbose"};
+};
+
 int main(int argc, char* const argv[])
 {
+    using namespace std::string_view_literals;
+
     try {
-        argc_argv args(argc, argv,
-                       {
-                           {"--start", "", "YYYYMMDD, use only tables on or after that date"},
-                           {"--db-dir", ""},
-                           {"-v", false},
-                           {"--verbose", false},
-                           {"-h", false},
-                           {"--help", false},
-                       });
-        if (args["-h"] || args["--help"] || args.number_of_arguments() != 0) {
-            throw std::runtime_error("Usage: "s + args.program() + " [options]\n" + args.usage_options());
-        }
-        const bool verbose = args["-v"] || args["--verbose"];
-        const std::string_view start_date = args["--start"];
-        hidb::setup(std::string(args["--db-dir"]), {}, verbose);
+        Options opt(argc, argv);
+        hidb::setup(opt.db_dir, {}, opt.verbose);
 
         std::vector<Record> records;
-        for (const std::string_view virus_type : {"A(H1N1)", "A(H3N2)", "B"}) {
+        for (auto virus_type : {"A(H1N1)"sv, "A(H3N2)"sv, "B"sv}) {
             auto& hidb = hidb::get(acmacs::virus::type_subtype_t{virus_type});
             auto tables = hidb.tables();
             auto antigens = hidb.antigens();
             auto sera = hidb.sera();
 
             for (auto table : *tables) {
-                if (start_date.empty() || table->date() >= start_date) {
+                if (opt.start->empty() || table->date() >= opt.start) {
                     // std::cerr << "DEBUG: table " << table->lab() << ' ' << table->date() << ' ' << table->assay() << ' ' << table->rbc() << '\n';
                     for (auto antigen_index : table->reference_antigens(hidb)) {
                         auto antigen = antigens->at(antigen_index);
                         records.emplace_back(virus_type, antigen->lineage(), table->lab(), table->date(), table->assay(), table->rbc(),
-                                             string::join(" ", {antigen->name_without_subtype(), string::join(" ", antigen->annotations()), antigen->reassortant()}), antigen->date(), antigen->passage());
+                                             string::join(" ", {antigen->name_without_subtype(), string::join(" ", antigen->annotations()), antigen->reassortant()}), antigen->date(),
+                                             antigen->passage());
                     }
                 }
             }

@@ -1,26 +1,24 @@
-#include "acmacs-base/argc-argv.hh"
+#include "acmacs-base/argv.hh"
 #include "acmacs-base/stream.hh"
 #include "hidb-5/hidb.hh"
 
-using namespace std::string_literals;
-
 // ----------------------------------------------------------------------
+
+using namespace acmacs::argv;
+struct Options : public argv
+{
+    Options(int a_argc, const char* const a_argv[], on_error on_err = on_error::exit) : argv() { parse(a_argc, a_argv, on_err); }
+
+    option<bool> verbose{*this, 'v', "verbose"};
+
+    argument<str> hidb_file{*this, arg_name{"hidb5.json.xz"}, mandatory};
+};
 
 int main(int argc, char* const argv[])
 {
     try {
-        argc_argv args(argc, argv, {
-                {"-v", false},
-                {"--verbose", false},
-                {"-h", false},
-                {"--help", false},
-            });
-        if (args["-h"] || args["--help"] || args.number_of_arguments() != 1) {
-            throw std::runtime_error("Usage: "s + args.program() + " [options] <hidb5.json.xz>\n" + args.usage_options());
-        }
-        const bool verbose = args["-v"] || args["--verbose"];
-
-        hidb::HiDb hidb(std::string(args[0]), verbose);
+        Options opt(argc, argv);
+        hidb::HiDb hidb(opt.hidb_file, opt.verbose);
         auto antigens = hidb.antigens();
         std::vector<std::string> dates;
         std::map<std::string, size_t> years;
@@ -33,14 +31,12 @@ int main(int argc, char* const argv[])
             }
         }
         std::sort(dates.begin(), dates.end());
-          // std::cout << "N: " << dates.size() << '\n';
-        std::cout << "Dates: " << dates.front() << " .. " << dates.back() << '\n';
-        std::cout << "Years: " << years << '\n';
+        fmt::print("Dates: {} .. {}\nYears: {}\n", dates.front(), dates.back(), years);
 
         return 0;
     }
     catch (std::exception& err) {
-        std::cerr << "ERROR: " << err.what() << '\n';
+        fmt::print(stderr, "ERROR: {}\n", err);
         return 1;
     }
 }
