@@ -49,7 +49,7 @@ int main(int argc, char* const argv[])
         if (fs::exists(*opt.virus_type))
             find(hidb::HiDb(opt.virus_type), opt);
         else
-            find(hidb::get(acmacs::virus::type_subtype_t{string::upper(*opt.virus_type)}, report_time::yes), opt);
+            find(hidb::get(acmacs::virus::type_subtype_t{string::upper(*opt.virus_type)}, report_time::no), opt);
         return 0;
     }
     catch (std::exception& err) {
