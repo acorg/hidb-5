@@ -10,7 +10,11 @@
 
 // ----------------------------------------------------------------------
 
-namespace acmacs::chart { class Chart; }
+namespace acmacs::chart
+{
+    class Chart;
+    class ChartModify;
+}
 
 namespace hidb
 {
@@ -89,20 +93,19 @@ namespace hidb
 
         Vaccines(const acmacs::whocc::Vaccine& aNameType) : mNameType(aNameType) {}
 
-        size_t number_of(PassageType pt) const { return mEntries[pt].size(); }
+        size_t number_of(PassageType pt) const { return mEntries[static_cast<size_t>(pt)].size(); }
         size_t number_of_eggs() const { return number_of(Egg); }
         size_t number_of_cells() const { return number_of(Cell); }
         size_t number_of_reassortants() const { return number_of(Reassortant); }
-        bool empty(PassageType pt) const { return mEntries[pt].empty(); }
+        bool empty(PassageType pt) const { return mEntries[static_cast<size_t>(pt)].empty(); }
         bool empty() const { return std::all_of(std::begin(mEntries), std::end(mEntries), [](const auto& e) { return e.empty(); }); }
 
-        const Entry* for_passage_type(PassageType pt, size_t aNo = 0) const { return mEntries[pt].size() > aNo ? &mEntries[pt][aNo] : nullptr; }
-        size_t size_for_passage_type(PassageType pt) const { return mEntries[pt].size(); }
+        const Entry* for_passage_type(PassageType pt, size_t aNo = 0) const { return mEntries[static_cast<size_t>(pt)].size() > aNo ? &mEntries[static_cast<size_t>(pt)][aNo] : nullptr; }
+        size_t size_for_passage_type(PassageType pt) const { return mEntries[static_cast<size_t>(pt)].size(); }
         const Entry* egg(size_t aNo = 0) const { return for_passage_type(Egg, aNo); }
         const Entry* cell(size_t aNo = 0) const { return for_passage_type(Cell, aNo); }
         const Entry* reassortant(size_t aNo = 0) const { return for_passage_type(Reassortant, aNo); }
 
-        std::string type_as_string() const { return mNameType.type_as_string(); }
         std::string report(const Vaccines::ReportConfig& config) const;
         std::string report(PassageType aPassageType, const Vaccines::ReportConfig& config, size_t aMark = static_cast<size_t>(-1)) const;
 
@@ -111,26 +114,39 @@ namespace hidb
                 return (aName.empty() || mNameType.name.find(aName) != std::string::npos) && (aType.empty() || mNameType.type == acmacs::whocc::Vaccine::type_from_string(aType));
             }
 
-        std::string type() const { return mNameType.type_as_string(); }
-        std::string name() const { return mNameType.name; }
+        std::string_view type() const { return mNameType.type_as_string(); }
+        std::string_view name() const { return mNameType.name; }
 
-        static inline PassageType passage_type(std::string pt)
+        static inline PassageType passage_type(std::string_view pt)
             {
-                if (pt == "egg")
+                using namespace std::string_view_literals;
+                if (pt == "egg"sv)
                     return Egg;
-                else if (pt == "cell")
+                else if (pt == "cell"sv)
                     return Cell;
-                else if (pt == "reassortant")
+                else if (pt == "reassortant"sv)
                     return Reassortant;
                 else if (pt.empty())
                     return PassageTypeSize;
                 else
-                    throw error("Unrecognized passage type: " + pt);
+                    throw error{fmt::format("Unrecognized passage type: {}", pt)};
+            }
+
+        static inline constexpr std::string_view passage_type_name(PassageType pt)
+            {
+                using namespace std::string_view_literals;
+                switch (pt) {
+                  case Egg: return "Egg"sv;
+                  case Cell: return "Cell"sv;
+                  case Reassortant: return "Reassortant"sv;
+                  case PassageTypeSize: return "?"sv;
+                }
+                return "?"sv;
             }
 
      private:
         acmacs::whocc::Vaccine mNameType;
-        std::vector<Entry> mEntries[PassageTypeSize];
+        std::array<std::vector<Entry>, PassageTypeSize> mEntries;
 
         friend VaccinesOfChart vaccines(const acmacs::chart::Chart&);
 
@@ -143,20 +159,9 @@ namespace hidb
                 return Cell;
             }
 
-        static inline const char* passage_type_name(PassageType pt)
-            {
-                switch (pt) {
-                  case Egg: return "Egg";
-                  case Cell: return "Cell";
-                  case Reassortant: return "Reassortant";
-                  case PassageTypeSize: return "?";
-                }
-                return "?";
-            }
-
         void add(size_t aAntigenIndex, std::shared_ptr<acmacs::chart::Antigen> aChartAntigen, AntigenP aHidbAntigen, std::shared_ptr<hidb::Table> aMostRecentTable, std::vector<HomologousSerum>&& aSera)
             {
-                mEntries[passage_type(*aChartAntigen)].emplace_back(aAntigenIndex, aChartAntigen, aHidbAntigen, aMostRecentTable, std::move(aSera));
+                mEntries[static_cast<size_t>(passage_type(*aChartAntigen))].emplace_back(aAntigenIndex, aChartAntigen, aHidbAntigen, aMostRecentTable, std::move(aSera));
             }
 
         void sort()
@@ -174,7 +179,7 @@ namespace hidb
      public:
         using std::vector<Vaccines>::vector;
 
-        std::string report(const Vaccines::ReportConfig& config) const;
+        std::string report(const Vaccines::ReportConfig& config = {}) const;
 
     }; // class VaccinesOfChart
 
@@ -185,8 +190,8 @@ namespace hidb
     VaccinesOfChart vaccines(const acmacs::chart::Chart& aChart);
 
     Vaccines* find_vaccines_in_chart(std::string aName, const acmacs::chart::Chart& aChart);
-    void update_vaccines(const VaccinesOfChart& vaccines);
-    inline void update_vaccines(const acmacs::chart::Chart& aChart) { update_vaccines(vaccines(aChart)); }
+    void update_vaccines(acmacs::chart::ChartModify& aChart, const VaccinesOfChart& vaccines);
+    void update_vaccines(acmacs::chart::ChartModify& aChart);
 
 } // namespace hidb
 

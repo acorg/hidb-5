@@ -44,17 +44,33 @@ hidb::VaccinesOfChart hidb::vaccines(const acmacs::chart::Chart& aChart)
 
 // ----------------------------------------------------------------------
 
-void hidb::update_vaccines(const VaccinesOfChart& vaccines)
+void hidb::update_vaccines(acmacs::chart::ChartModify& aChart, const VaccinesOfChart& vaccines)
 {
+    fmt::print(stderr, "{}: warning: hidb::update_vaccines not implemented (need to implemented sematic attributes first)\n", DEBUG_FILE_LINE);
+    // fmt::print("{}\n", vaccines.report());
+
+
     for (const auto& vacc : vaccines) {
+        // fmt::print("Vaccine {} ({})\n", vacc.name(), vacc.type());
         if (!vacc.empty()) {
             Vaccines::for_each_passage_type([&vacc](Vaccines::PassageType pt) {
+                // fmt::print("  {} ({}):\n", Vaccines::passage_type_name(pt), vacc.size_for_passage_type(pt));
                 for (size_t no = 0; no < vacc.size_for_passage_type(pt); ++no) {
-                      // const auto* entry = vacc.for_passage_type(pt, no);
+                    if (const auto* entry = vacc.for_passage_type(pt, no); entry) {
+                        // fmt::print("    {:2d}: AG {:4d} {}\n", no, entry->chart_antigen_index, entry->chart_antigen->full_name());
+                    }
                 }
             });
         }
     }
+
+} // hidb::update_vaccines
+
+// ----------------------------------------------------------------------
+
+void hidb::update_vaccines(acmacs::chart::ChartModify& aChart)
+{
+    update_vaccines(aChart, vaccines(aChart));
 
 } // hidb::update_vaccines
 
@@ -96,7 +112,7 @@ std::string hidb::Vaccines::report(const Vaccines::ReportConfig& config) const
 {
     fmt::memory_buffer out;
     if (!empty()) {
-        fmt::format_to(out, "{:{}c}Vaccine {} [{}]\n", ' ', config.indent_, type_as_string(), mNameType.name);
+        fmt::format_to(out, "{:{}c}Vaccine {} [{}]\n", ' ', config.indent_, type(), mNameType.name);
         for_each_passage_type([this, &config, &out](PassageType pt) { fmt::format_to(out, "{}", this->report(pt, config)); });
         fmt::format_to(out, "{}", config.vaccine_sep_);
     }
@@ -118,7 +134,7 @@ std::string hidb::Vaccines::report(PassageType aPassageType, const Vaccines::Rep
             fmt::format_to(out, "{:{}c}      {} {} tables:{} recent:{}\n", ' ', config.indent_ + 2, hs.chart_serum->serum_id(), hs.chart_serum->annotations().join(), hs.hidb_serum->number_of_tables(), hs.most_recent_table->name());
     };
 
-    const auto& entry = mEntries[aPassageType];
+    const auto& entry = mEntries[static_cast<size_t>(aPassageType)];
     if (!entry.empty()) {
         fmt::format_to(out, "{:{}c}{} ({})\n", ' ', config.indent_ + 2, passage_type_name(aPassageType), entry.size());
         // const auto me = std::max_element(entry.begin(), entry.end(), [](const auto& e1, const auto& e2) { return e1.chart_antigen_index < e2.chart_antigen_index; });
