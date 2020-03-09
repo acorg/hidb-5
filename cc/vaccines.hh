@@ -109,7 +109,7 @@ namespace hidb
         std::string report(const Vaccines::ReportConfig& config) const;
         std::string report(PassageType aPassageType, const Vaccines::ReportConfig& config, size_t aMark = static_cast<size_t>(-1)) const;
 
-        bool match(std::string aName, std::string aType) const
+        bool match(std::string_view aName, std::string_view aType) const
             {
                 return (aName.empty() || mNameType.name.find(aName) != std::string::npos) && (aType.empty() || mNameType.type == acmacs::whocc::Vaccine::type_from_string(aType));
             }
