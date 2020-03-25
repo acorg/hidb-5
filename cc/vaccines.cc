@@ -46,7 +46,7 @@ hidb::VaccinesOfChart hidb::vaccines(const acmacs::chart::Chart& aChart)
 
 void hidb::update_vaccines(acmacs::chart::ChartModify& aChart, const VaccinesOfChart& vaccines)
 {
-    fmt::print(stderr, "{}: warning: hidb::update_vaccines not implemented (need to implemented sematic attributes first)\n", DEBUG_FILE_LINE);
+    fmt::print(stderr, "{}: warning: hidb::update_vaccines not implemented (need to implemented sematic attributes first)\n", AD_DEBUG_FILE_LINE);
     // fmt::print("{}\n", vaccines.report());
 
 
