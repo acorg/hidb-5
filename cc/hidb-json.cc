@@ -123,10 +123,10 @@ std::string hidb::json::read(std::string aData, bool verbose)
     if (verbose)
         std::cerr << "INFO: hidb bin size: " << result.size() << '\n';
     if (result.size() > estimations.size)
-        std::cerr << "WARNING: data overflow: " << (result.size() - estimations.size) << " bytes " << std::fixed << std::setprecision(1) << (100.0 * (result.size() - estimations.size) / result.size())
+        std::cerr << "WARNING: data overflow: " << (result.size() - estimations.size) << " bytes " << std::fixed << std::setprecision(1) << (100.0 * static_cast<double>(result.size() - estimations.size) / static_cast<double>(result.size()))
                   << "%\n";
     else if (verbose)
-        std::cerr << "size estimation extra: " << (estimations.size - result.size()) << " bytes " << std::fixed << std::setprecision(1) << (100.0 * (estimations.size - result.size()) / result.size())
+        std::cerr << "size estimation extra: " << (estimations.size - result.size()) << " bytes " << std::fixed << std::setprecision(1) << (100.0 * static_cast<double>(estimations.size - result.size()) / static_cast<double>(result.size()))
                   << "%\n";
     return result;
 
@@ -139,17 +139,17 @@ size_t make_antigen(const rjson::value& aSource, hidb::bin::Antigen* aTarget)
     if (const auto& year = aSource["y"]; year.size() == 4)
         std::memmove(aTarget->year_data, year.to<std::string_view>().data(), 4);
     else if (!year.empty())
-        throw std::runtime_error("Invalid year in " + rjson::to_string(aSource));
+        throw std::runtime_error(fmt::format("Invalid year in {}", aSource));
     if (const auto& lineage = aSource["L"]; lineage.size() == 1)
         aTarget->lineage = lineage.to<std::string_view>()[0];
     else if (!lineage.empty())
-        throw std::runtime_error("Invalid lineage in " + rjson::to_string(aSource));
+        throw std::runtime_error(fmt::format("Invalid lineage in {}", aSource));
 
     auto* const target_base = reinterpret_cast<char*>(aTarget) + sizeof(hidb::bin::Antigen);
     auto set_offset = [target_base, &aSource](uint8_t& offset, char* target) -> void {
         const auto off = static_cast<size_t>(target - target_base);
         if (off > std::numeric_limits<std::decay_t<decltype(offset)>>::max())
-            throw std::runtime_error("Overflow when setting offset for a field (antigen): " + acmacs::to_string(off) + " when processing " + rjson::to_string(aSource));
+            throw std::runtime_error(fmt::format("Overflow when setting offset for a field (antigen): {} when processing {}", off, aSource));
         offset = static_cast<std::decay_t<decltype(offset)>>(off);
     };
 
@@ -164,7 +164,7 @@ size_t make_antigen(const rjson::value& aSource, hidb::bin::Antigen* aTarget)
         target += location.size();
     }
     else {
-        std::cerr << "WARNING: empty location in " << rjson::to_string(aSource) << '\n';
+        AD_WARNING("empty location in {}\n", aSource);
     }
 
     set_offset(aTarget->isolation_offset, target);
@@ -173,7 +173,7 @@ size_t make_antigen(const rjson::value& aSource, hidb::bin::Antigen* aTarget)
         target += isolation.size();
     }
     else {
-        std::cerr << "WARNING: empty isolation in " << rjson::to_string(aSource) << '\n';
+        AD_WARNING("empty isolation in {}", aSource);
     }
 
     set_offset(aTarget->passage_offset, target);
@@ -199,7 +199,7 @@ size_t make_antigen(const rjson::value& aSource, hidb::bin::Antigen* aTarget)
         }
     }
     else
-        throw std::runtime_error("Too many annotations in " + rjson::to_string(aSource));
+        throw std::runtime_error(fmt::format("Too many annotations in {}", aSource));
 
     if (const auto& lab_ids = aSource["l"]; lab_ids.size() <= sizeof(hidb::bin::Antigen::lab_id_offset)) {
         for (size_t lab_id_no = 0; lab_id_no < sizeof(hidb::bin::Antigen::lab_id_offset); ++lab_id_no) {
@@ -212,7 +212,7 @@ size_t make_antigen(const rjson::value& aSource, hidb::bin::Antigen* aTarget)
         }
     }
     else
-        throw std::runtime_error("Too many lab ids in " + rjson::to_string(aSource));
+        throw std::runtime_error(fmt::format("Too many lab ids in {}", aSource));
 
     // padding
     if (size_t size = static_cast<size_t>(target - target_base); size % 4)
@@ -227,7 +227,7 @@ size_t make_antigen(const rjson::value& aSource, hidb::bin::Antigen* aTarget)
                 target += sizeof(date);
             }
             catch (hidb::bin::invalid_date&) {
-                throw std::runtime_error("Invalid date in " + rjson::to_string(aSource));
+                throw std::runtime_error(fmt::format("Invalid date in {}", aSource));
             }
         }
     }
@@ -238,7 +238,7 @@ size_t make_antigen(const rjson::value& aSource, hidb::bin::Antigen* aTarget)
     std::memmove(target, &num_indexes, sizeof(num_indexes));
     target += sizeof(num_indexes);
     if (tables.empty())
-        throw std::runtime_error("No table indexes in " + rjson::to_string(aSource));
+        throw std::runtime_error(fmt::format("No table indexes in {}", aSource));
     for (size_t no = 0; no < tables.size(); ++no) {
         const auto index = static_cast<hidb::bin::table_index_t>(tables[no].to<size_t>());
         std::memmove(target, &index, sizeof(index));
@@ -259,17 +259,17 @@ size_t make_serum(const rjson::value& aSource, hidb::bin::Serum* aTarget)
     if (const auto& year = aSource["y"]; year.size() == 4)
         std::memmove(aTarget->year_data, year.to<std::string_view>().data(), 4);
     else if (!year.empty())
-        throw std::runtime_error("Invalid year in " + rjson::to_string(aSource));
+        throw std::runtime_error(fmt::format("Invalid year in {}", aSource));
     if (const auto& lineage = aSource["L"]; lineage.size() == 1)
         aTarget->lineage = lineage.to<std::string_view>()[0];
     else if (!lineage.empty())
-        throw std::runtime_error("Invalid lineage in " + rjson::to_string(aSource));
+        throw std::runtime_error(fmt::format("Invalid lineage in {}", aSource));
 
     auto* const target_base = reinterpret_cast<char*>(aTarget) + sizeof(hidb::bin::Serum);
     auto set_offset = [target_base,&aSource](uint8_t& offset, char* target) -> void {
         const auto off = static_cast<size_t>(target - target_base);
         if (off > std::numeric_limits<std::decay_t<decltype(offset)>>::max())
-            throw std::runtime_error("Overflow when setting offset for a field (serum): " + acmacs::to_string(off) + " when processing " + rjson::to_string(aSource));
+            throw std::runtime_error(fmt::format("Overflow when setting offset for a field (serum): {} when processing {}", off, aSource));
         offset = static_cast<std::decay_t<decltype(offset)>>(off);
     };
 
@@ -296,7 +296,7 @@ size_t make_serum(const rjson::value& aSource, hidb::bin::Serum* aTarget)
         target += isolation.size();
     }
     else {
-        std::cerr << "WARNING: empty isolation in " << rjson::to_string(aSource) << '\n';
+        AD_WARNING("empty isolation in {}", aSource);
     }
 
     set_offset(aTarget->passage_offset, target);
@@ -322,7 +322,7 @@ size_t make_serum(const rjson::value& aSource, hidb::bin::Serum* aTarget)
         }
     }
     else
-        throw std::runtime_error("Too many annotations (" + std::to_string(annotations.size()) + ", avail: " + std::to_string(sizeof(hidb::bin::Serum::annotation_offset)) + ") in " + rjson::to_string(aSource));
+        throw std::runtime_error(fmt::format("Too many annotations ({}, avail: {}) in {}", annotations.size(), sizeof(hidb::bin::Serum::annotation_offset), aSource));
 
     set_offset(aTarget->serum_id_offset, target);
     if (const auto& serum_id = aSource["I"]; !serum_id.empty()) {
@@ -354,7 +354,7 @@ size_t make_serum(const rjson::value& aSource, hidb::bin::Serum* aTarget)
     std::memmove(target, &num_indexes, sizeof(num_indexes));
     target += sizeof(num_indexes);
     if (tables.empty())
-        throw std::runtime_error("No table indexes in " + rjson::to_string(aSource));
+        throw std::runtime_error(fmt::format("No table indexes in {}", aSource));
     for (size_t no = 0; no < tables.size(); ++no) {
         const auto index = static_cast<hidb::bin::table_index_t>(tables[no].to<size_t>());
         std::memmove(target, &index, sizeof(index));
@@ -375,13 +375,13 @@ size_t make_table(const rjson::value& aSource, hidb::bin::Table* aTarget)
     if (const auto& lineage = aSource["L"]; lineage.size() == 1)
         aTarget->lineage = lineage.to<std::string_view>()[0];
     else if (!lineage.empty())
-        throw std::runtime_error("Invalid lineage in " + rjson::to_string(aSource));
+        throw std::runtime_error(fmt::format("Invalid lineage in {}", aSource));
 
     auto* const target_base = reinterpret_cast<char*>(aTarget) + sizeof(hidb::bin::Table);
     auto set_offset = [target_base,&aSource](uint8_t& offset, char* target) -> void {
         const auto off = static_cast<size_t>(target - target_base);
         if (off > std::numeric_limits<std::decay_t<decltype(offset)>>::max())
-            throw std::runtime_error("Overflow when setting offset for a field (table): " + acmacs::to_string(off) + " when processing " + rjson::to_string(aSource));
+            throw std::runtime_error(fmt::format("Overflow when setting offset for a field (table): {} when processing {}", off, aSource));
         offset = static_cast<std::decay_t<decltype(offset)>>(off);
     };
 
@@ -398,7 +398,7 @@ size_t make_table(const rjson::value& aSource, hidb::bin::Table* aTarget)
         target += date.size();
     }
     else {
-        std::cerr << "WARNING: table has no date: " << rjson::to_string(aSource) << '\n';
+        AD_WARNING("table has no date: {}", aSource);
     }
 
     set_offset(aTarget->lab_offset, target);
@@ -407,7 +407,7 @@ size_t make_table(const rjson::value& aSource, hidb::bin::Table* aTarget)
         target += lab.size();
     }
     else {
-        std::cerr << "WARNING: table has no lab: " << rjson::to_string(aSource) << '\n';
+        AD_WARNING("table has no lab: {}", aSource);
     }
 
     set_offset(aTarget->rbc_offset, target);
@@ -423,7 +423,7 @@ size_t make_table(const rjson::value& aSource, hidb::bin::Table* aTarget)
     aTarget->antigen_index_offset = static_cast<decltype(aTarget->antigen_index_offset)>(target - target_base);
     const auto& antigens = aSource["a"];
     if (antigens.empty())
-        throw std::runtime_error("No antigen indexes in " + rjson::to_string(aSource));
+        throw std::runtime_error(fmt::format("No antigen indexes in {}", aSource));
     for (size_t no = 0; no < antigens.size(); ++no) {
         const auto index = static_cast<hidb::bin::antigen_index_t>(antigens[no].to<size_t>());
         std::memmove(target, &index, sizeof(index));
@@ -433,7 +433,7 @@ size_t make_table(const rjson::value& aSource, hidb::bin::Table* aTarget)
     aTarget->serum_index_offset = static_cast<decltype(aTarget->serum_index_offset)>(target - target_base);
     const auto& sera = aSource["s"];
     if (sera.empty())
-        throw std::runtime_error("No serum indexes in " + rjson::to_string(aSource));
+        throw std::runtime_error(fmt::format("No serum indexes in {}", aSource));
     for (size_t no = 0; no < sera.size(); ++no) {
         const auto index = static_cast<hidb::bin::serum_index_t>(sera[no].to<size_t>());
         std::memmove(target, &index, sizeof(index));

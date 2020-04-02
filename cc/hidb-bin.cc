@@ -104,7 +104,7 @@ std::vector<std::string_view> hidb::bin::Antigen::annotations() const
 {
     std::vector<std::string_view> result;
       // optimization bug in gcc 7.2 and 7.3, volatile prevents from optimization
-    for (volatile size_t no = 0; no < sizeof(annotation_offset); ++no) {
+    for (/* volatile */ size_t no = 0; no < sizeof(annotation_offset); ++no) {
         if (const auto size = annotation_offset[no+1] - annotation_offset[no]; size > 0)
             result.emplace_back(_start() + annotation_offset[no], static_cast<size_t>(size));
     }
@@ -127,7 +127,7 @@ std::vector<std::string_view> hidb::bin::Serum::annotations() const
 {
     std::vector<std::string_view> result;
       // optimization bug in gcc 7.2 and 7.3, volatile prevents from optimization
-    for (volatile size_t no = 0; no < sizeof(annotation_offset); ++no) {
+    for (/* volatile */ size_t no = 0; no < sizeof(annotation_offset); ++no) {
         if (const auto size = annotation_offset[no+1] - annotation_offset[no]; size > 0)
             result.emplace_back(_start() + annotation_offset[no], static_cast<size_t>(size));
     }
