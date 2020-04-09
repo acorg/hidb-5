@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "acmacs-base/string.hh"
+#include "acmacs-base/string-join.hh"
 #include "hidb-5/hidb-bin.hh"
 
 // ----------------------------------------------------------------------
@@ -25,9 +25,9 @@ bool hidb::bin::has_signature(const char* data)
 std::string hidb::bin::Antigen::name() const
 {
     if (!cdc_name())
-        return string::join("/", {host(), location(), isolation(), year_fast()});
+        return acmacs::string::join("/", host(), location(), isolation(), year_fast());
     else
-        return string::join(" ", {location(), isolation()}); // cdc name
+        return acmacs::string::join(" ", location(), isolation()); // cdc name
 
 } // hidb::bin::Antigen::name
 
@@ -65,7 +65,7 @@ std::string hidb::bin::Antigen::date(bool compact) const
     const std::string brief = std::to_string(*reinterpret_cast<const date_t*>(_start() + date_offset));
     if (brief.size() != 8)
         return brief;
-    return compact ? brief : string::join("-", {std::string_view(brief.data(), 4), std::string_view(brief.data() + 4, 2), std::string_view(brief.data() + 6, 2)});
+    return compact ? brief : acmacs::string::join("-", std::string_view(brief.data(), 4), std::string_view(brief.data() + 4, 2), std::string_view(brief.data() + 6, 2));
 
 } // hidb::bin::Antigen::date
 
@@ -126,7 +126,7 @@ std::vector<std::string_view> hidb::bin::Antigen::annotations() const
 std::string hidb::bin::Serum::name() const
 {
       // host, location, year are empty if name was not recognized
-    return string::join("/", {host(), location(), isolation(), std::string_view(year())});
+    return acmacs::string::join("/", host(), location(), isolation(), std::string_view(year()));
 
 } // hidb::bin::Serum::name
 

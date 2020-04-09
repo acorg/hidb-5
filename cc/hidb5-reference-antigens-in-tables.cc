@@ -133,7 +133,7 @@ int main(int argc, char* const argv[])
                     for (auto antigen_index : table->reference_antigens(hidb)) {
                         auto antigen = antigens->at(antigen_index);
                         records.emplace_back(virus_type, antigen->lineage(), table->lab(), table->date(), table->assay(), table->rbc(),
-                                             string::join(" ", {antigen->name_without_subtype(), string::join(" ", antigen->annotations()), antigen->reassortant()}), antigen->date(),
+                                             acmacs::string::join(" ", antigen->name_without_subtype(), acmacs::string::join(" ", antigen->annotations()), antigen->reassortant()), antigen->date(),
                                              antigen->passage());
                     }
                 }
@@ -153,7 +153,7 @@ int main(int argc, char* const argv[])
             << "antigen" << acmacs::CsvWriter::end_of_row;
         for (auto [r_no, record] : acmacs::enumerate(records)) {
             csv << record.subtype << record.lab << record.date << record.test_type << record.virus_name << static_cast<std::string>(record.collection_date) << static_cast<std::string>(record.passage)
-                << string::join("_", {record.lab, record.virus_name, record.passage}) << acmacs::CsvWriter::end_of_row;
+                << acmacs::string::join("_", record.lab, record.virus_name, record.passage) << acmacs::CsvWriter::end_of_row;
             // if (r_no > 100)
             //     break;
         }

@@ -90,7 +90,7 @@ void hidb::report_tables(std::ostream& out, const hidb::HiDb& hidb, const indexe
                     for (auto entry : by_lab_assay) {
                         out << aPrefix << entry.first.first << ':' << entry.first.second << ' ' << entry.second.size();
                         for (auto table : entry.second)
-                            out << ' ' << string::join(":", {table->date(), table->rbc()});
+                            out << ' ' << acmacs::string::join(":", table->date(), table->rbc());
                     }
                     break;
                 case report_tables::oldest:

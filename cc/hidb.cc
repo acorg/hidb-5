@@ -373,7 +373,7 @@ std::shared_ptr<hidb::Table> hidb::Tables::operator[](size_t aIndex) const
 
 std::string hidb::Table::name() const
 {
-    return string::join(":", {lab(), assay(), acmacs::chart::BLineage{mTable->lineage}.to_string(), rbc(), date()});
+    return acmacs::string::join(":", lab(), assay(), acmacs::chart::BLineage{mTable->lineage}.to_string(), rbc(), date());
 
 } // hidb::Table::name
 

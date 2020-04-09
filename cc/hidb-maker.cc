@@ -343,7 +343,7 @@ std::string acmacs::to_string(const Table& aTable)
 
 std::string Antigen::to_string() const
 {
-    return string::join(" ", {string::join("/", {virus_type, host, location, isolation, year}), string::join(" ", annotations), reassortant, passage});
+    return acmacs::string::join(" ", acmacs::string::join("/", virus_type, host, location, isolation, year), acmacs::string::join(" ", annotations), reassortant, passage);
 
 } // Antigen::to_string
 
@@ -351,7 +351,7 @@ std::string Antigen::to_string() const
 
 std::string Serum::to_string() const
 {
-    return string::join(" ", {string::join("/", {virus_type, host, location, isolation, year}), string::join(" ", annotations), reassortant, serum_id});
+    return acmacs::string::join(" ", acmacs::string::join("/", virus_type, host, location, isolation, year), acmacs::string::join(" ", annotations), reassortant, serum_id);
 
 } // Serum::to_string
 
