@@ -30,7 +30,7 @@ int main(int argc, char* const argv[])
     try {
         Options opt(argc, argv);
         hidb::setup(opt.db_dir, {}, *opt.verbose);
-        auto& locdb = get_locdb();
+        auto& locdb = acmacs::locationdb::get();
         std::map<std::string, std::vector<std::tuple<std::string, std::string, std::string, std::string, std::string, std::string, acmacs::virus::lineage_t>>> data;
         for (const std::string_view subtype : {"B", "H1", "H3"}) {
             auto& hidb = hidb::get(acmacs::virus::type_subtype_t{subtype}, report_time::yes);

@@ -179,7 +179,7 @@ void update(data_t& data, std::string_view virus_type, std::string_view lab, std
 
 data_t scan_antigens(std::string_view aStart, std::string_view aEnd)
 {
-    auto& locdb = get_locdb();
+    auto& locdb = acmacs::locationdb::get();
 
     data_t data_antigens;
     std::string min_date{"3000"}, max_date{"1000"};
@@ -211,7 +211,7 @@ data_t scan_antigens(std::string_view aStart, std::string_view aEnd)
 
 std::pair<data_t, data_t> scan_sera(std::string_view aStart, std::string_view aEnd)
 {
-    auto& locdb = get_locdb();
+    auto& locdb = acmacs::locationdb::get();
     const std::string all = "all";
 
     data_t data_sera, data_sera_unique;

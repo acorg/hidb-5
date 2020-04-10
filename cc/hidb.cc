@@ -5,7 +5,6 @@
 #include "acmacs-base/string.hh"
 #include "acmacs-base/string-split.hh"
 #include "acmacs-virus/virus-name.hh"
-#include "locationdb/locdb.hh"
 #include "hidb-5/hidb.hh"
 #include "hidb-5/hidb-bin.hh"
 #include "hidb-5/hidb-json.hh"
@@ -192,7 +191,7 @@ std::string hidb::Antigen::country(const LocDb& locdb) const
     try {
         return std::string(locdb.country(loc));
     }
-    catch (LocationNotFound&) {
+    catch (acmacs::locationdb::LocationNotFound&) {
         if (loc.size() == 2) {
             return std::string(locdb.find_cdc_abbreviation(loc).country());
         }
@@ -591,7 +590,7 @@ hidb::AntigenPIndexList hidb::Antigens::find(std::string_view aName, fix_locatio
         std::string virus_type, host, location, isolation, year, passage, extra;
         virus_name::split_with_extra(aName, virus_type, host, location, isolation, year, passage, extra);
         if (aFixLocation == fix_location::yes)
-            location = get_locdb().find(location).name;
+            location = acmacs::locationdb::get().find_or_throw(location).name;
         first_last = find_by<hidb::bin::Antigen>(all_antigens, mAntigen0, location, isolation, year, fuzzy);
     }
     catch (virus_name::Unrecognized&) {
@@ -634,7 +633,7 @@ hidb::SerumPIndexList hidb::Sera::find(std::string_view aName, fix_location aFix
         std::string virus_type, host, isolation, year, passage, extra;
         virus_name::split_with_extra(aName, virus_type, host, location, isolation, year, passage, extra);
         if (aFixLocation == fix_location::yes)
-            location = get_locdb().find(location).name;
+            location = acmacs::locationdb::get().find_or_throw(location).name;
         first_last = find_by<hidb::bin::Serum>(all_sera, mSerum0, location, isolation, year, fuzzy);
     }
     catch (virus_name::Unrecognized&) {
@@ -644,11 +643,11 @@ hidb::SerumPIndexList hidb::Sera::find(std::string_view aName, fix_location aFix
               first_last = find_by<hidb::bin::Serum>(all_sera, mSerum0, parts[0], std::string_view{}, std::string_view{}, fuzzy);
               break;
           case 2:           // location/isolation
-              location = aFixLocation == hidb::fix_location::yes ? get_locdb().find(std::string(parts[0])).name : std::string(parts[0]);
+              location = aFixLocation == hidb::fix_location::yes ? acmacs::locationdb::get().find_or_throw(std::string(parts[0])).name : std::string(parts[0]);
               first_last = find_by<hidb::bin::Serum>(all_sera, mSerum0, std::string_view(location), parts[1], std::string_view{}, fuzzy);
               break;
           case 3:          // host/location/isolation?
-              location = aFixLocation == hidb::fix_location::yes ? get_locdb().find(std::string(parts[1])).name : std::string(parts[1]);
+              location = aFixLocation == hidb::fix_location::yes ? acmacs::locationdb::get().find_or_throw(std::string(parts[1])).name : std::string(parts[1]);
               first_last = find_by<hidb::bin::Serum>(all_sera, mSerum0, std::string_view(location), parts[2], std::string_view{}, fuzzy);
               break;
           default:          // ?

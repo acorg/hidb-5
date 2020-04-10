@@ -3,12 +3,11 @@
 #include <string>
 
 #include "acmacs-base/read-file.hh"
+#include "locationdb/locdb.hh"
 #include "acmacs-chart-2/chart.hh"
 #include "hidb-5/hidb-set.hh"
 
 // ----------------------------------------------------------------------
-
-class LocDb;
 
 namespace hidb
 {
