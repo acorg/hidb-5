@@ -521,7 +521,7 @@ std::vector<hidb::TableStat> hidb::Tables::stat(const indexes_t& tables) const
 
 std::string hidb::TableStat::title() const noexcept
 {
-    std::string result = string::concat(lab, ':', assay);
+    std::string result = acmacs::string::concat(lab, ':', assay);
     if (assay == "HI") {
         if (rbc == "turkey")
             result += ":tu";

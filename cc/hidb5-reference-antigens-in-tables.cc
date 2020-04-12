@@ -70,7 +70,7 @@ struct Record
                     return "B";
                 return fmt::format("B{}", lineage.to_string().substr(0, 3));
             }
-            throw std::runtime_error(string::concat("Unrecognized subtype: ", subtype));
+            throw std::runtime_error(acmacs::string::concat("Unrecognized subtype: ", subtype));
         }
 
     static inline std::string fix_lab(std::string_view lab)
