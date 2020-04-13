@@ -46,7 +46,7 @@ namespace hidb
         std::string year() const;
         std::string date_compact() const;
 
-        std::string country(const LocDb& locdb) const;
+        std::string_view country(const LocDb& locdb) const noexcept;
 
      private:
         const char* mAntigen;

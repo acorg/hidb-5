@@ -185,18 +185,22 @@ size_t hidb::Antigen::number_of_tables() const
 
 // ----------------------------------------------------------------------
 
-std::string hidb::Antigen::country(const LocDb& locdb) const
+std::string_view hidb::Antigen::country(const LocDb& locdb) const noexcept
 {
-    const std::string loc{location()};
-    try {
-        return std::string(locdb.country(loc));
-    }
-    catch (acmacs::locationdb::LocationNotFound&) {
-        if (loc.size() == 2) {
-            return std::string(locdb.find_cdc_abbreviation(loc).country());
+    using namespace std::string_view_literals;
+    const auto loc = location();
+    if (const auto country = locdb.country(loc); !country.empty())
+        return country;
+    else if (loc.size() == 2) {
+        try {
+            return locdb.find_cdc_abbreviation(loc).country();
+        }
+        catch (std::exception&) {
+            return "UNKNOWN"sv;
         }
     }
-    return "UNKNOWN";
+    else
+        return "UNKNOWN"sv;
 
 } // hidb::Antigen::country
 
