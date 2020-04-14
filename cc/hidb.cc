@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <optional>
 
+#include "acmacs-base/debug.hh"
 #include "acmacs-base/fmt.hh"
 #include "acmacs-base/string.hh"
 #include "acmacs-base/string-split.hh"
@@ -458,7 +459,7 @@ hidb::indexes_t hidb::Table::reference_antigens(const HiDb& aHidb) const
                        return *serum->name();
                          // return string::join(" ", {serum->name(), string::join(" ", serum->annotations()), serum->reassortant()});
                    });
-      // std::cerr << "DEBUG: sera: " << serum_names << '\n';
+      // AD_DEBUG("sera: {}", serum_names);
 
     hidb::indexes_t result;
     auto antigens = aHidb.antigens();
@@ -613,7 +614,7 @@ hidb::AntigenPIndexList hidb::Antigens::find(std::string_view aName, fix_locatio
                   first_last = find_by<hidb::bin::Antigen>(all_antigens, mAntigen0, parts[1], parts[2], std::string_view{}, fuzzy);
                   break;
               default:          // ?
-                  std::cerr << "WARNING: don't know how to split: " << aName << '\n';
+                  AD_WARNING("don't know how to split: {}", aName);
                   break;
             }
         }
@@ -655,7 +656,7 @@ hidb::SerumPIndexList hidb::Sera::find(std::string_view aName, fix_location aFix
               first_last = find_by<hidb::bin::Serum>(all_sera, mSerum0, std::string_view(location), parts[2], std::string_view{}, fuzzy);
               break;
           default:          // ?
-              std::cerr << "WARNING: don't know how to split: " << aName << '\n';
+              AD_WARNING("don't know how to split: {}", aName);
               break;
         }
     }
@@ -726,7 +727,7 @@ hidb::AntigenPIndex hidb::Antigens::find(const acmacs::chart::Antigen& aAntigen,
         if (antigen->annotations() == aAntigen.annotations() && antigen->reassortant() == aAntigen.reassortant() && (ignore_passage || antigen->passage() == aAntigen.passage()))
             return antigen_index;
     }
-    std::cerr << "WARNING: not in hidb: " << aAntigen.full_name() << '\n';
+    AD_WARNING("not in hidb: {}", aAntigen.full_name());
     throw not_found(aAntigen.full_name());
 
 } // hidb::Antigens::find
@@ -765,7 +766,7 @@ hidb::SerumPIndex hidb::Sera::find(const acmacs::chart::Serum& aSerum) const
     }
     if (with_unknown_serum_id.has_value())
         return *with_unknown_serum_id;
-    std::cerr << "WARNING: not in hidb: " << aSerum.full_name() << '\n';
+    AD_WARNING("not in hidb: {}", aSerum.full_name());
     throw not_found(aSerum.full_name());
 
 } // hidb::Sera::find
@@ -818,7 +819,7 @@ hidb::SerumPList hidb::Sera::find_homologous(size_t aAntigenIndex, const Antigen
             result.push_back(std::make_shared<hidb::Serum>(mSerum0 + *offset_p, mHiDb));
         }
     }
-    // std::cerr << "find_homologous " << aAntigenIndex << ' ' << aAntigen.full_name() << ' ' << result.size() << '\n';
+    // AD_DEBUG("find_homologous {} \"{}\" {}", aAntigenIndex, aAntigen.full_name(), result.size());
     return result;
 
 } // hidb::Sera::find_homologous

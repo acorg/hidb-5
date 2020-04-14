@@ -335,7 +335,7 @@ void Serum::make_indexes()
 
 std::string acmacs::to_string(const Table& aTable)
 {
-    return string::join(":", {*aTable.virus == "influenza" ? std::string{} : *aTable.virus, aTable.virus_type, aTable.subset, aTable.lineage, aTable.assay, aTable.lab, aTable.rbc_species, aTable.date});
+    return acmacs::string::join(":", *aTable.virus == "influenza" ? std::string{} : *aTable.virus, aTable.virus_type, aTable.subset, aTable.lineage, aTable.assay, aTable.lab, aTable.rbc_species, aTable.date);
 
 } // acmacs::to_string
 
