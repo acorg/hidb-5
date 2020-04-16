@@ -5,7 +5,7 @@
 #include "acmacs-base/fmt.hh"
 #include "acmacs-base/string.hh"
 #include "acmacs-base/string-split.hh"
-#include "acmacs-virus/virus-name.hh"
+#include "acmacs-virus/virus-name-v1.hh"
 #include "hidb-5/hidb.hh"
 #include "hidb-5/hidb-bin.hh"
 #include "hidb-5/hidb-json.hh"
