@@ -215,13 +215,13 @@ class Antigen : public AntigenSerum
     Antigen(const acmacs::chart::Antigen& aAntigen);
 
     bool operator==(const Antigen& rhs) const { return string::compare(
-        {    virus_type,     host,     location,     isolation,     year, acmacs::string::join(" ",     annotations),     reassortant,     passage},
-        {rhs.virus_type, rhs.host, rhs.location, rhs.isolation, rhs.year, acmacs::string::join(" ", rhs.annotations), rhs.reassortant, rhs.passage}) == 0; }
+        {    virus_type,     host,     location,     isolation,     year, acmacs::string::join(acmacs::string::join_space,     annotations),     reassortant,     passage},
+        {rhs.virus_type, rhs.host, rhs.location, rhs.isolation, rhs.year, acmacs::string::join(acmacs::string::join_space, rhs.annotations), rhs.reassortant, rhs.passage}) == 0; }
     bool operator!=(const Antigen& rhs) const { return !operator==(rhs); }
 
     bool operator<(const Antigen& rhs) const { return string::compare(
-        {    location,     isolation,     year,     host, acmacs::string::join(" ",     annotations),     reassortant,     passage},
-        {rhs.location, rhs.isolation, rhs.year, rhs.host, acmacs::string::join(" ", rhs.annotations), rhs.reassortant, rhs.passage}) < 0; }
+        {    location,     isolation,     year,     host, acmacs::string::join(acmacs::string::join_space,     annotations),     reassortant,     passage},
+        {rhs.location, rhs.isolation, rhs.year, rhs.host, acmacs::string::join(acmacs::string::join_space, rhs.annotations), rhs.reassortant, rhs.passage}) < 0; }
 
     template <typename Iter> void add_lab_id(Iter first, Iter last) { for (; first != last; ++first) lab_ids.insert(*first); }
     void add_date(std::string aSource) { if (!aSource.empty()) dates.insert(aSource); }
@@ -253,13 +253,13 @@ class Serum : public AntigenSerum
     Serum(const acmacs::chart::Serum& aSerum);
 
     bool operator==(const Serum& rhs) const { return string::compare(
-        {    virus_type,     host,     location,     isolation,     year, acmacs::string::join(" ",     annotations),     reassortant,     serum_id},
-        {rhs.virus_type, rhs.host, rhs.location, rhs.isolation, rhs.year, acmacs::string::join(" ", rhs.annotations), rhs.reassortant, rhs.serum_id}) == 0; }
+        {    virus_type,     host,     location,     isolation,     year, acmacs::string::join(acmacs::string::join_space,     annotations),     reassortant,     serum_id},
+        {rhs.virus_type, rhs.host, rhs.location, rhs.isolation, rhs.year, acmacs::string::join(acmacs::string::join_space, rhs.annotations), rhs.reassortant, rhs.serum_id}) == 0; }
     bool operator!=(const Serum& rhs) const { return !operator==(rhs); }
 
     bool operator<(const Serum& rhs) const { return string::compare(
-        {    location,     isolation,     year,     host, acmacs::string::join(" ",     annotations),     reassortant,     serum_id},
-        {rhs.location, rhs.isolation, rhs.year, rhs.host, acmacs::string::join(" ", rhs.annotations), rhs.reassortant, rhs.serum_id}) < 0; }
+        {    location,     isolation,     year,     host, acmacs::string::join(acmacs::string::join_space,     annotations),     reassortant,     serum_id},
+        {rhs.location, rhs.isolation, rhs.year, rhs.host, acmacs::string::join(acmacs::string::join_space, rhs.annotations), rhs.reassortant, rhs.serum_id}) < 0; }
 
     std::string type_name() const override { return "Serum"; }
     std::string to_string() const override;

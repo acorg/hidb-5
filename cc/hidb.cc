@@ -377,7 +377,7 @@ std::shared_ptr<hidb::Table> hidb::Tables::operator[](size_t aIndex) const
 
 std::string hidb::Table::name() const
 {
-    return acmacs::string::join(":", lab(), assay(), acmacs::chart::BLineage{mTable->lineage}.to_string(), rbc(), date());
+    return acmacs::string::join(acmacs::string::join_colon, lab(), assay(), acmacs::chart::BLineage{mTable->lineage}.to_string(), rbc(), date());
 
 } // hidb::Table::name
 
@@ -457,7 +457,7 @@ hidb::indexes_t hidb::Table::reference_antigens(const HiDb& aHidb) const
                    [&sera](size_t serum_index) -> std::string {
                        auto serum = sera->at(serum_index);
                        return *serum->name();
-                         // return string::join(" ", {serum->name(), string::join(" ", serum->annotations()), serum->reassortant()});
+                         // return string::join(acmacs::string::join_space, {serum->name(), string::join(acmacs::string::join_space, serum->annotations()), serum->reassortant()});
                    });
       // AD_DEBUG("sera: {}", serum_names);
 
@@ -466,7 +466,7 @@ hidb::indexes_t hidb::Table::reference_antigens(const HiDb& aHidb) const
     for (const auto* antigen_index = mTable->antigen_begin(); antigen_index != mTable->antigen_end(); ++antigen_index) {
         auto antigen = antigens->at(*antigen_index);
         const auto antigen_name = antigen->name();
-          // const auto antigen_name = string::join(" ", {antigen->name(), string::join(" ", antigen->annotations()), antigen->reassortant()});
+          // const auto antigen_name = string::join(acmacs::string::join_space, {antigen->name(), string::join(acmacs::string::join_space, antigen->annotations()), antigen->reassortant()});
         if (std::find(serum_names.begin(), serum_names.end(), *antigen_name) != serum_names.end())
             result.push_back(*antigen_index);
     }

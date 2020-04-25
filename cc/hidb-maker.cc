@@ -335,7 +335,7 @@ void Serum::make_indexes()
 
 std::string acmacs::to_string(const Table& aTable)
 {
-    return acmacs::string::join(":", *aTable.virus == "influenza" ? std::string{} : *aTable.virus, aTable.virus_type, aTable.subset, aTable.lineage, aTable.assay, aTable.lab, aTable.rbc_species, aTable.date);
+    return acmacs::string::join(acmacs::string::join_colon, *aTable.virus == "influenza" ? std::string{} : *aTable.virus, aTable.virus_type, aTable.subset, aTable.lineage, aTable.assay, aTable.lab, aTable.rbc_species, aTable.date);
 
 } // acmacs::to_string
 
@@ -343,7 +343,7 @@ std::string acmacs::to_string(const Table& aTable)
 
 std::string Antigen::to_string() const
 {
-    return acmacs::string::join(" ", acmacs::string::join("/", virus_type, host, location, isolation, year), acmacs::string::join(" ", annotations), reassortant, passage);
+    return acmacs::string::join(acmacs::string::join_space, acmacs::string::join(acmacs::string::join_slash, virus_type, host, location, isolation, year), acmacs::string::join(acmacs::string::join_space, annotations), reassortant, passage);
 
 } // Antigen::to_string
 
@@ -351,7 +351,7 @@ std::string Antigen::to_string() const
 
 std::string Serum::to_string() const
 {
-    return acmacs::string::join(" ", acmacs::string::join("/", virus_type, host, location, isolation, year), acmacs::string::join(" ", annotations), reassortant, serum_id);
+    return acmacs::string::join(acmacs::string::join_space, acmacs::string::join(acmacs::string::join_slash, virus_type, host, location, isolation, year), acmacs::string::join(acmacs::string::join_space, annotations), reassortant, serum_id);
 
 } // Serum::to_string
 
