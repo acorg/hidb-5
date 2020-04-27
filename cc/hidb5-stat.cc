@@ -6,7 +6,7 @@
 
 #include "acmacs-base/argv.hh"
 #include "acmacs-base/string.hh"
-#include "acmacs-base/rjson.hh"
+#include "acmacs-base/rjson-v2.hh"
 #include "acmacs-base/read-file.hh"
 #include "acmacs-base/time.hh"
 #include "locationdb/locdb.hh"

@@ -1,6 +1,6 @@
 #include "acmacs-base/stream.hh"
 #include "acmacs-virus/virus-name-v1.hh"
-#include "acmacs-base/rjson.hh"
+#include "acmacs-base/rjson-v2.hh"
 #include "acmacs-base/read-file.hh"
 #include "acmacs-chart-2/chart.hh"
 #include "hidb-maker.hh"

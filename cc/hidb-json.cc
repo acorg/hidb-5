@@ -5,7 +5,7 @@
 #include "acmacs-base/string.hh"
 #include "acmacs-base/stream.hh"
 #include "acmacs-base/timeit.hh"
-#include "acmacs-base/rjson.hh"
+#include "acmacs-base/rjson-v2.hh"
 #include "hidb-5/hidb-json.hh"
 #include "hidb-5/hidb-bin.hh"
 
