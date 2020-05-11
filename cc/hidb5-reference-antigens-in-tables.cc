@@ -6,6 +6,7 @@
 #include "acmacs-base/enumerate.hh"
 #include "acmacs-base/string.hh"
 #include "acmacs-base/csv.hh"
+#include "acmacs-whocc-data/labs.hh"
 #include "hidb-5/hidb.hh"
 
 // ----------------------------------------------------------------------
@@ -23,7 +24,7 @@ struct Record
 
     Record(std::string_view a_subtype, acmacs::chart::BLineage a_lineage, std::string_view a_lab, std::string_view a_date, std::string_view a_assay, std::string_view a_rbc, std::string a_virus_name,
            const acmacs::chart::Date& a_collection_date, const acmacs::virus::Passage& a_passage)
-        : subtype(fix_subtype(a_subtype, a_lineage)), lab(fix_lab(a_lab)), date(fix_test_date(a_date, a_lab, a_lineage)), test_type(fix_test_type(a_assay, a_rbc)), virus_name(fix_virus_name(a_virus_name)),
+        : subtype(fix_subtype(a_subtype, a_lineage)), lab{*acmacs::whocc::lab_name_normalize(a_lab)}, date(fix_test_date(a_date, lab, a_lineage)), test_type(fix_test_type(a_assay, a_rbc)), virus_name(fix_virus_name(a_virus_name)),
           collection_date(a_collection_date), passage(a_passage)
     {
     }
@@ -73,18 +74,9 @@ struct Record
             throw std::runtime_error(acmacs::string::concat("Unrecognized subtype: ", subtype));
         }
 
-    static inline std::string fix_lab(std::string_view lab)
-        {
-            if (lab == "NIMR")
-                return "Crick";
-            if (lab == "MELB")
-                return "VIDRL";
-            return std::string(lab);
-        }
-
     static inline std::string fix_test_date(std::string_view a_date, std::string_view a_lab, acmacs::chart::BLineage a_lineage)
         {
-            if (a_lab != "MELB" && a_lineage == acmacs::chart::BLineage::Yamagata && a_date.size() > 8)
+            if (a_lab != "VIDRL" && a_lineage == acmacs::chart::BLineage::Yamagata && a_date.size() > 8)
                 return std::string(a_date.data(), 8);
             return std::string(a_date);
         }
