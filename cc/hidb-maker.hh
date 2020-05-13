@@ -98,7 +98,7 @@ class Table
     std::string subset;
     acmacs::chart::Assay assay;
     std::string date;
-    acmacs::chart::Lab lab;
+    acmacs::Lab lab;
     acmacs::chart::RbcSpecies rbc_species;
     acmacs::virus::lineage_t lineage;
     Indexes antigens;
