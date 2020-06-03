@@ -71,7 +71,8 @@ namespace hidb
         AntigenPIndexList find(std::string_view aName, fix_location aFixLocation, find_fuzzy fuzzy = find_fuzzy::no) const;
         AntigenPList find_labid(std::string_view labid) const;
         AntigenPIndex find(const acmacs::chart::Antigen& aAntigen, passage_strictness aPassageStrictness = passage_strictness::yes) const;
-        AntigenPList find(const acmacs::chart::Antigens& aAntigens) const;
+        AntigenPList find(const acmacs::chart::Antigens& aAntigens) const; // entry* per each antigen
+        AntigenPList find(const acmacs::chart::Antigens& aAntigens, const acmacs::chart::Indexes& indexes) const; // entry* per each index
         AntigenPList date_range(std::string_view first, std::string_view after_last) const;
 
         std::vector<std::pair<std::string_view, const hidb::bin::Antigen*>> sorted_by_labid() const; // for seqdb-3, to speed up looking by lab_id
@@ -133,7 +134,8 @@ namespace hidb
         SerumP at(size_t aIndex) const;
         SerumPIndexList find(std::string_view aName, fix_location aFixLocation, find_fuzzy fuzzy = find_fuzzy::no) const;
         SerumPIndex find(const acmacs::chart::Serum& aSerum) const; // find_serum_of_chart
-        SerumPList find(const acmacs::chart::Sera& aSera) const;
+        SerumPList find(const acmacs::chart::Sera& aSera) const; // entry* per each serum
+        SerumPList find(const acmacs::chart::Sera& aSera, const acmacs::chart::Indexes& indexes) const; // entry* per each index
         SerumPList find_homologous(size_t aAntigenIndex, const Antigen& aAntigen) const; // for vaccines
 
      private:

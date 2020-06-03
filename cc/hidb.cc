@@ -751,6 +751,23 @@ hidb::AntigenPList hidb::Antigens::find(const acmacs::chart::Antigens& aAntigens
 
 // ----------------------------------------------------------------------
 
+hidb::AntigenPList hidb::Antigens::find(const acmacs::chart::Antigens& aAntigens, const acmacs::chart::Indexes& indexes) const
+{
+    hidb::AntigenPList result;
+    for (auto antigen_no: indexes) {
+        try {
+            result.push_back(find(*aAntigens[antigen_no]).first);
+        }
+        catch (not_found&) {
+            result.emplace_back(nullptr);
+        }
+    }
+    return result;
+
+} // hidb::Antigens::find
+
+// ----------------------------------------------------------------------
+
 hidb::SerumPIndex hidb::Sera::find(const acmacs::chart::Serum& aSerum) const
 {
     const auto serum_index_list = find(aSerum.name(), hidb::fix_location::no);
@@ -779,6 +796,23 @@ hidb::SerumPList hidb::Sera::find(const acmacs::chart::Sera& aSera) const
     for (auto serum: aSera) {
         try {
             result.push_back(find(*serum).first);
+        }
+        catch (not_found&) {
+            result.emplace_back(nullptr);
+        }
+    }
+    return result;
+
+} // hidb::Sera::find
+
+// ----------------------------------------------------------------------
+
+hidb::SerumPList hidb::Sera::find(const acmacs::chart::Sera& aSera, const acmacs::chart::Indexes& indexes) const
+{
+    hidb::SerumPList result;
+    for (auto serum_no: indexes) {
+        try {
+            result.push_back(find(*aSera[serum_no]).first);
         }
         catch (not_found&) {
             result.emplace_back(nullptr);
