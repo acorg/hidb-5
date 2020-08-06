@@ -724,10 +724,11 @@ hidb::AntigenPIndex hidb::Antigens::find(const acmacs::chart::Antigen& aAntigen,
     const bool ignore_passage = aPassageStrictness == passage_strictness::ignore_if_empty && aAntigen.passage().empty();
     for (auto antigen_index: antigen_index_list) {
         const auto& antigen = antigen_index.first;
+        // AD_DEBUG("  \"{}\" A:{} R:\"{}\" P:\"{}\"", antigen->name(), antigen->annotations(), antigen->reassortant(), antigen->passage());
         if (antigen->annotations() == aAntigen.annotations() && antigen->reassortant() == aAntigen.reassortant() && (ignore_passage || antigen->passage() == aAntigen.passage()))
             return antigen_index;
     }
-    AD_WARNING("not in hidb: {}", aAntigen.full_name());
+    AD_WARNING("not in hidb: \"{}\" A:{} R:\"{}\" P:\"{}\"", aAntigen.name(), aAntigen.annotations(), aAntigen.reassortant(), aAntigen.passage());
     throw not_found(aAntigen.full_name());
 
 } // hidb::Antigens::find
