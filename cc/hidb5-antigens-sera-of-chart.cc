@@ -33,7 +33,7 @@ int main(int argc, char* const argv[])
                 if (ag)
                     hidb::report_antigen(hidb, *ag, true);
             }
-            std::cout << '\n';
+            fmt::format("\n");
         }
 
         auto sera = hidb.sera()->find(*chart->sera());
@@ -45,12 +45,10 @@ int main(int argc, char* const argv[])
         return 0;
     }
     catch (std::exception& err) {
-        std::cerr << "ERROR: " << err.what() << '\n';
+        AD_ERROR("{}", err);
         return 1;
     }
 }
-
-// ----------------------------------------------------------------------
 
 // ----------------------------------------------------------------------
 /// Local Variables:
