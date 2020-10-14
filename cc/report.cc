@@ -2,7 +2,7 @@
 
 // ----------------------------------------------------------------------
 
-void hidb::report_antigens(const hidb::HiDb& hidb, const indexes_t& aIndexes, bool aReportTables, std::string aPrefix)
+void hidb::report_antigens(const hidb::HiDb& hidb, const indexes_t& aIndexes, bool aReportTables, std::string_view aPrefix)
 {
     for (auto index: aIndexes)
         report_antigen(hidb, index, aReportTables, aPrefix);
@@ -11,34 +11,19 @@ void hidb::report_antigens(const hidb::HiDb& hidb, const indexes_t& aIndexes, bo
 
 // ----------------------------------------------------------------------
 
-void hidb::report_antigen(const hidb::HiDb& hidb, const hidb::Antigen& aAntigen, bool aReportTables, std::string aPrefix)
+void hidb::report_antigen(const hidb::HiDb& hidb, const hidb::Antigen& aAntigen, bool aReportTables, std::string_view aPrefix)
 {
-    std::cout << aPrefix << *aAntigen.name();
-    if (const auto annotations = aAntigen.annotations(); !annotations->empty())
-        std::cout << ' ' << *annotations;
-    if (const auto reassortant = aAntigen.reassortant(); !reassortant.empty())
-        std::cout << ' ' << *reassortant;
-    if (const auto passage = aAntigen.passage(); !passage.empty())
-        std::cout << ' ' << *passage;
-    if (const auto date = aAntigen.date(); !date.empty())
-        std::cout << fmt::format(" [{}]", date);
-    if (const auto lab_ids = aAntigen.lab_ids(); !lab_ids->empty())
-        std::cout << ' ' << *lab_ids;
-    if (const auto lineage = aAntigen.lineage(); lineage != acmacs::chart::BLineage::Unknown)
-        std::cout << fmt::format(" {}", lineage);
+    fmt::print("{}{} {} {} {} [{}] {} {}\n", aPrefix, aAntigen.name(), aAntigen.annotations(), aAntigen.reassortant(), aAntigen.passage(), aAntigen.date(), aAntigen.lab_ids(), aAntigen.lineage());
     if (aReportTables) {
-        std::cout << '\n';
-        report_tables(std::cout, hidb, aAntigen.tables(), report_tables::all, aPrefix + "    ");
-        std::cout << '\n';
+        const std::string pref = std::string{aPrefix} + "    ";
+        fmt::print("{}\n", report_tables(hidb, aAntigen.tables(), report_tables::all, pref));
     }
-    else
-        std::cout << '\n';
 
 } // hidb::report_antigen
 
 // ----------------------------------------------------------------------
 
-void hidb::report_sera(const hidb::HiDb& hidb, const indexes_t& aIndexes, enum hidb::report_tables aReportTables, std::string aPrefix)
+void hidb::report_sera(const hidb::HiDb& hidb, const indexes_t& aIndexes, enum hidb::report_tables aReportTables, std::string_view aPrefix)
 {
     for (auto index: aIndexes)
         report_serum(hidb, index, aReportTables, aPrefix);
@@ -47,33 +32,43 @@ void hidb::report_sera(const hidb::HiDb& hidb, const indexes_t& aIndexes, enum h
 
 // ----------------------------------------------------------------------
 
-void hidb::report_serum(const hidb::HiDb& hidb, const hidb::Serum& aSerum, enum hidb::report_tables aReportTables, std::string aPrefix)
+void hidb::report_serum(const hidb::HiDb& hidb, const hidb::Serum& aSerum, enum hidb::report_tables aReportTables, std::string_view aPrefix)
 {
-    std::cout << aPrefix << *aSerum.name();
-    if (const auto annotations = aSerum.annotations(); !annotations->empty())
-        std::cout << ' ' << *annotations;
-    if (const auto reassortant = aSerum.reassortant(); !reassortant.empty())
-        std::cout << ' ' << *reassortant;
-    if (const auto serum_id = aSerum.serum_id(); !serum_id.empty())
-        std::cout << ' ' << *serum_id;
-    if (const auto serum_species = aSerum.serum_species(); !serum_species.empty())
-        std::cout << ' ' << *serum_species;
-    if (const auto passage = aSerum.passage(); !passage.empty())
-        std::cout << ' ' << *passage;
-    if (const auto lineage = aSerum.lineage(); lineage != acmacs::chart::BLineage::Unknown)
-        std::cout << fmt::format(" {}", lineage);
-    std::cout << '\n';
+    fmt::print("{}{} {} {} {} {} {} {}\n", aPrefix, aSerum.name(), aSerum.annotations(), aSerum.reassortant(), aSerum.serum_id(), aSerum.serum_species(), aSerum.passage(), aSerum.lineage());
+    const std::string pref = std::string{aPrefix} + "    ";
     for (size_t ag_no: aSerum.homologous_antigens())
-        report_antigen(hidb, ag_no, false, aPrefix + "    ");
-    report_tables(std::cout, hidb, aSerum.tables(), aReportTables, aPrefix + "    ");
-    std::cout << '\n';
+        report_antigen(hidb, ag_no, false, pref);
+    fmt::print("{}\n", report_tables(hidb, aSerum.tables(), aReportTables, pref));
 
 } // hidb::report_serum
 
 // ----------------------------------------------------------------------
 
-void hidb::report_tables(std::ostream& out, const hidb::HiDb& hidb, const indexes_t& aTables, enum hidb::report_tables aReportTables, std::string aPrefix)
+std::string hidb::report_tables(const hidb::HiDb& hidb, const indexes_t& aTables, enum hidb::report_tables aReportTables, std::string_view aPrefix)
 {
+    using namespace std::string_view_literals;
+    const auto assay = [](std::string_view src) -> std::string_view {
+        if (src == "FOCUS REDUCTION")
+            return "FRA"sv;
+        else if (src == "HI")
+            return "HI "sv;
+        else
+            return src;
+    };
+    const auto rbc = [](std::string_view aAssay, std::string_view src) -> std::string_view {
+        if (aAssay == "HI") {
+            if (src == "guinea-pig")
+                return ":gp"sv;
+            else if (src == "turkey")
+                return ":tu"sv;
+            else
+                return src;
+        }
+        else
+            return {};
+    };
+
+    fmt::memory_buffer out;
     if (aReportTables != report_tables::none) {
         auto hidb_tables = hidb.tables();
         std::vector<std::shared_ptr<hidb::Table>> tables(aTables.size());
@@ -85,31 +80,33 @@ void hidb::report_tables(std::ostream& out, const hidb::HiDb& hidb, const indexe
                 by_lab_assay[{table->lab(), table->assay()}].push_back(table);
             switch (aReportTables) {
                 case report_tables::all:
-                    if (by_lab_assay.size() > 1)
-                        out << aPrefix << "Tables:" << tables.size() << "  Recent: " << tables[0]->name() << '\n';
                     for (auto entry : by_lab_assay) {
-                        out << aPrefix << entry.first.first << ':' << entry.first.second << ' ' << entry.second.size();
+                        fmt::format_to(out, "{}{}:{} ({})", aPrefix, entry.first.first, assay(entry.first.second), entry.second.size());
                         for (auto table : entry.second)
-                            out << ' ' << acmacs::string::join(acmacs::string::join_colon, table->date(), table->rbc());
+                            fmt::format_to(out, " {}{}", table->date(), rbc(entry.first.second, table->rbc()));
+                        fmt::format_to(out, "\n");
                     }
+                    if (by_lab_assay.size() > 1)
+                        fmt::format_to(out, "{}Total tables: {}\n", aPrefix, tables.size());
                     break;
                 case report_tables::oldest:
-                    out << aPrefix << "Tables:" << tables.size();
+                    fmt::format_to(out, "{}Tables:{}\n", aPrefix, tables.size());
                     for (auto entry : by_lab_assay)
-                        out << aPrefix << "  " << entry.first.first << ':' << entry.first.second << ' ' << entry.second.size() << " oldest:" << entry.second.back()->name();
+                        fmt::format_to(out, "{}{}:{} ({})  oldest:{}", aPrefix, entry.first.first, assay(entry.first.second), entry.second.size(), entry.second.back()->name());
                     break;
                 case report_tables::recent:
-                    out << aPrefix << "Tables:" << tables.size();
+                    fmt::format_to(out, "{}Tables:{}\n", aPrefix, tables.size());
                     for (auto entry : by_lab_assay)
-                        out << aPrefix << "  " << entry.first.first << ':' << entry.first.second << ' ' << entry.second.size() << " recent:" << entry.second.front()->name();
+                        fmt::format_to(out, "{}{}:{} ({})  recent:{}", aPrefix, entry.first.first, assay(entry.first.second), entry.second.size(), entry.second.front()->name());
                     break;
                 case report_tables::none:
                     break;
             }
         }
         else
-            std::cerr << "WARNING: hidb::report_tables: no tables!\n";
+            AD_WARNING("hidb::report_tables: no tables!");
     }
+    return fmt::to_string(out);
 
 } // hidb::report_tables
 
