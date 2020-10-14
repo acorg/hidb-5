@@ -13,6 +13,8 @@ struct Options : public argv
     option<bool> sera_only{*this, "sera-only"};
     option<bool> first_table{*this, "first-table"};
     option<str> db_dir{*this, "db-dir"};
+    option<str> virus_type{*this, "flu"};
+    option<bool> relaxed_passage{*this, "relaxed", desc{"ignore passage, if antigen with that passage not found"}};
     option<bool> verbose{*this, 'v', "verbose"};
 
     argument<str> chart{*this, arg_name{"chart"}, mandatory};
@@ -25,19 +27,22 @@ int main(int argc, char* const argv[])
         hidb::setup(opt.db_dir, {}, opt.verbose);
 
         auto chart = acmacs::chart::import_from_file(opt.chart);
-        auto& hidb = hidb::get(chart->info()->virus_type());
+        acmacs::virus::type_subtype_t virus_type{*opt.virus_type};
+        if (virus_type.empty())
+            virus_type = chart->info()->virus_type();
+        auto& hidb = hidb::get(virus_type);
 
         if (!opt.sera_only) {
-            auto antigens = hidb.antigens()->find(*chart->antigens());
-            for (auto ag: antigens) {
-                if (ag)
-                    hidb::report_antigen(hidb, *ag, true);
+            auto antigens = chart->antigens();
+            for (auto ag : *antigens) {
+                if (const auto found = hidb.antigens()->find(*ag, opt.relaxed_passage ? hidb::passage_strictness::ignore_if_empty : hidb::passage_strictness::yes); found.has_value())
+                    hidb::report_antigen(hidb, *found->first, true);
             }
-            fmt::format("\n");
+            // fmt::format("\n");
         }
 
         auto sera = hidb.sera()->find(*chart->sera());
-        for (auto sr: sera) {
+        for (auto sr : sera) {
             if (sr)
                 hidb::report_serum(hidb, *sr, opt.first_table ? hidb::report_tables::oldest : hidb::report_tables::all);
         }

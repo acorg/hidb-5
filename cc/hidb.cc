@@ -716,7 +716,7 @@ std::vector<std::pair<std::string_view, const hidb::bin::Antigen*>> hidb::Antige
 
 // ----------------------------------------------------------------------
 
-hidb::AntigenPIndex hidb::Antigens::find(const acmacs::chart::Antigen& aAntigen, passage_strictness aPassageStrictness) const
+std::optional<hidb::AntigenPIndex> hidb::Antigens::find(const acmacs::chart::Antigen& aAntigen, passage_strictness aPassageStrictness) const
 {
     if (aAntigen.annotations().distinct()) // distinct antigens are not stored
         throw not_found(aAntigen.full_name());
@@ -724,12 +724,10 @@ hidb::AntigenPIndex hidb::Antigens::find(const acmacs::chart::Antigen& aAntigen,
     const bool ignore_passage = aPassageStrictness == passage_strictness::ignore_if_empty && aAntigen.passage().empty();
     for (auto antigen_index: antigen_index_list) {
         const auto& antigen = antigen_index.first;
-        // AD_DEBUG("  \"{}\" A:{} R:\"{}\" P:\"{}\"", antigen->name(), antigen->annotations(), antigen->reassortant(), antigen->passage());
         if (antigen->annotations() == aAntigen.annotations() && antigen->reassortant() == aAntigen.reassortant() && (ignore_passage || antigen->passage() == aAntigen.passage()))
             return antigen_index;
     }
-    AD_WARNING("not in hidb: \"{}\" A:{} R:\"{}\" P:\"{}\"", aAntigen.name(), aAntigen.annotations(), aAntigen.reassortant(), aAntigen.passage());
-    throw not_found(aAntigen.full_name());
+    return std::nullopt;
 
 } // hidb::Antigens::find
 
@@ -739,12 +737,10 @@ hidb::AntigenPList hidb::Antigens::find(const acmacs::chart::Antigens& aAntigens
 {
     hidb::AntigenPList result;
     for (auto antigen: aAntigens) {
-        try {
-            result.push_back(find(*antigen).first);
-        }
-        catch (not_found&) {
+        if (const auto found = find(*antigen); found.has_value())
+            result.push_back(found->first);
+        else
             result.emplace_back(nullptr);
-        }
     }
     return result;
 
@@ -756,12 +752,10 @@ hidb::AntigenPList hidb::Antigens::find(const acmacs::chart::Antigens& aAntigens
 {
     hidb::AntigenPList result;
     for (auto antigen_no: indexes) {
-        try {
-            result.push_back(find(*aAntigens[antigen_no]).first);
-        }
-        catch (not_found&) {
+        if (const auto found = find(*aAntigens[antigen_no]); found.has_value())
+            result.push_back(found->first);
+        else
             result.emplace_back(nullptr);
-        }
     }
     return result;
 

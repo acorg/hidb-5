@@ -70,7 +70,7 @@ namespace hidb
         AntigenP at(size_t aIndex) const;
         AntigenPIndexList find(std::string_view aName, fix_location aFixLocation, find_fuzzy fuzzy = find_fuzzy::no) const;
         AntigenPList find_labid(std::string_view labid) const;
-        AntigenPIndex find(const acmacs::chart::Antigen& aAntigen, passage_strictness aPassageStrictness = passage_strictness::yes) const;
+        std::optional<AntigenPIndex> find(const acmacs::chart::Antigen& aAntigen, passage_strictness aPassageStrictness = passage_strictness::yes) const;
         AntigenPList find(const acmacs::chart::Antigens& aAntigens) const; // entry* per each antigen
         AntigenPList find(const acmacs::chart::Antigens& aAntigens, const acmacs::chart::Indexes& indexes) const; // entry* per each index
         AntigenPList date_range(std::string_view first, std::string_view after_last) const;

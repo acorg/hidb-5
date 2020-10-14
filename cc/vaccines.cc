@@ -22,22 +22,20 @@ hidb::VaccinesOfChart hidb::vaccines(const acmacs::chart::Chart& aChart)
     for (const auto& name_type : acmacs::whocc::vaccine_names(virus_type, aChart.lineage())) {
         Vaccines& vaccines = result.emplace_back(name_type);
         for (size_t ag_no : chart_antigens->find_by_name(fmt::format("{}/{}", virus_type, name_type.name))) {
-            try {
-                auto chart_antigen = aChart.antigen(ag_no);
-                auto [hidb_antigen, hidb_antigen_index] = hidb_antigens->find(*chart_antigen, passage_strictness::ignore_if_empty);
+            auto chart_antigen = aChart.antigen(ag_no);
+            if (const auto hidb_antigen_index = hidb_antigens->find(*chart_antigen, passage_strictness::ignore_if_empty); hidb_antigen_index.has_value()) {
                 std::vector<hidb::Vaccines::HomologousSerum> homologous_sera;
-                for (auto sd : hidb_sera->find_homologous(hidb_antigen_index, *hidb_antigen)) {
+                for (auto sd : hidb_sera->find_homologous(hidb_antigen_index->second, *hidb_antigen_index->first)) {
                     if (const auto sr_no = chart_sera->find_by_full_name(fmt::format("{}/{}", virus_type, sd->full_name()))) {
                         homologous_sera.emplace_back(*sr_no, (*chart_sera)[*sr_no], sd, hidb.tables()->most_recent(sd->tables()));
                     }
                 }
-                vaccines.add(ag_no, chart_antigen, hidb_antigen, hidb.tables()->most_recent(hidb_antigen->tables()), std::move(homologous_sera));
-            }
-            catch (hidb::not_found&) {
+                vaccines.add(ag_no, chart_antigen, hidb_antigen_index->first, hidb.tables()->most_recent(hidb_antigen_index->first->tables()), std::move(homologous_sera));
             }
         }
         vaccines.sort();
     }
+
     return result;
 
 } // hidb::vaccines
@@ -46,7 +44,7 @@ hidb::VaccinesOfChart hidb::vaccines(const acmacs::chart::Chart& aChart)
 
 void hidb::update_vaccines(acmacs::chart::ChartModify& /*aChart*/, const VaccinesOfChart& vaccines)
 {
-    fmt::print(stderr, "{}: warning: hidb::update_vaccines not implemented (need to implemented sematic attributes first)\n", AD_DEBUG_FILE_LINE);
+    AD_WARNING("hidb::update_vaccines not implemented (need to implemented sematic attributes first)");
     // fmt::print("{}\n", vaccines.report());
 
 
