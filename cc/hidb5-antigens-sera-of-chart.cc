@@ -22,6 +22,7 @@ struct Options : public argv
 
 int main(int argc, char* const argv[])
 {
+    using namespace std::string_view_literals;
     try {
         Options opt(argc, argv);
         hidb::setup(opt.db_dir, {}, opt.verbose);
@@ -32,13 +33,16 @@ int main(int argc, char* const argv[])
             virus_type = chart->info()->virus_type();
         auto& hidb = hidb::get(virus_type);
 
+        const auto prefix = "    "sv;
         if (!opt.sera_only) {
             auto antigens = chart->antigens();
             for (auto ag : *antigens) {
-                if (const auto found = hidb.antigens()->find(*ag, opt.relaxed_passage ? hidb::passage_strictness::ignore_if_empty : hidb::passage_strictness::yes); found.has_value())
-                    hidb::report_antigen(hidb, *found->first, true);
+                fmt::print("{}\n", ag->full_name());
+                if (const auto found = hidb.antigens()->find(*ag, opt.relaxed_passage ? hidb::passage_strictness::ignore : hidb::passage_strictness::yes); found.has_value())
+                    hidb::report_antigen(hidb, *found->first, hidb::report_tables::all, prefix);
+                else
+                    fmt::print("{}*not found*\n", prefix);
             }
-            // fmt::format("\n");
         }
 
         auto sera = hidb.sera()->find(*chart->sera());

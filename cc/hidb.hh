@@ -19,7 +19,7 @@ namespace hidb
 
     enum class find_fuzzy { no, yes };
     enum class fix_location { no, yes };
-    enum class passage_strictness { yes, ignore_if_empty };
+    enum class passage_strictness { yes, ignore_if_empty, ignore };
 
     class HiDb;
 
@@ -133,7 +133,7 @@ namespace hidb
         std::shared_ptr<acmacs::chart::Serum> operator[](size_t aIndex) const override { return at(aIndex); }
         SerumP at(size_t aIndex) const;
         SerumPIndexList find(std::string_view aName, fix_location aFixLocation, find_fuzzy fuzzy = find_fuzzy::no) const;
-        SerumPIndex find(const acmacs::chart::Serum& aSerum) const; // find_serum_of_chart
+        std::optional<SerumPIndex> find(const acmacs::chart::Serum& aSerum) const; // find_serum_of_chart
         SerumPList find(const acmacs::chart::Sera& aSera) const; // entry* per each serum
         SerumPList find(const acmacs::chart::Sera& aSera, const acmacs::chart::Indexes& indexes) const; // entry* per each index
         SerumPList find_homologous(size_t aAntigenIndex, const Antigen& aAntigen) const; // for vaccines

@@ -721,28 +721,37 @@ std::optional<hidb::AntigenPIndex> hidb::Antigens::find(const acmacs::chart::Ant
     if (aAntigen.annotations().distinct()) // distinct antigens are not stored
         throw not_found(aAntigen.full_name());
     const auto antigen_index_list = find(aAntigen.name(), hidb::fix_location::no);
-    const bool ignore_passage = aPassageStrictness == passage_strictness::ignore_if_empty && aAntigen.passage().empty();
-    for (auto antigen_index: antigen_index_list) {
+    const auto ignore_passage = [aPassageStrictness, &aAntigen]() -> bool {
+        switch (aPassageStrictness) {
+            case passage_strictness::yes:
+                return false;
+            case passage_strictness::ignore_if_empty:
+                return aAntigen.passage().empty();
+            case passage_strictness::ignore:
+                return true;
+        }
+    }();
+    for (auto antigen_index : antigen_index_list) {
         const auto& antigen = antigen_index.first;
         if (antigen->annotations() == aAntigen.annotations() && antigen->reassortant() == aAntigen.reassortant() && (ignore_passage || antigen->passage() == aAntigen.passage()))
             return antigen_index;
-    }
-    return std::nullopt;
+        }
+        return std::nullopt;
+    } // hidb::Antigens::find
 
-} // hidb::Antigens::find
+    // ----------------------------------------------------------------------
 
-// ----------------------------------------------------------------------
-
-hidb::AntigenPList hidb::Antigens::find(const acmacs::chart::Antigens& aAntigens) const
-{
-    hidb::AntigenPList result;
-    for (auto antigen: aAntigens) {
-        if (const auto found = find(*antigen); found.has_value())
-            result.push_back(found->first);
-        else
-            result.emplace_back(nullptr);
-    }
-    return result;
+    hidb::AntigenPList
+    hidb::Antigens::find(const acmacs::chart::Antigens& aAntigens) const
+    {
+        hidb::AntigenPList result;
+        for (auto antigen : aAntigens) {
+            if (const auto found = find(*antigen); found.has_value())
+                result.push_back(found->first);
+            else
+                result.emplace_back(nullptr);
+        }
+        return result;
 
 } // hidb::Antigens::find
 
@@ -763,7 +772,7 @@ hidb::AntigenPList hidb::Antigens::find(const acmacs::chart::Antigens& aAntigens
 
 // ----------------------------------------------------------------------
 
-hidb::SerumPIndex hidb::Sera::find(const acmacs::chart::Serum& aSerum) const
+std::optional<hidb::SerumPIndex> hidb::Sera::find(const acmacs::chart::Serum& aSerum) const
 {
     const auto serum_index_list = find(aSerum.name(), hidb::fix_location::no);
     std::optional<SerumPIndex> with_unknown_serum_id;
@@ -778,8 +787,7 @@ hidb::SerumPIndex hidb::Sera::find(const acmacs::chart::Serum& aSerum) const
     }
     if (with_unknown_serum_id.has_value())
         return *with_unknown_serum_id;
-    AD_WARNING("not in hidb: {}", aSerum.full_name());
-    throw not_found(aSerum.full_name());
+    return std::nullopt;
 
 } // hidb::Sera::find
 
@@ -789,12 +797,10 @@ hidb::SerumPList hidb::Sera::find(const acmacs::chart::Sera& aSera) const
 {
     hidb::SerumPList result;
     for (auto serum: aSera) {
-        try {
-            result.push_back(find(*serum).first);
-        }
-        catch (not_found&) {
+        if (const auto found = find(*serum); found)
+            result.push_back(found->first);
+        else
             result.emplace_back(nullptr);
-        }
     }
     return result;
 
@@ -806,12 +812,10 @@ hidb::SerumPList hidb::Sera::find(const acmacs::chart::Sera& aSera, const acmacs
 {
     hidb::SerumPList result;
     for (auto serum_no: indexes) {
-        try {
-            result.push_back(find(*aSera[serum_no]).first);
-        }
-        catch (not_found&) {
+        if (const auto found = find(*aSera[serum_no]); found)
+            result.push_back(found->first);
+        else
             result.emplace_back(nullptr);
-        }
     }
     return result;
 

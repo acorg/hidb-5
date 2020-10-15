@@ -97,7 +97,7 @@ void find_antigens(const hidb::HiDb& hidb, std::string_view aName)
             prefix = "*** ";
         }
         for (auto antigen_index: antigen_index_list)
-            report_antigen(hidb, *antigen_index.first, true, prefix);
+            report_antigen(hidb, *antigen_index.first, hidb::report_tables::all, prefix);
     }
     catch (acmacs::locationdb::LocationNotFound& err) {
         throw std::runtime_error(fmt::format("location not found: {}", err));
@@ -111,7 +111,7 @@ void find_antigens_by_labid(const hidb::HiDb& hidb, std::string_view aLabId)
 {
     const auto antigens = hidb.antigens()->find_labid(string::upper(aLabId));
     for (auto antigen: antigens)
-        report_antigen(hidb, *antigen, true);
+        report_antigen(hidb, *antigen, hidb::report_tables::all);
 
 } // find_antigens_by_labid
 
@@ -161,7 +161,7 @@ void list_all_antigens(const hidb::HiDb& hidb)
     auto antigens = hidb.antigens();
     fmt::print("Antigens: {}\n", antigens->size());
     for (auto antigen: *antigens)
-        report_antigen(hidb, dynamic_cast<const hidb::Antigen&>(*antigen), true);
+        report_antigen(hidb, dynamic_cast<const hidb::Antigen&>(*antigen), hidb::report_tables::all);
 
 } // list_all_antigens
 

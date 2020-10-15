@@ -2,7 +2,7 @@
 
 // ----------------------------------------------------------------------
 
-void hidb::report_antigens(const hidb::HiDb& hidb, const indexes_t& aIndexes, bool aReportTables, std::string_view aPrefix)
+void hidb::report_antigens(const hidb::HiDb& hidb, const indexes_t& aIndexes, enum report_tables aReportTables, std::string_view aPrefix)
 {
     for (auto index: aIndexes)
         report_antigen(hidb, index, aReportTables, aPrefix);
@@ -11,19 +11,19 @@ void hidb::report_antigens(const hidb::HiDb& hidb, const indexes_t& aIndexes, bo
 
 // ----------------------------------------------------------------------
 
-void hidb::report_antigen(const hidb::HiDb& hidb, const hidb::Antigen& aAntigen, bool aReportTables, std::string_view aPrefix)
+void hidb::report_antigen(const hidb::HiDb& hidb, const hidb::Antigen& aAntigen, enum report_tables aReportTables, std::string_view aPrefix)
 {
     fmt::print("{}{} {} {} {} [{}] {} {}\n", aPrefix, aAntigen.name(), aAntigen.annotations(), aAntigen.reassortant(), aAntigen.passage(), aAntigen.date(), aAntigen.lab_ids(), aAntigen.lineage());
-    if (aReportTables) {
+    if (aReportTables != report_tables::none) {
         const std::string pref = std::string{aPrefix} + "    ";
-        fmt::print("{}\n", report_tables(hidb, aAntigen.tables(), report_tables::all, pref));
+        fmt::print("{}\n", report_tables(hidb, aAntigen.tables(), aReportTables, pref));
     }
 
 } // hidb::report_antigen
 
 // ----------------------------------------------------------------------
 
-void hidb::report_sera(const hidb::HiDb& hidb, const indexes_t& aIndexes, enum hidb::report_tables aReportTables, std::string_view aPrefix)
+void hidb::report_sera(const hidb::HiDb& hidb, const indexes_t& aIndexes, enum report_tables aReportTables, std::string_view aPrefix)
 {
     for (auto index: aIndexes)
         report_serum(hidb, index, aReportTables, aPrefix);
@@ -32,19 +32,19 @@ void hidb::report_sera(const hidb::HiDb& hidb, const indexes_t& aIndexes, enum h
 
 // ----------------------------------------------------------------------
 
-void hidb::report_serum(const hidb::HiDb& hidb, const hidb::Serum& aSerum, enum hidb::report_tables aReportTables, std::string_view aPrefix)
+void hidb::report_serum(const hidb::HiDb& hidb, const hidb::Serum& aSerum, enum report_tables aReportTables, std::string_view aPrefix)
 {
     fmt::print("{}{} {} {} {} {} {} {}\n", aPrefix, aSerum.name(), aSerum.annotations(), aSerum.reassortant(), aSerum.serum_id(), aSerum.serum_species(), aSerum.passage(), aSerum.lineage());
     const std::string pref = std::string{aPrefix} + "    ";
     for (size_t ag_no: aSerum.homologous_antigens())
-        report_antigen(hidb, ag_no, false, pref);
+        report_antigen(hidb, ag_no, report_tables::none, pref);
     fmt::print("{}\n", report_tables(hidb, aSerum.tables(), aReportTables, pref));
 
 } // hidb::report_serum
 
 // ----------------------------------------------------------------------
 
-std::string hidb::report_tables(const hidb::HiDb& hidb, const indexes_t& aTables, enum hidb::report_tables aReportTables, std::string_view aPrefix)
+std::string hidb::report_tables(const hidb::HiDb& hidb, const indexes_t& aTables, enum report_tables aReportTables, std::string_view aPrefix)
 {
     using namespace std::string_view_literals;
     const auto assay = [](std::string_view src) -> std::string_view {
