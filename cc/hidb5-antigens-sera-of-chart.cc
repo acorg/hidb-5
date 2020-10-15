@@ -10,7 +10,8 @@ struct Options : public argv
 {
     Options(int a_argc, const char* const a_argv[], on_error on_err = on_error::exit) : argv() { parse(a_argc, a_argv, on_err); }
 
-    option<bool> sera_only{*this, "sera-only"};
+    option<bool> antigens_only{*this, 'a', "antigens-only"};
+    option<bool> sera_only{*this, 's', "sera-only"};
     option<bool> first_table{*this, "first-table"};
     option<str> db_dir{*this, "db-dir"};
     option<str> virus_type{*this, "flu"};
@@ -41,16 +42,20 @@ int main(int argc, char* const argv[])
                 if (const auto found = hidb.antigens()->find(*ag, opt.relaxed_passage ? hidb::passage_strictness::ignore : hidb::passage_strictness::yes); found.has_value())
                     hidb::report_antigen(hidb, *found->first, hidb::report_tables::all, prefix);
                 else
-                    fmt::print("{}*not found*\n", prefix);
+                    fmt::print("{}*not found*\n\n", prefix);
             }
         }
 
-        auto sera = hidb.sera()->find(*chart->sera());
-        for (auto sr : sera) {
-            if (sr)
-                hidb::report_serum(hidb, *sr, opt.first_table ? hidb::report_tables::oldest : hidb::report_tables::all);
+        if (!opt.antigens_only) {
+            auto sera = chart->sera();
+            for (auto sr : *sera) {
+                fmt::print("{}\n", sr->full_name());
+                if (const auto found = hidb.sera()->find(*sr); found.has_value())
+                    hidb::report_serum(hidb, *found->first, hidb::report_tables::all, prefix);
+                else
+                    fmt::print("{}*not found*\n\n", prefix);
+            }
         }
-
         return 0;
     }
     catch (std::exception& err) {
