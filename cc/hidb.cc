@@ -730,6 +730,7 @@ std::optional<hidb::AntigenPIndex> hidb::Antigens::find(const acmacs::chart::Ant
             case passage_strictness::ignore:
                 return true;
         }
+        return false;           // hey g++-10
     }();
     for (auto antigen_index : antigen_index_list) {
         const auto& antigen = antigen_index.first;
