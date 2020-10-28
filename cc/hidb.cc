@@ -1,7 +1,7 @@
 #include <algorithm>
 #include <optional>
 
-#include "acmacs-base/debug.hh"
+#include "acmacs-base/log.hh"
 #include "acmacs-base/fmt.hh"
 #include "acmacs-base/string.hh"
 #include "acmacs-base/string-split.hh"
