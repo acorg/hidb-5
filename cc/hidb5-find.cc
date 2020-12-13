@@ -19,7 +19,7 @@ static void list_all_tables(const hidb::HiDb& hidb);
 static void find_antigens(const hidb::HiDb& hidb, std::string_view aName);
 static void find_antigens_by_labid(const hidb::HiDb& hidb, std::string_view aLabId);
 static void find_sera(const hidb::HiDb& hidb, std::string_view aName);
-static void find_tables(const hidb::HiDb& hidb, std::string_view aName);
+[[noreturn]] static void find_tables(const hidb::HiDb& hidb, std::string_view aName);
 static void find(const hidb::HiDb& hidb, const Options& opt);
 
 // ----------------------------------------------------------------------
