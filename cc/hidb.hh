@@ -185,11 +185,14 @@ namespace hidb
     struct lab_assay_rbc_table_t
     {
         std::string_view lab;
-        std::string_view assay;
-        std::string_view rbc;
+        acmacs::chart::Assay assay;
+        acmacs::chart::RbcSpecies rbc;
         std::vector<std::shared_ptr<Table>> tables;
 
-        lab_assay_rbc_table_t(std::string_view a_lab, std::string_view a_assay, std::string_view a_rbc, std::shared_ptr<Table> a_table) : lab{a_lab}, assay{a_assay}, rbc{a_rbc}, tables{a_table} {}
+        lab_assay_rbc_table_t(std::string_view a_lab, const acmacs::chart::Assay& a_assay, const acmacs::chart::RbcSpecies& a_rbc, std::shared_ptr<Table> a_table)
+            : lab{a_lab}, assay{a_assay}, rbc{a_rbc}, tables{a_table}
+        {
+        }
 
         enum sort_by_date_order { oldest_first, recent_first };
 

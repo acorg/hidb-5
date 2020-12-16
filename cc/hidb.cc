@@ -399,8 +399,10 @@ std::vector<hidb::lab_assay_rbc_table_t> hidb::Tables::sorted(indexes_t indexes,
 
     std::vector<hidb::lab_assay_rbc_table_t> by_lab;
     for (const auto& table : tables_of_indexes) {
-        if (by_lab.empty() || by_lab.back().lab != table->lab() || by_lab.back().assay != table->assay() || by_lab.back().rbc != table->rbc())
-            by_lab.emplace_back(table->lab(), table->assay(), table->rbc(), table);
+        const acmacs::chart::Assay assay{table->assay()};
+        const acmacs::chart::RbcSpecies rbc{table->rbc()};
+        if (by_lab.empty() || by_lab.back().lab != table->lab() || by_lab.back().assay != assay || by_lab.back().rbc != rbc)
+            by_lab.emplace_back(table->lab(), assay, rbc, table);
         else
             by_lab.back().tables.push_back(table);
     }
@@ -771,7 +773,7 @@ std::optional<hidb::AntigenPIndex> hidb::Antigens::find(const acmacs::chart::Ant
         const auto& antigen = antigen_index.first;
         if (antigen->annotations() == aAntigen.annotations() && antigen->reassortant() == aAntigen.reassortant() && (ignore_passage || antigen->passage() == aAntigen.passage()))
             return antigen_index;
-        }
+    }
         return std::nullopt;
     } // hidb::Antigens::find
 
