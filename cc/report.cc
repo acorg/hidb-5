@@ -71,33 +71,28 @@ std::string hidb::report_tables(const hidb::HiDb& hidb, const indexes_t& aTables
     fmt::memory_buffer out;
     if (aReportTables != report_tables::none) {
         auto hidb_tables = hidb.tables();
-        std::vector<std::shared_ptr<hidb::Table>> tables(aTables.size());
-        std::transform(aTables.begin(), aTables.end(), tables.begin(), [hidb_tables](size_t aIndex) { return (*hidb_tables)[aIndex]; });
-        if (!tables.empty()) {
-            std::sort(tables.begin(), tables.end(), [](auto a, auto b) -> bool { return a->date() > b->date(); });
-            std::map<std::pair<std::string_view, std::string_view>, std::vector<std::shared_ptr<hidb::Table>>> by_lab_assay;
-            for (auto table : tables)
-                by_lab_assay[{table->lab(), table->assay()}].push_back(table);
+        const auto by_lab_assay = hidb_tables->sorted(aTables, lab_assay_table_t::recent_first);
+        if (!by_lab_assay.empty()) {
             switch (aReportTables) {
                 case report_tables::all:
                     for (auto entry : by_lab_assay) {
-                        fmt::format_to(out, "{}{}:{} ({})", aPrefix, entry.first.first, assay(entry.first.second), entry.second.size());
-                        for (auto table : entry.second)
-                            fmt::format_to(out, " {}{}", table->date(), rbc(entry.first.second, table->rbc()));
+                        fmt::format_to(out, "{}{}:{} ({})", aPrefix, entry.lab, assay(entry.assay), entry.tables.size());
+                        for (auto table : entry.tables)
+                            fmt::format_to(out, " {}{}", table->date(), rbc(entry.assay, table->rbc()));
                         fmt::format_to(out, "\n");
                     }
-                    if (by_lab_assay.size() > 1)
-                        fmt::format_to(out, "{}Total tables: {}\n", aPrefix, tables.size());
+                    // if (by_lab_assay.size() > 1)
+                    //     fmt::format_to(out, "{}Total tables: {}\n", aPrefix, tables.size());
                     break;
                 case report_tables::oldest:
-                    fmt::format_to(out, "{}Tables:{}\n", aPrefix, tables.size());
+                    // fmt::format_to(out, "{}Tables:{}\n", aPrefix, tables.size());
                     for (auto entry : by_lab_assay)
-                        fmt::format_to(out, "{}{}:{} ({})  oldest:{}", aPrefix, entry.first.first, assay(entry.first.second), entry.second.size(), entry.second.back()->name());
+                        fmt::format_to(out, "{}{}:{} ({})  oldest:{}", aPrefix, entry.lab, assay(entry.assay), entry.tables.size(), entry.tables.back()->name());
                     break;
                 case report_tables::recent:
-                    fmt::format_to(out, "{}Tables:{}\n", aPrefix, tables.size());
+                    // fmt::format_to(out, "{}Tables:{}\n", aPrefix, tables.size());
                     for (auto entry : by_lab_assay)
-                        fmt::format_to(out, "{}{}:{} ({})  recent:{}", aPrefix, entry.first.first, assay(entry.first.second), entry.second.size(), entry.second.front()->name());
+                        fmt::format_to(out, "{}{}:{} ({})  recent:{}", aPrefix, entry.lab, assay(entry.assay), entry.tables.size(), entry.tables.front()->name());
                     break;
                 case report_tables::none:
                     break;
@@ -105,6 +100,42 @@ std::string hidb::report_tables(const hidb::HiDb& hidb, const indexes_t& aTables
         }
         else
             AD_WARNING("hidb::report_tables: no tables!");
+
+        // std::vector<std::shared_ptr<hidb::Table>> tables(aTables.size());
+        // std::transform(aTables.begin(), aTables.end(), tables.begin(), [hidb_tables](size_t aIndex) { return hidb_tables->at(aIndex); });
+        // if (!tables.empty()) {
+        //     std::sort(tables.begin(), tables.end(), [](auto a, auto b) -> bool { return a->date() > b->date(); });
+        //     std::map<std::pair<std::string_view, std::string_view>, std::vector<std::shared_ptr<hidb::Table>>> by_lab_assay;
+        //     for (auto table : tables)
+        //         by_lab_assay[{table->lab(), table->assay()}].push_back(table);
+
+        //     switch (aReportTables) {
+        //         case report_tables::all:
+        //             for (auto entry : by_lab_assay) {
+        //                 fmt::format_to(out, "{}{}:{} ({})", aPrefix, entry.first.first, assay(entry.first.second), entry.second.size());
+        //                 for (auto table : entry.second)
+        //                     fmt::format_to(out, " {}{}", table->date(), rbc(entry.first.second, table->rbc()));
+        //                 fmt::format_to(out, "\n");
+        //             }
+        //             if (by_lab_assay.size() > 1)
+        //                 fmt::format_to(out, "{}Total tables: {}\n", aPrefix, tables.size());
+        //             break;
+        //         case report_tables::oldest:
+        //             fmt::format_to(out, "{}Tables:{}\n", aPrefix, tables.size());
+        //             for (auto entry : by_lab_assay)
+        //                 fmt::format_to(out, "{}{}:{} ({})  oldest:{}", aPrefix, entry.first.first, assay(entry.first.second), entry.second.size(), entry.second.back()->name());
+        //             break;
+        //         case report_tables::recent:
+        //             fmt::format_to(out, "{}Tables:{}\n", aPrefix, tables.size());
+        //             for (auto entry : by_lab_assay)
+        //                 fmt::format_to(out, "{}{}:{} ({})  recent:{}", aPrefix, entry.first.first, assay(entry.first.second), entry.second.size(), entry.second.front()->name());
+        //             break;
+        //         case report_tables::none:
+        //             break;
+        //     }
+        // }
+        // else
+        //     AD_WARNING("hidb::report_tables: no tables!");
     }
     return fmt::to_string(out);
 

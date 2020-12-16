@@ -224,7 +224,7 @@ hidb::SerumP hidb::Sera::at(size_t aIndex) const
 {
     return std::make_shared<hidb::Serum>(mSerum0 + reinterpret_cast<const hidb::bin::ast_offset_t*>(mIndex)[aIndex], mHiDb);
 
-} // hidb::Sera::operator[]
+} // hidb::Sera::at
 
 // ----------------------------------------------------------------------
 
@@ -357,21 +357,59 @@ std::vector<std::string> hidb::Serum::labs(const Tables& all_tables) const
 
 std::shared_ptr<hidb::Tables> hidb::HiDb::tables() const
 {
-    const auto* tables = mData + reinterpret_cast<const hidb::bin::Header*>(mData)->table_offset;
-    const auto number_of_tables = *reinterpret_cast<const hidb::bin::ast_number_t*>(tables);
-    return std::make_shared<hidb::Tables>(static_cast<size_t>(number_of_tables),
-                                          tables + sizeof(hidb::bin::ast_number_t),
-                                          tables + sizeof(hidb::bin::ast_number_t) + sizeof(hidb::bin::ast_offset_t) * (number_of_tables + 1));
+    if (!tables_) {
+        const auto* tables = mData + reinterpret_cast<const hidb::bin::Header*>(mData)->table_offset;
+        const auto number_of_tables = *reinterpret_cast<const hidb::bin::ast_number_t*>(tables);
+        tables_ = std::make_shared<hidb::Tables>(static_cast<size_t>(number_of_tables), tables + sizeof(hidb::bin::ast_number_t),
+                                                 tables + sizeof(hidb::bin::ast_number_t) + sizeof(hidb::bin::ast_offset_t) * (number_of_tables + 1));
+    }
+    return tables_;
 
 } // hidb::HiDb::tables
 
 // ----------------------------------------------------------------------
 
-std::shared_ptr<hidb::Table> hidb::Tables::operator[](size_t aIndex) const
+std::shared_ptr<hidb::Table> hidb::Tables::at(size_t aIndex) const
 {
     return std::make_shared<hidb::Table>(mTable0 + reinterpret_cast<const hidb::bin::ast_offset_t*>(mIndex)[aIndex]);
 
-} // hidb::Tables::operator[]
+} // hidb::Tables::at
+
+// ----------------------------------------------------------------------
+
+std::vector<hidb::lab_assay_table_t> hidb::Tables::sorted(indexes_t indexes, lab_assay_table_t::sort_by_date_order order) const
+{
+    std::vector<std::shared_ptr<Table>> tables_of_indexes(indexes.size());
+    std::transform(std::begin(indexes), std::end(indexes), tables_of_indexes.begin(), [this](size_t aIndex) { return at(aIndex); });
+
+    std::sort(std::begin(tables_of_indexes), std::end(tables_of_indexes), [order](const auto& t1, const auto& t2) {
+        if (t1->lab() == t2->lab()) {
+            if (t1->assay() == t2->assay()) {
+                switch (order) {
+                    case lab_assay_table_t::oldest_first:
+                        return t1->date() < t2->date();
+                    case lab_assay_table_t::recent_first:
+                        return t1->date() > t2->date();
+                }
+                return t1->date() < t2->date(); // g++-10
+            }
+            else
+                return t1->assay() < t2->assay();
+        }
+        else
+            return t1->lab() < t2->lab();
+    });
+
+    std::vector<hidb::lab_assay_table_t> by_lab;
+    for (const auto& table : tables_of_indexes) {
+        if (by_lab.empty() || by_lab.back().lab != table->lab() || by_lab.back().assay != table->assay())
+            by_lab.emplace_back(table->lab(), table->assay(), table);
+        else
+            by_lab.back().tables.push_back(table);
+    }
+    return by_lab;
+
+} // hidb::Tables::sorted
 
 // ----------------------------------------------------------------------
 
@@ -547,15 +585,15 @@ using offset_t = const hidb::bin::ast_offset_t*;
 
 struct first_last_t
 {
-    first_last_t() : first{nullptr}, last{nullptr} {}
-    first_last_t(offset_t a, offset_t b) : first(a), last(b) {}
-    first_last_t(offset_t aFirst, size_t aNumber) : first(aFirst), last(aFirst + aNumber) {}
-    constexpr size_t size() const { return static_cast<size_t>(last - first); }
-    constexpr bool empty() const { return first == last; }
-    constexpr auto begin() const { return first; }
-    constexpr auto end() const { return last; }
-    offset_t first;
-    offset_t last;
+        first_last_t() : first{nullptr}, last{nullptr} {}
+        first_last_t(offset_t a, offset_t b) : first(a), last(b) {}
+        first_last_t(offset_t aFirst, size_t aNumber) : first(aFirst), last(aFirst + aNumber) {}
+        constexpr size_t size() const { return static_cast<size_t>(last - first); }
+        constexpr bool empty() const { return first == last; }
+        constexpr auto begin() const { return first; }
+        constexpr auto end() const { return last; }
+        offset_t first;
+        offset_t last;
 
 }; // struct first_last_t
 

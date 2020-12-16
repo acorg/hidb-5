@@ -182,6 +182,29 @@ namespace hidb
         std::shared_ptr<Table> oldest;
     };
 
+    struct lab_assay_table_t
+    {
+        std::string_view lab;
+        std::string_view assay;
+        std::vector<std::shared_ptr<Table>> tables;
+
+        lab_assay_table_t(std::string_view a_lab, std::string_view a_assay, std::shared_ptr<Table> a_table) : lab{a_lab}, assay{a_assay}, tables{a_table} {}
+
+        enum sort_by_date_order { oldest_first, recent_first };
+
+        void sort_by_date(sort_by_date_order ord)
+        {
+            switch (ord) {
+                case oldest_first:
+                    std::sort(std::begin(tables), std::end(tables), [](const auto& t1, const auto& t2) { return t1->date() < t2->date(); });
+                    break;
+                case recent_first:
+                    std::sort(std::begin(tables), std::end(tables), [](const auto& t1, const auto& t2) { return t1->date() > t2->date(); });
+                    break;
+            }
+        }
+    };
+
     class Tables // : public acmacs::chart::Tables
     {
      public:
@@ -189,7 +212,8 @@ namespace hidb
             : mNumberOfTables(aNumberOfTables), mIndex(aIndex), mTable0(aTable0) {}
 
         size_t size() const { return mNumberOfTables; }
-        std::shared_ptr<Table> operator[](size_t aIndex) const;
+        std::shared_ptr<Table> at(size_t aIndex) const;
+        std::shared_ptr<Table> operator[](size_t aIndex) const { return at(aIndex); }
         std::shared_ptr<Table> most_recent(const indexes_t& aTables) const;
         std::shared_ptr<Table> oldest(const indexes_t& aTables) const;
         std::vector<TableStat> stat(const indexes_t& aTables) const;
@@ -197,6 +221,8 @@ namespace hidb
         using iterator = acmacs::iterator<Tables, std::shared_ptr<Table>>;
         iterator begin() const { return {*this, 0}; }
         iterator end() const { return {*this, size()}; }
+
+        std::vector<lab_assay_table_t> sorted(indexes_t indexes, lab_assay_table_t::sort_by_date_order order) const;
 
      private:
         size_t mNumberOfTables;
@@ -217,8 +243,11 @@ namespace hidb
         std::shared_ptr<Tables> tables() const;
         std::string_view virus_type() const;
 
-        std::string_view lab(const Antigen& aAntigen, const Tables& aTables) const { return aTables[aAntigen.tables()[0]]->lab(); }
-        std::string_view lab(const Serum& aSerum, const Tables& aTables) const { return aTables[aSerum.tables()[0]]->lab(); }
+        std::string_view lab(const Antigen& aAntigen) const { return tables()->at(aAntigen.tables()[0])->lab(); }
+        std::string_view lab(const Serum& aSerum) const { return tables()->at(aSerum.tables()[0])->lab(); }
+
+        std::vector<lab_assay_table_t> tables(const Antigen& aAntigen, lab_assay_table_t::sort_by_date_order order) const { return tables()->sorted(aAntigen.tables(), order); }
+        std::vector<lab_assay_table_t> tables(const Serum& aSerum, lab_assay_table_t::sort_by_date_order order) const { return tables()->sorted(aSerum.tables(), order); }
 
         // void find_homologous_antigens_for_sera_of_chart(Chart& aChart) const; // sets homologous_antigen attribute in chart
         // std::string serum_date(const SerumData& aSerum) const; // for stat
@@ -232,6 +261,7 @@ namespace hidb
         const char* mData = nullptr;
         std::string mDataStorage;
         acmacs::file::read_access mAccess;
+        mutable std::shared_ptr<Tables> tables_;
 
     }; // class HiDb
 
