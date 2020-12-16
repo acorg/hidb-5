@@ -71,14 +71,14 @@ std::string hidb::report_tables(const hidb::HiDb& hidb, const indexes_t& aTables
     fmt::memory_buffer out;
     if (aReportTables != report_tables::none) {
         auto hidb_tables = hidb.tables();
-        const auto by_lab_assay = hidb_tables->sorted(aTables, lab_assay_table_t::recent_first);
+        const auto by_lab_assay = hidb_tables->sorted(aTables, lab_assay_rbc_table_t::recent_first);
         if (!by_lab_assay.empty()) {
             switch (aReportTables) {
                 case report_tables::all:
                     for (auto entry : by_lab_assay) {
                         fmt::format_to(out, "{}{}:{} ({})", aPrefix, entry.lab, assay(entry.assay), entry.tables.size());
                         for (auto table : entry.tables)
-                            fmt::format_to(out, " {}{}", table->date(), rbc(entry.assay, table->rbc()));
+                            fmt::format_to(out, " {}{}", table->date(), rbc(entry.assay, entry.rbc));
                         fmt::format_to(out, "\n");
                     }
                     // if (by_lab_assay.size() > 1)

@@ -182,13 +182,14 @@ namespace hidb
         std::shared_ptr<Table> oldest;
     };
 
-    struct lab_assay_table_t
+    struct lab_assay_rbc_table_t
     {
         std::string_view lab;
         std::string_view assay;
+        std::string_view rbc;
         std::vector<std::shared_ptr<Table>> tables;
 
-        lab_assay_table_t(std::string_view a_lab, std::string_view a_assay, std::shared_ptr<Table> a_table) : lab{a_lab}, assay{a_assay}, tables{a_table} {}
+        lab_assay_rbc_table_t(std::string_view a_lab, std::string_view a_assay, std::string_view a_rbc, std::shared_ptr<Table> a_table) : lab{a_lab}, assay{a_assay}, rbc{a_rbc}, tables{a_table} {}
 
         enum sort_by_date_order { oldest_first, recent_first };
 
@@ -222,7 +223,7 @@ namespace hidb
         iterator begin() const { return {*this, 0}; }
         iterator end() const { return {*this, size()}; }
 
-        std::vector<lab_assay_table_t> sorted(indexes_t indexes, lab_assay_table_t::sort_by_date_order order) const;
+        std::vector<lab_assay_rbc_table_t> sorted(indexes_t indexes, lab_assay_rbc_table_t::sort_by_date_order order) const;
 
      private:
         size_t mNumberOfTables;
@@ -246,8 +247,8 @@ namespace hidb
         std::string_view lab(const Antigen& aAntigen) const { return tables()->at(aAntigen.tables()[0])->lab(); }
         std::string_view lab(const Serum& aSerum) const { return tables()->at(aSerum.tables()[0])->lab(); }
 
-        std::vector<lab_assay_table_t> tables(const Antigen& aAntigen, lab_assay_table_t::sort_by_date_order order) const { return tables()->sorted(aAntigen.tables(), order); }
-        std::vector<lab_assay_table_t> tables(const Serum& aSerum, lab_assay_table_t::sort_by_date_order order) const { return tables()->sorted(aSerum.tables(), order); }
+        std::vector<lab_assay_rbc_table_t> tables(const Antigen& aAntigen, lab_assay_rbc_table_t::sort_by_date_order order) const { return tables()->sorted(aAntigen.tables(), order); }
+        std::vector<lab_assay_rbc_table_t> tables(const Serum& aSerum, lab_assay_rbc_table_t::sort_by_date_order order) const { return tables()->sorted(aSerum.tables(), order); }
 
         // void find_homologous_antigens_for_sera_of_chart(Chart& aChart) const; // sets homologous_antigen attribute in chart
         // std::string serum_date(const SerumData& aSerum) const; // for stat

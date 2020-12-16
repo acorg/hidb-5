@@ -377,33 +377,30 @@ std::shared_ptr<hidb::Table> hidb::Tables::at(size_t aIndex) const
 
 // ----------------------------------------------------------------------
 
-std::vector<hidb::lab_assay_table_t> hidb::Tables::sorted(indexes_t indexes, lab_assay_table_t::sort_by_date_order order) const
+std::vector<hidb::lab_assay_rbc_table_t> hidb::Tables::sorted(indexes_t indexes, lab_assay_rbc_table_t::sort_by_date_order order) const
 {
     std::vector<std::shared_ptr<Table>> tables_of_indexes(indexes.size());
     std::transform(std::begin(indexes), std::end(indexes), tables_of_indexes.begin(), [this](size_t aIndex) { return at(aIndex); });
 
     std::sort(std::begin(tables_of_indexes), std::end(tables_of_indexes), [order](const auto& t1, const auto& t2) {
-        if (t1->lab() == t2->lab()) {
-            if (t1->assay() == t2->assay()) {
-                switch (order) {
-                    case lab_assay_table_t::oldest_first:
-                        return t1->date() < t2->date();
-                    case lab_assay_table_t::recent_first:
-                        return t1->date() > t2->date();
-                }
-                return t1->date() < t2->date(); // g++-10
+        const auto k1 = fmt::format("{}:{}:{}", t1->lab(), t1->assay(), t1->rbc()), k2 = fmt::format("{}:{}:{}", t2->lab(), t2->assay(), t2->rbc());
+        if (k1 == k2) {
+            switch (order) {
+                case lab_assay_rbc_table_t::oldest_first:
+                    return t1->date() < t2->date();
+                case lab_assay_rbc_table_t::recent_first:
+                    return t1->date() > t2->date();
             }
-            else
-                return t1->assay() < t2->assay();
+            return t1->date() < t2->date(); // g++-10
         }
         else
-            return t1->lab() < t2->lab();
+            return k1 < k2;
     });
 
-    std::vector<hidb::lab_assay_table_t> by_lab;
+    std::vector<hidb::lab_assay_rbc_table_t> by_lab;
     for (const auto& table : tables_of_indexes) {
-        if (by_lab.empty() || by_lab.back().lab != table->lab() || by_lab.back().assay != table->assay())
-            by_lab.emplace_back(table->lab(), table->assay(), table);
+        if (by_lab.empty() || by_lab.back().lab != table->lab() || by_lab.back().assay != table->assay() || by_lab.back().rbc != table->rbc())
+            by_lab.emplace_back(table->lab(), table->assay(), table->rbc(), table);
         else
             by_lab.back().tables.push_back(table);
     }
