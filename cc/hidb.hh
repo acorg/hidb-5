@@ -48,6 +48,8 @@ namespace hidb
 
         std::string_view country(const LocDb& locdb) const noexcept;
 
+        std::string full_name() const;
+
      private:
         const char* mAntigen;
         const HiDb& mHiDb;
@@ -111,6 +113,8 @@ namespace hidb
         std::string_view location() const;
         std::string_view isolation() const;
         std::string year() const;
+
+        std::string full_name() const;
 
      private:
         const char* mSerum;

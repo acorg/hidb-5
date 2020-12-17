@@ -5,6 +5,7 @@
 #include "acmacs-base/fmt.hh"
 #include "acmacs-base/string.hh"
 #include "acmacs-base/string-split.hh"
+#include "acmacs-base/string-join.hh"
 #include "acmacs-virus/virus-name-v1.hh"
 #include "hidb-5/hidb.hh"
 #include "hidb-5/hidb-bin.hh"
@@ -207,6 +208,14 @@ std::string_view hidb::Antigen::country(const LocDb& locdb) const noexcept
 
 // ----------------------------------------------------------------------
 
+std::string hidb::Antigen::full_name() const
+{
+    return acmacs::string::join(acmacs::string::join_space, name(), acmacs::string::join(acmacs::string::join_space, annotations()), reassortant(), passage());
+
+} // hidb::Antigen::full_name
+
+// ----------------------------------------------------------------------
+
 std::shared_ptr<hidb::Sera> hidb::HiDb::sera() const
 {
     const auto* sera = mData + reinterpret_cast<const hidb::bin::Header*>(mData)->serum_offset;
@@ -352,6 +361,14 @@ std::vector<std::string> hidb::Serum::labs(const Tables& all_tables) const
     return result;
 
 } // hidb::Serum::labs
+
+// ----------------------------------------------------------------------
+
+std::string hidb::Serum::full_name() const
+{
+    return acmacs::string::join(acmacs::string::join_space, name(), acmacs::string::join(acmacs::string::join_space, annotations()), reassortant(), serum_id());
+
+} // hidb::Serum::full_name
 
 // ----------------------------------------------------------------------
 
