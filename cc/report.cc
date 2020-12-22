@@ -58,9 +58,11 @@ std::string hidb::report_tables(const hidb::HiDb& hidb, const indexes_t& aTables
     const auto rbc = [](std::string_view aAssay, std::string_view src) -> std::string_view {
         if (aAssay == "HI") {
             if (src == "guinea-pig")
-                return ":gp"sv;
+                return "gp"sv;
             else if (src == "turkey")
-                return ":tu"sv;
+                return "tu"sv;
+            else if (src == "chicken")
+                return "ch"sv;
             else
                 return src;
         }
@@ -78,7 +80,7 @@ std::string hidb::report_tables(const hidb::HiDb& hidb, const indexes_t& aTables
                     for (auto entry : by_lab_assay) {
                         fmt::format_to(out, "{}{}:{} ({})", aPrefix, entry.lab, assay(entry.assay), entry.tables.size());
                         for (auto table : entry.tables)
-                            fmt::format_to(out, " {}{}", table->date(), rbc(entry.assay, entry.rbc));
+                            fmt::format_to(out, " {}:{}", table->date(), rbc(entry.assay, entry.rbc));
                         fmt::format_to(out, "\n");
                     }
                     // if (by_lab_assay.size() > 1)
