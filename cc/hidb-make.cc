@@ -12,7 +12,7 @@ struct Options : public argv
 {
     Options(int a_argc, const char* const a_argv[], on_error on_err = on_error::exit) : argv() { parse(a_argc, a_argv, on_err); }
 
-    option<bool> report_time{*this, "time", desc{"report time of loading chart"}};
+    // option<bool> report_time{*this, "time", desc{"report time of loading chart"}};
 
     argument<str> output_hidb{*this, arg_name{"hidb5.json.xz"}, mandatory};
     argument<str_array> charts{*this, arg_name{"input-chart-file"}, mandatory};
@@ -25,7 +25,7 @@ int main(int argc, char* const argv[])
         Options opt(argc, argv);
         HidbMaker maker;
         for (const auto& source : *opt.charts) {
-            auto chart = acmacs::chart::import_from_file(source, acmacs::chart::Verify::All, do_report_time(opt.report_time));
+            auto chart = acmacs::chart::import_from_file(source); // , acmacs::chart::Verify::All, do_report_time(opt.report_time));
             maker.add(*chart);
         }
         maker.save(opt.output_hidb);
