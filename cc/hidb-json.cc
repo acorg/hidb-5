@@ -3,7 +3,6 @@
 #include <limits>
 
 #include "acmacs-base/string.hh"
-#include "acmacs-base/stream.hh"
 #include "acmacs-base/timeit.hh"
 #include "acmacs-base/rjson-v2.hh"
 #include "hidb-5/hidb-json.hh"
@@ -481,14 +480,14 @@ Estimations::Estimations(const rjson::value& aSource, bool verbose)
             ;
 
     if (verbose)
-        std::cerr << "Estimated bin size: " << size << '\n';
+        fmt::print(stderr, "Estimated bin size: {}\n", size);
 
     if (verbose)
-        std::cerr << "virus_types: " << virus_types << '\n';
+        fmt::print(stderr, "virus_types: {}\n", virus_types);
     const auto most_often = std::max_element(virus_types.begin(), virus_types.end(), [](const auto& a, const auto& b) -> bool { return a.second < b.second; });
     virus_type = most_often->first;
     if (verbose)
-        std::cerr << "virus_type: " << virus_type << '\n';
+        fmt::print(stderr, "virus_type: {}\n", virus_type);
 
 } // Estimations::Estimations
 

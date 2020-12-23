@@ -1,4 +1,3 @@
-#include "acmacs-base/stream.hh"
 #include "acmacs-virus/virus-name-v1.hh"
 #include "acmacs-base/rjson-v2.hh"
 #include "acmacs-base/read-file.hh"

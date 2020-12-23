@@ -1,5 +1,4 @@
 #include "acmacs-base/argv.hh"
-#include "acmacs-base/stream.hh"
 #include "hidb-5/hidb.hh"
 
 // ----------------------------------------------------------------------
