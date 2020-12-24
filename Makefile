@@ -39,7 +39,7 @@ LDLIBS = \
 
 install: install-headers $(TARGETS)
 	$(call install_lib,$(HIDB_LIB))
-	$(call symbolic_link_wildcard,$(DIST)/hidb5*,$(AD_BIN))
+	$(call install_all,$(AD_PACKAGE_NAME))
 
 test: install
 	test/test
@@ -47,15 +47,15 @@ test: install
 
 # ----------------------------------------------------------------------
 
-$(HIDB_LIB): $(patsubst %.cc,$(BUILD)/%.o,$(HIDB_SOURCES)) | $(DIST)
+$(HIDB_LIB): $(patsubst %.cc,$(BUILD)/%.o,$(HIDB_SOURCES)) | $(DIST) install-headers
 	$(call echo_shared_lib,$@)
 	$(call make_shared_lib,$(HIDB_LIB_NAME),$(HIDB_LIB_MAJOR),$(HIDB_LIB_MINOR)) $(LDFLAGS) -o $@ $^ $(LDLIBS)
 
-$(DIST)/hidb5-make: $(patsubst %.cc,$(BUILD)/%.o,$(HIDB_MAKE_SOURCES)) | $(DIST)
+$(DIST)/hidb5-make: $(patsubst %.cc,$(BUILD)/%.o,$(HIDB_MAKE_SOURCES)) | $(DIST) install-headers
 	$(call echo_link_exe,$@)
 	$(CXX) $(LDFLAGS) -o $@ $^ $(LDLIBS) $(AD_RPATH)
 
-$(DIST)/%: $(BUILD)/%.o | $(HIDB_LIB)
+$(DIST)/%: $(BUILD)/%.o | $(HIDB_LIB) install-headers
 	$(call echo_link_exe,$@)
 	$(CXX) $(LDFLAGS) -o $@ $^ $(HIDB_LIB) $(LDLIBS) $(AD_RPATH)
 
