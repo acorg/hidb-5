@@ -22,7 +22,7 @@ int main(int argc, char* const argv[])
         std::vector<std::string> dates;
         std::map<std::string, size_t> years;
         for (size_t ag_no = 0; ag_no < antigens->size(); ++ag_no) {
-            auto antigen = antigens->at(ag_no);
+            auto antigen = antigens->at(hidb::AntigenIndex{ag_no});
             const std::string date = antigen->date_compact().substr(0, 6);
             if (!date.empty()) {
                 dates.push_back(date);

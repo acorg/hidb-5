@@ -37,7 +37,7 @@ int main(int argc, char* const argv[])
             auto antigens = hidb.antigens();
             auto tables = hidb.tables();
             for (auto ag_no = 0UL; ag_no < antigens->size(); ++ag_no) {
-                auto antigen = antigens->at(ag_no);
+                auto antigen = antigens->at(hidb::AntigenIndex{ag_no});
                 const auto date = date::from_string(antigen->date_compact());
                 const auto lineage = antigen->lineage();
                 const auto country = antigen->country(locdb);

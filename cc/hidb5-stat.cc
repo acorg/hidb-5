@@ -187,7 +187,7 @@ data_t scan_antigens(std::string_view aStart, std::string_view aEnd)
         const auto& hidb = hidb::get(acmacs::virus::type_subtype_t{virus_type}, report_time::no);
         auto antigens = hidb.antigens();
         for (size_t ag_no = 0; ag_no < antigens->size(); ++ag_no) {
-            auto antigen = antigens->at(ag_no);
+            auto antigen = antigens->at(hidb::AntigenIndex{ag_no});
             std::string date = antigen->date_compact().substr(0, 6);
             if (date.empty())
                 date = antigen->year() + "99";
@@ -222,11 +222,11 @@ std::pair<data_t, data_t> scan_sera(std::string_view aStart, std::string_view aE
         auto antigens = hidb.antigens();
         std::set<std::string> names;
         for (size_t sr_no = 0; sr_no < sera->size(); ++sr_no) {
-            auto serum = sera->at(sr_no);
+            auto serum = sera->at(hidb::SerumIndex{sr_no});
 
             std::string date;
             for (auto ag_no: serum->homologous_antigens()) {
-                date = antigens->at(ag_no)->date_compact().substr(0, 6);
+                date = antigens->at(hidb::AntigenIndex{ag_no})->date_compact().substr(0, 6);
                 if (!date.empty())
                     break;
             }

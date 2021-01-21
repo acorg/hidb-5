@@ -97,7 +97,7 @@ void find_antigens(const hidb::HiDb& hidb, std::string_view aName)
             prefix = "*** ";
         }
         for (auto antigen_index: antigen_index_list)
-            report_antigen(hidb, *antigen_index.first, hidb::report_tables::all, prefix);
+            report_antigen(hidb, *hidb.antigens()->at(antigen_index), hidb::report_tables::all, prefix);
     }
     catch (acmacs::locationdb::LocationNotFound& err) {
         throw std::runtime_error(fmt::format("location not found: {}", err));
@@ -127,7 +127,7 @@ void find_sera(const hidb::HiDb& hidb, std::string_view aName)
             prefix = "*** ";
         }
         for (auto serum_index: serum_index_list)
-            report_serum(hidb, *serum_index.first, hidb::report_tables::all);
+            report_serum(hidb, *hidb.sera()->at(serum_index), hidb::report_tables::all);
     }
     catch (acmacs::locationdb::LocationNotFound& err) {
         throw std::runtime_error(fmt::format("location not found: {}", err));

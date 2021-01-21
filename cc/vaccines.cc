@@ -25,7 +25,7 @@ hidb::VaccinesOfChart hidb::vaccines(const acmacs::chart::Chart& aChart)
             auto chart_antigen = aChart.antigen(ag_no);
             if (const auto hidb_antigen_index = hidb_antigens->find(*chart_antigen, passage_strictness::ignore_if_empty); hidb_antigen_index.has_value()) {
                 std::vector<hidb::Vaccines::HomologousSerum> homologous_sera;
-                for (auto sd : hidb_sera->find_homologous(hidb_antigen_index->second, *hidb_antigen_index->first)) {
+                for (auto sd : hidb_sera->find_homologous(*hidb_antigen_index->second, *hidb_antigen_index->first)) {
                     if (const auto sr_no = chart_sera->find_by_full_name(fmt::format("{}/{}", virus_type, sd->full_name()))) {
                         homologous_sera.emplace_back(*sr_no, (*chart_sera)[*sr_no], sd, hidb.tables()->most_recent(sd->tables()));
                     }

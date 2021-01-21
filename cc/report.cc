@@ -2,7 +2,7 @@
 
 // ----------------------------------------------------------------------
 
-void hidb::report_antigens(const hidb::HiDb& hidb, const indexes_t& aIndexes, enum report_tables aReportTables, std::string_view aPrefix)
+void hidb::report_antigens(const hidb::HiDb& hidb, const AntigenIndexList& aIndexes, enum report_tables aReportTables, std::string_view aPrefix)
 {
     for (auto index: aIndexes)
         report_antigen(hidb, index, aReportTables, aPrefix);
@@ -23,7 +23,7 @@ void hidb::report_antigen(const hidb::HiDb& hidb, const hidb::Antigen& aAntigen,
 
 // ----------------------------------------------------------------------
 
-void hidb::report_sera(const hidb::HiDb& hidb, const indexes_t& aIndexes, enum report_tables aReportTables, std::string_view aPrefix)
+void hidb::report_sera(const hidb::HiDb& hidb, const SerumIndexList& aIndexes, enum report_tables aReportTables, std::string_view aPrefix)
 {
     for (auto index: aIndexes)
         report_serum(hidb, index, aReportTables, aPrefix);
@@ -37,7 +37,7 @@ void hidb::report_serum(const hidb::HiDb& hidb, const hidb::Serum& aSerum, enum 
     fmt::print("{}{} {} {} {} {} {} {}\n", aPrefix, aSerum.name(), aSerum.annotations(), aSerum.reassortant(), aSerum.serum_id(), aSerum.serum_species(), aSerum.passage(), aSerum.lineage());
     const std::string pref = std::string{aPrefix} + "    ";
     for (size_t ag_no: aSerum.homologous_antigens())
-        report_antigen(hidb, ag_no, report_tables::none, pref);
+        report_antigen(hidb, AntigenIndex{ag_no}, report_tables::none, pref);
     fmt::print("{}\n", report_tables(hidb, aSerum.tables(), aReportTables, pref));
 
 } // hidb::report_serum

@@ -1,8 +1,7 @@
 #pragma once
 
-#include <string>
-
 #include "acmacs-base/read-file.hh"
+#include "acmacs-base/named-type.hh"
 #include "locationdb/locdb.hh"
 #include "acmacs-chart-2/chart.hh"
 #include "hidb-5/hidb-set.hh"
@@ -56,9 +55,12 @@ namespace hidb
 
     }; // class Antigen
 
+    using AntigenIndex = acmacs::named_size_t<struct AntigenIndex_tag>;
+    using AntigenIndexList = std::vector<AntigenIndex>;
+
     using AntigenP = std::shared_ptr<Antigen>;
     using AntigenPList = std::vector<AntigenP>;
-    using AntigenPIndex = std::pair<AntigenP, size_t>;
+    using AntigenPIndex = std::pair<AntigenP, AntigenIndex>;
     using AntigenPIndexList = std::vector<AntigenPIndex>;
 
     class Antigens : public acmacs::chart::Antigens
@@ -68,9 +70,10 @@ namespace hidb
             : mNumberOfAntigens(aNumberOfAntigens), mIndex(aIndex), mAntigen0(aAntigen0), mHiDb(aHiDb) {}
 
         size_t size() const override { return mNumberOfAntigens; }
-        std::shared_ptr<acmacs::chart::Antigen> operator[](size_t aIndex) const override { return at(aIndex); }
-        AntigenP at(size_t aIndex) const;
-        AntigenPIndexList find(std::string_view aName, fix_location aFixLocation, find_fuzzy fuzzy = find_fuzzy::no) const;
+        std::shared_ptr<acmacs::chart::Antigen> operator[](size_t aIndex) const override { return at(AntigenIndex{aIndex}); }
+        AntigenP at(AntigenIndex aIndex) const;
+        // AntigenPIndexList find(std::string_view aName, fix_location aFixLocation, find_fuzzy fuzzy = find_fuzzy::no) const;
+        AntigenIndexList find(std::string_view aName, fix_location aFixLocation, find_fuzzy fuzzy = find_fuzzy::no) const;
         AntigenPList find_labid(std::string_view labid) const;
         std::optional<AntigenPIndex> find(const acmacs::chart::Antigen& aAntigen, passage_strictness aPassageStrictness = passage_strictness::yes) const;
         AntigenPList find(const acmacs::chart::Antigens& aAntigens) const; // entry* per each antigen
@@ -122,6 +125,9 @@ namespace hidb
 
     }; // class Serum
 
+    using SerumIndex = acmacs::named_size_t<struct SerumIndex_tag>;
+    using SerumIndexList = std::vector<SerumIndex>;
+
     using SerumP = std::shared_ptr<Serum>;
     using SerumPList = std::vector<SerumP>;
     using SerumPIndex = std::pair<SerumP, size_t>;
@@ -134,9 +140,9 @@ namespace hidb
             : mNumberOfSera(aNumberOfSera), mIndex(aIndex), mSerum0(aSerum0), mHiDb(aHiDb) {}
 
         size_t size() const override { return mNumberOfSera; }
-        std::shared_ptr<acmacs::chart::Serum> operator[](size_t aIndex) const override { return at(aIndex); }
-        SerumP at(size_t aIndex) const;
-        SerumPIndexList find(std::string_view aName, fix_location aFixLocation, find_fuzzy fuzzy = find_fuzzy::no) const;
+        std::shared_ptr<acmacs::chart::Serum> operator[](size_t aIndex) const override { return at(SerumIndex{aIndex}); }
+        SerumP at(SerumIndex aIndex) const;
+        SerumIndexList find(std::string_view aName, fix_location aFixLocation, find_fuzzy fuzzy = find_fuzzy::no) const;
         std::optional<SerumPIndex> find(const acmacs::chart::Serum& aSerum) const; // find_serum_of_chart
         SerumPList find(const acmacs::chart::Sera& aSera) const; // entry* per each serum
         SerumPList find(const acmacs::chart::Sera& aSera, const acmacs::chart::Indexes& indexes) const; // entry* per each index
@@ -166,7 +172,7 @@ namespace hidb
         size_t number_of_sera() const;
         indexes_t antigens() const;
         indexes_t sera() const;
-        indexes_t reference_antigens(const HiDb& aHidb) const;
+        AntigenIndexList reference_antigens(const HiDb& aHidb) const;
 
      private:
         const bin::Table* mTable;

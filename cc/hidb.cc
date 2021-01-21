@@ -63,9 +63,9 @@ std::string_view hidb::HiDb::virus_type() const
 
 // ----------------------------------------------------------------------
 
-hidb::AntigenP hidb::Antigens::at(size_t aIndex) const
+hidb::AntigenP hidb::Antigens::at(AntigenIndex aIndex) const
 {
-    return std::make_shared<hidb::Antigen>(mAntigen0 + reinterpret_cast<const hidb::bin::ast_offset_t*>(mIndex)[aIndex], mHiDb);
+    return std::make_shared<hidb::Antigen>(mAntigen0 + reinterpret_cast<const hidb::bin::ast_offset_t*>(mIndex)[*aIndex], mHiDb);
 }
 
 // ----------------------------------------------------------------------
@@ -229,9 +229,9 @@ std::shared_ptr<hidb::Sera> hidb::HiDb::sera() const
 
 // ----------------------------------------------------------------------
 
-hidb::SerumP hidb::Sera::at(size_t aIndex) const
+hidb::SerumP hidb::Sera::at(SerumIndex aIndex) const
 {
-    return std::make_shared<hidb::Serum>(mSerum0 + reinterpret_cast<const hidb::bin::ast_offset_t*>(mIndex)[aIndex], mHiDb);
+    return std::make_shared<hidb::Serum>(mSerum0 + reinterpret_cast<const hidb::bin::ast_offset_t*>(mIndex)[*aIndex], mHiDb);
 
 } // hidb::Sera::at
 
@@ -501,7 +501,7 @@ hidb::indexes_t hidb::Table::sera() const
 
 // ----------------------------------------------------------------------
 
-hidb::indexes_t hidb::Table::reference_antigens(const HiDb& aHidb) const
+hidb::AntigenIndexList hidb::Table::reference_antigens(const HiDb& aHidb) const
 {
       // antigens with names (without annotations and reassortant) that match serum name (without annotations and reassortant) in the same table are reference
       // there is minor possibility that test antigen with the same name present, it becomes false positive
@@ -509,20 +509,20 @@ hidb::indexes_t hidb::Table::reference_antigens(const HiDb& aHidb) const
     std::vector<std::string> serum_names(mTable->number_of_sera());
     std::transform(mTable->serum_begin(), mTable->serum_end(), serum_names.begin(),
                    [&sera](size_t serum_index) -> std::string {
-                       auto serum = sera->at(serum_index);
+                       auto serum = sera->at(SerumIndex{serum_index});
                        return *serum->name();
                          // return string::join(acmacs::string::join_space, {serum->name(), string::join(acmacs::string::join_space, serum->annotations()), serum->reassortant()});
                    });
       // AD_DEBUG("sera: {}", serum_names);
 
-    hidb::indexes_t result;
+    AntigenIndexList result;
     auto antigens = aHidb.antigens();
     for (const auto* antigen_index = mTable->antigen_begin(); antigen_index != mTable->antigen_end(); ++antigen_index) {
-        auto antigen = antigens->at(*antigen_index);
+        auto antigen = antigens->at(AntigenIndex{*antigen_index});
         const auto antigen_name = antigen->name();
           // const auto antigen_name = string::join(acmacs::string::join_space, {antigen->name(), string::join(acmacs::string::join_space, antigen->annotations()), antigen->reassortant()});
         if (std::find(serum_names.begin(), serum_names.end(), *antigen_name) != serum_names.end())
-            result.push_back(*antigen_index);
+            result.push_back(AntigenIndex{*antigen_index});
     }
     return result;
 
@@ -641,7 +641,7 @@ template <typename AgSr, typename S> inline first_last_t find_by(first_last_t fi
 
 // ----------------------------------------------------------------------
 
-hidb::AntigenPIndexList hidb::Antigens::find(std::string_view aName, fix_location aFixLocation, find_fuzzy fuzzy) const
+hidb::AntigenIndexList hidb::Antigens::find(std::string_view aName, fix_location aFixLocation, find_fuzzy fuzzy) const
 {
     const first_last_t all_antigens(reinterpret_cast<const hidb::bin::ast_offset_t*>(mIndex), mNumberOfAntigens);
     first_last_t first_last;
@@ -658,32 +658,32 @@ hidb::AntigenPIndexList hidb::Antigens::find(std::string_view aName, fix_locatio
         if (first_last.empty()) {
             const auto parts = acmacs::string::split(aName, "/");
             switch (parts.size()) {
-              case 1:           // just location?
-                  first_last = find_by<hidb::bin::Antigen>(all_antigens, mAntigen0, parts[0], std::string_view{}, std::string_view{}, fuzzy);
-                  break;
-              case 2:           // location/isolation
-                  first_last = find_by<hidb::bin::Antigen>(all_antigens, mAntigen0, parts[0], parts[1], std::string_view{}, fuzzy);
-                  break;
-              case 3:          // host/location/isolation?
-                  first_last = find_by<hidb::bin::Antigen>(all_antigens, mAntigen0, parts[1], parts[2], std::string_view{}, fuzzy);
-                  break;
-              default:          // ?
-                  AD_WARNING("don't know how to split: {}", aName);
-                  break;
+                case 1: // just location?
+                    first_last = find_by<hidb::bin::Antigen>(all_antigens, mAntigen0, parts[0], std::string_view{}, std::string_view{}, fuzzy);
+                    break;
+                case 2: // location/isolation
+                    first_last = find_by<hidb::bin::Antigen>(all_antigens, mAntigen0, parts[0], parts[1], std::string_view{}, fuzzy);
+                    break;
+                case 3: // host/location/isolation?
+                    first_last = find_by<hidb::bin::Antigen>(all_antigens, mAntigen0, parts[1], parts[2], std::string_view{}, fuzzy);
+                    break;
+                default: // ?
+                    AD_WARNING("don't know how to split: {}", aName);
+                    break;
             }
         }
     }
 
-    AntigenPIndexList result(first_last.size());
+    AntigenIndexList result(first_last.size());
     std::transform(first_last.first, first_last.last, result.begin(),
-                   [this,index_begin=all_antigens.first](const hidb::bin::ast_offset_t& offset) -> AntigenPIndex { return {std::make_shared<Antigen>(this->mAntigen0 + offset, mHiDb), static_cast<size_t>(&offset - index_begin)}; });
+                   [index_begin = all_antigens.first](const hidb::bin::ast_offset_t& offset) { return AntigenIndex{&offset - index_begin}; });
     return result;
 
 } // hidb::Antigens::find
 
 // ----------------------------------------------------------------------
 
-hidb::SerumPIndexList hidb::Sera::find(std::string_view aName, fix_location aFixLocation, find_fuzzy fuzzy) const
+hidb::SerumIndexList hidb::Sera::find(std::string_view aName, fix_location aFixLocation, find_fuzzy fuzzy) const
 {
     const first_last_t all_sera(reinterpret_cast<const hidb::bin::ast_offset_t*>(mIndex), mNumberOfSera);
     first_last_t first_last;
@@ -715,9 +715,9 @@ hidb::SerumPIndexList hidb::Sera::find(std::string_view aName, fix_location aFix
         }
     }
 
-    SerumPIndexList result(first_last.size());
+    SerumIndexList result(first_last.size());
     std::transform(first_last.first, first_last.last, result.begin(),
-                   [this,index_begin=all_sera.first](const hidb::bin::ast_offset_t& offset) -> SerumPIndex { return {std::make_shared<Serum>(this->mSerum0 + offset, mHiDb), static_cast<size_t>(&offset - index_begin)}; });
+                   [index_begin=all_sera.first](const hidb::bin::ast_offset_t& offset) { return SerumIndex{&offset - index_begin}; });
     return result;
 
 } // hidb::Sera::find
@@ -784,29 +784,29 @@ std::optional<hidb::AntigenPIndex> hidb::Antigens::find(const acmacs::chart::Ant
             case passage_strictness::ignore:
                 return true;
         }
-        return false;           // hey g++-10
+        return false; // hey g++-10
     }();
     for (auto antigen_index : antigen_index_list) {
-        const auto& antigen = antigen_index.first;
+        auto antigen = at(antigen_index);
         if (antigen->annotations() == aAntigen.annotations() && antigen->reassortant() == aAntigen.reassortant() && (ignore_passage || antigen->passage() == aAntigen.passage()))
-            return antigen_index;
+            return std::make_pair(antigen, antigen_index);
     }
-        return std::nullopt;
-    } // hidb::Antigens::find
+    return std::nullopt;
 
-    // ----------------------------------------------------------------------
+} // hidb::Antigens::find
 
-    hidb::AntigenPList
-    hidb::Antigens::find(const acmacs::chart::Antigens& aAntigens) const
-    {
-        hidb::AntigenPList result;
-        for (auto antigen : aAntigens) {
-            if (const auto found = find(*antigen); found.has_value())
-                result.push_back(found->first);
-            else
-                result.emplace_back(nullptr);
-        }
-        return result;
+// ----------------------------------------------------------------------
+
+hidb::AntigenPList hidb::Antigens::find(const acmacs::chart::Antigens& aAntigens) const
+{
+    hidb::AntigenPList result;
+    for (auto antigen : aAntigens) {
+        if (const auto found = find(*antigen); found.has_value())
+            result.push_back(found->first);
+        else
+            result.emplace_back(nullptr);
+    }
+    return result;
 
 } // hidb::Antigens::find
 
@@ -832,12 +832,12 @@ std::optional<hidb::SerumPIndex> hidb::Sera::find(const acmacs::chart::Serum& aS
     const auto serum_index_list = find(aSerum.name(), hidb::fix_location::no);
     std::optional<SerumPIndex> with_unknown_serum_id;
     for (auto serum_index: serum_index_list) {
-        const auto& serum = serum_index.first;
+        auto serum = at(serum_index);
         if (serum->annotations() == aSerum.annotations() && serum->reassortant() == aSerum.reassortant()) {
             if (serum->serum_id() == aSerum.serum_id())
-                return serum_index;
+                return hidb::SerumPIndex{serum, serum_index};
             else if (serum->serum_id().empty() && aSerum.serum_id() == acmacs::chart::SerumId{"UNKNOWN"}) // old tables may have UNKNOWN serum id, but database stores empty serum_id
-                with_unknown_serum_id = serum_index;
+                with_unknown_serum_id = hidb::SerumPIndex{serum, serum_index};
         }
     }
     if (with_unknown_serum_id.has_value())
