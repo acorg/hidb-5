@@ -70,6 +70,26 @@ hidb::AntigenP hidb::Antigens::at(AntigenIndex aIndex) const
 
 // ----------------------------------------------------------------------
 
+hidb::AntigenIndex hidb::Antigens::index(const hidb::bin::Antigen* antigen_bin) const
+{
+    const auto antigen_record_offset = static_cast<hidb::bin::ast_offset_t>(antigen_bin - reinterpret_cast<const hidb::bin::Antigen*>(mAntigen0));
+    const auto* index = reinterpret_cast<const hidb::bin::ast_offset_t*>(mIndex);
+    if (const auto* ind_p = std::lower_bound(index, index + mNumberOfAntigens, antigen_record_offset); ind_p != (index + mNumberOfAntigens) && *ind_p == antigen_record_offset)
+        return AntigenIndex{ind_p - index};
+    throw std::runtime_error{"internal error in hidb::Antigens::index"};
+}
+
+// ----------------------------------------------------------------------
+
+hidb::AntigenPList hidb::Antigens::list(const AntigenIndexList& indexes) const
+{
+    hidb::AntigenPList result(indexes.size());
+    std::transform(std::begin(indexes), std::end(indexes), std::begin(result), [this](const auto index) { return at(index); });
+    return result;
+}
+
+// ----------------------------------------------------------------------
+
 acmacs::virus::name_t hidb::Antigen::name() const
 {
     auto antigen = reinterpret_cast<const hidb::bin::Antigen*>(mAntigen);

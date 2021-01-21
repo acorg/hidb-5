@@ -82,6 +82,8 @@ namespace hidb
 
         std::vector<std::pair<std::string_view, const hidb::bin::Antigen*>> sorted_by_labid() const; // for seqdb-3, to speed up looking by lab_id
         AntigenP make(const hidb::bin::Antigen* antigen_bin) const { return std::make_shared<Antigen>(reinterpret_cast<const char*>(antigen_bin), mHiDb); }
+        AntigenIndex index(const hidb::bin::Antigen* antigen_bin) const;
+        AntigenPList list(const AntigenIndexList& indexes) const;
 
      private:
         size_t mNumberOfAntigens;
