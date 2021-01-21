@@ -72,11 +72,13 @@ hidb::AntigenP hidb::Antigens::at(AntigenIndex aIndex) const
 
 hidb::AntigenIndex hidb::Antigens::index(const hidb::bin::Antigen* antigen_bin) const
 {
-    const auto antigen_record_offset = static_cast<hidb::bin::ast_offset_t>(antigen_bin - reinterpret_cast<const hidb::bin::Antigen*>(mAntigen0));
+    const auto antigen_record_offset = static_cast<hidb::bin::ast_offset_t>(reinterpret_cast<const char*>(antigen_bin) - mAntigen0);
     const auto* index = reinterpret_cast<const hidb::bin::ast_offset_t*>(mIndex);
     if (const auto* ind_p = std::lower_bound(index, index + mNumberOfAntigens, antigen_record_offset); ind_p != (index + mNumberOfAntigens) && *ind_p == antigen_record_offset)
         return AntigenIndex{ind_p - index};
-    throw std::runtime_error{"internal error in hidb::Antigens::index"};
+    else
+        throw std::runtime_error{fmt::format("internal error in hidb::Antigens::index ind_p==end:{} ind_p:{} last:{} antigen_record_offset:{}",
+                                             ind_p == (index + mNumberOfAntigens), *ind_p, *(index + mNumberOfAntigens - 1), antigen_record_offset)};
 }
 
 // ----------------------------------------------------------------------
