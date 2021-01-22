@@ -190,11 +190,11 @@ acmacs::chart::Annotations hidb::Antigen::annotations() const
 
 // ----------------------------------------------------------------------
 
-hidb::indexes_t hidb::Antigen::tables() const
+hidb::TableIndexList hidb::Antigen::tables() const
 {
     const auto [size, ptr] = reinterpret_cast<const hidb::bin::Antigen*>(mAntigen)->tables();
-    indexes_t result(size);
-    std::transform(ptr, ptr + size, result.begin(), [](const auto& index) -> size_t { return static_cast<size_t>(index); });
+    TableIndexList result(size);
+    std::transform(ptr, ptr + size, result.begin(), [](const auto& index) { return TableIndex{index}; });
     return result;
 
 } // hidb::Antigen::tables
@@ -329,11 +329,11 @@ acmacs::chart::PointIndexList hidb::Serum::homologous_antigens() const
 
 // ----------------------------------------------------------------------
 
-hidb::indexes_t hidb::Serum::tables() const
+hidb::TableIndexList hidb::Serum::tables() const
 {
     const auto [size, ptr] = reinterpret_cast<const hidb::bin::Serum*>(mSerum)->tables();
-    indexes_t result(size);
-    std::transform(ptr, ptr + size, result.begin(), [](const auto& index) -> size_t { return static_cast<size_t>(index); });
+    TableIndexList result(size);
+    std::transform(ptr, ptr + size, result.begin(), [](const auto& index) { return TableIndex{index}; });
     return result;
 
 } // hidb::Serum::tables
@@ -399,7 +399,7 @@ std::shared_ptr<hidb::Tables> hidb::HiDb::tables() const
     if (!tables_) {
         const auto* tables = mData + reinterpret_cast<const hidb::bin::Header*>(mData)->table_offset;
         const auto number_of_tables = *reinterpret_cast<const hidb::bin::ast_number_t*>(tables);
-        tables_ = std::make_shared<hidb::Tables>(static_cast<size_t>(number_of_tables), tables + sizeof(hidb::bin::ast_number_t),
+        tables_ = std::make_shared<hidb::Tables>(TableIndex{number_of_tables}, tables + sizeof(hidb::bin::ast_number_t),
                                                  tables + sizeof(hidb::bin::ast_number_t) + sizeof(hidb::bin::ast_offset_t) * (number_of_tables + 1));
     }
     return tables_;
@@ -408,18 +408,18 @@ std::shared_ptr<hidb::Tables> hidb::HiDb::tables() const
 
 // ----------------------------------------------------------------------
 
-std::shared_ptr<hidb::Table> hidb::Tables::at(size_t aIndex) const
+std::shared_ptr<hidb::Table> hidb::Tables::at(TableIndex aIndex) const
 {
-    return std::make_shared<hidb::Table>(mTable0 + reinterpret_cast<const hidb::bin::ast_offset_t*>(mIndex)[aIndex]);
+    return std::make_shared<hidb::Table>(mTable0 + reinterpret_cast<const hidb::bin::ast_offset_t*>(mIndex)[*aIndex]);
 
 } // hidb::Tables::at
 
 // ----------------------------------------------------------------------
 
-std::vector<hidb::lab_assay_rbc_table_t> hidb::Tables::sorted(indexes_t indexes, lab_assay_rbc_table_t::sort_by_date_order order) const
+std::vector<hidb::lab_assay_rbc_table_t> hidb::Tables::sorted(const TableIndexList& indexes, lab_assay_rbc_table_t::sort_by_date_order order) const
 {
     std::vector<std::shared_ptr<Table>> tables_of_indexes(indexes.size());
-    std::transform(std::begin(indexes), std::end(indexes), tables_of_indexes.begin(), [this](size_t aIndex) { return at(aIndex); });
+    std::transform(std::begin(indexes), std::end(indexes), tables_of_indexes.begin(), [this](auto aIndex) { return at(aIndex); });
 
     std::sort(std::begin(tables_of_indexes), std::end(tables_of_indexes), [order](const auto& t1, const auto& t2) {
         const auto k1 = fmt::format("{}:{}:{}", t1->lab(), t1->assay(), t1->rbc()), k2 = fmt::format("{}:{}:{}", t2->lab(), t2->assay(), t2->rbc());
@@ -552,33 +552,33 @@ hidb::AntigenIndexList hidb::Table::reference_antigens(const HiDb& aHidb) const
 
 // ----------------------------------------------------------------------
 
-std::shared_ptr<hidb::Table> hidb::Tables::most_recent(const indexes_t& aTables) const
+std::shared_ptr<hidb::Table> hidb::Tables::most_recent(const TableIndexList& aTables) const
 {
     const auto* index = reinterpret_cast<const hidb::bin::ast_offset_t*>(mIndex);
-    auto table_date_compare = [this,index] (size_t i1, size_t i2) -> bool {
-                                  const auto t1{reinterpret_cast<const bin::Table*>(this->mTable0 + index[i1])}, t2{reinterpret_cast<const bin::Table*>(this->mTable0 + index[i2])};
-                                  return t1->date() < t2->date();
-                              };
+    auto table_date_compare = [this, index](TableIndex i1, TableIndex i2) -> bool {
+        const auto t1{reinterpret_cast<const bin::Table*>(this->mTable0 + index[*i1])}, t2{reinterpret_cast<const bin::Table*>(this->mTable0 + index[*i2])};
+        return t1->date() < t2->date();
+    };
     return operator[](*std::max_element(aTables.begin(), aTables.end(), table_date_compare));
 
 } // hidb::Tables::most_recent
 
 // ----------------------------------------------------------------------
 
-std::shared_ptr<hidb::Table> hidb::Tables::oldest(const indexes_t& aTables) const
+std::shared_ptr<hidb::Table> hidb::Tables::oldest(const TableIndexList& aTables) const
 {
     const auto* index = reinterpret_cast<const hidb::bin::ast_offset_t*>(mIndex);
-    auto table_date_compare = [this,index] (size_t i1, size_t i2) -> bool {
-                                  const auto t1{reinterpret_cast<const bin::Table*>(this->mTable0 + index[i1])}, t2{reinterpret_cast<const bin::Table*>(this->mTable0 + index[i2])};
-                                  return t1->date() < t2->date();
-                              };
+    auto table_date_compare = [this, index](TableIndex i1, TableIndex i2) -> bool {
+        const auto t1{reinterpret_cast<const bin::Table*>(this->mTable0 + index[*i1])}, t2{reinterpret_cast<const bin::Table*>(this->mTable0 + index[*i2])};
+        return t1->date() < t2->date();
+    };
     return operator[](*std::min_element(aTables.begin(), aTables.end(), table_date_compare));
 
 } // hidb::Tables::oldest
 
 // ----------------------------------------------------------------------
 
-std::vector<hidb::TableStat> hidb::Tables::stat(const indexes_t& tables) const
+std::vector<hidb::TableStat> hidb::Tables::stat(const TableIndexList& tables) const
 {
     std::vector<hidb::TableStat> result;
     for (auto table_no : tables) {

@@ -13,6 +13,10 @@ namespace hidb
     namespace bin { struct Table; struct Antigen; }
 
     using indexes_t = std::vector<size_t>;
+
+    using TableIndex = acmacs::named_size_t<struct TableIndex_tag>;
+    using TableIndexList = std::vector<TableIndex>;
+
     class error : public std::runtime_error { public: using std::runtime_error::runtime_error; };
     class not_found : public error { public: using error::error; };
 
@@ -37,7 +41,7 @@ namespace hidb
         acmacs::chart::Annotations annotations() const override;
         bool reference() const override { return false; }
 
-        indexes_t tables() const;
+        TableIndexList tables() const;
         size_t number_of_tables() const;
 
         std::string_view location() const;
@@ -111,7 +115,7 @@ namespace hidb
         acmacs::chart::SerumSpecies serum_species() const override;
         acmacs::chart::PointIndexList homologous_antigens() const override;
 
-        indexes_t tables() const;
+        TableIndexList tables() const;
         size_t number_of_tables() const;
 
         std::vector<std::string> labs(const Tables& tables) const;
@@ -224,24 +228,24 @@ namespace hidb
     class Tables // : public acmacs::chart::Tables
     {
      public:
-        Tables(size_t aNumberOfTables, const char* aIndex, const char* aTable0)
-            : mNumberOfTables(aNumberOfTables), mIndex(aIndex), mTable0(aTable0) {}
+        Tables(TableIndex aNumberOfTables, const char* aIndex, const char* aTable0)
+            : mNumberOfTables{aNumberOfTables}, mIndex{aIndex}, mTable0{aTable0} {}
 
-        size_t size() const { return mNumberOfTables; }
-        std::shared_ptr<Table> at(size_t aIndex) const;
-        std::shared_ptr<Table> operator[](size_t aIndex) const { return at(aIndex); }
-        std::shared_ptr<Table> most_recent(const indexes_t& aTables) const;
-        std::shared_ptr<Table> oldest(const indexes_t& aTables) const;
-        std::vector<TableStat> stat(const indexes_t& aTables) const;
+        TableIndex size() const { return mNumberOfTables; }
+        std::shared_ptr<Table> at(TableIndex aIndex) const;
+        std::shared_ptr<Table> operator[](TableIndex aIndex) const { return at(aIndex); }
+        std::shared_ptr<Table> most_recent(const TableIndexList& aTables) const;
+        std::shared_ptr<Table> oldest(const TableIndexList& aTables) const;
+        std::vector<TableStat> stat(const TableIndexList& aTables) const;
 
-        using iterator = acmacs::iterator<Tables, std::shared_ptr<Table>>;
-        iterator begin() const { return {*this, 0}; }
+        using iterator = acmacs::iterator<Tables, std::shared_ptr<Table>, TableIndex>;
+        iterator begin() const { return {*this, TableIndex{0}}; }
         iterator end() const { return {*this, size()}; }
 
-        std::vector<lab_assay_rbc_table_t> sorted(indexes_t indexes, lab_assay_rbc_table_t::sort_by_date_order order) const;
+        std::vector<lab_assay_rbc_table_t> sorted(const TableIndexList& indexes, lab_assay_rbc_table_t::sort_by_date_order order) const;
 
      private:
-        size_t mNumberOfTables;
+        TableIndex mNumberOfTables;
         const char* mIndex;
         const char* mTable0;
 

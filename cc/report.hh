@@ -13,7 +13,7 @@ namespace hidb
     void report_sera(const hidb::HiDb& hidb, const SerumIndexList& aIndexes, report_tables aReportTables, std::string_view aPrefix = {});
     void report_serum(const hidb::HiDb& hidb, const hidb::Serum& aSerum, report_tables aReportTables, std::string_view aPrefix = {});
     inline void report_serum(const hidb::HiDb& hidb, SerumIndex aIndex, report_tables aReportTables, std::string_view aPrefix = {}) { report_serum(hidb, *hidb.sera()->at(aIndex), aReportTables, aPrefix); }
-    std::string report_tables(const hidb::HiDb& hidb, const indexes_t& aIndexes, enum hidb::report_tables aReportTables, std::string_view aPrefix = {});
+    std::string report_tables(const hidb::HiDb& hidb, const TableIndexList& aIndexes, enum hidb::report_tables aReportTables, std::string_view aPrefix = {});
 
 } // namespace hidb
 

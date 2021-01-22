@@ -44,7 +44,7 @@ void hidb::report_serum(const hidb::HiDb& hidb, const hidb::Serum& aSerum, enum 
 
 // ----------------------------------------------------------------------
 
-std::string hidb::report_tables(const hidb::HiDb& hidb, const indexes_t& aTables, enum report_tables aReportTables, std::string_view aPrefix)
+std::string hidb::report_tables(const hidb::HiDb& hidb, const TableIndexList& aTables, enum report_tables aReportTables, std::string_view aPrefix)
 {
     using namespace std::string_view_literals;
     const auto assay = [](std::string_view src) -> std::string_view {
