@@ -507,17 +507,17 @@ size_t hidb::Table::number_of_sera() const
 
 // ----------------------------------------------------------------------
 
-hidb::indexes_t hidb::Table::antigens() const
+hidb::AntigenIndexList hidb::Table::antigens() const
 {
-    return hidb::indexes_t(mTable->antigen_begin(), mTable->antigen_end());
+    return AntigenIndexList{mTable->antigen_begin(), mTable->antigen_end()};
 
 } // hidb::Table::antigens
 
 // ----------------------------------------------------------------------
 
-hidb::indexes_t hidb::Table::sera() const
+hidb::SerumIndexList hidb::Table::sera() const
 {
-    return hidb::indexes_t(mTable->serum_begin(), mTable->serum_end());
+    return SerumIndexList{mTable->serum_begin(), mTable->serum_end()};
 
 } // hidb::Table::sera
 

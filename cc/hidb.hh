@@ -12,8 +12,6 @@ namespace hidb
 {
     namespace bin { struct Table; struct Antigen; }
 
-    using indexes_t = std::vector<size_t>;
-
     using TableIndex = acmacs::named_size_t<struct TableIndex_tag>;
     using TableIndexList = std::vector<TableIndex>;
 
@@ -176,8 +174,8 @@ namespace hidb
         std::string_view rbc() const;
         size_t number_of_antigens() const;
         size_t number_of_sera() const;
-        indexes_t antigens() const;
-        indexes_t sera() const;
+        AntigenIndexList antigens() const;
+        SerumIndexList sera() const;
         AntigenIndexList reference_antigens(const HiDb& aHidb) const;
 
      private:
