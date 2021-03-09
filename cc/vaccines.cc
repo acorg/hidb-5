@@ -127,9 +127,9 @@ std::string hidb::Vaccines::report(PassageType aPassageType, const Vaccines::Rep
         fmt::format_to(out, "{:{}c}{}", ' ', config.indent_ + 2, aMarkIt ? ">>" : "  ");
         if (config.show_no_)
             fmt::format_to(out, "{:2d} ", aNo);
-        fmt::format_to(out, "{:4d} \"{}\" tables:{} recent:{}\n", entry.chart_antigen_index, entry.chart_antigen->full_name(), entry.hidb_antigen->number_of_tables(), entry.most_recent_table->name());
+        fmt::format_to(out, "{:4d} \"{}\" tables:{} recent:{}\n", entry.chart_antigen_index, entry.chart_antigen->format("{name_full}"), entry.hidb_antigen->number_of_tables(), entry.most_recent_table->name());
         for (const auto& hs: entry.homologous_sera)
-            fmt::format_to(out, "{:{}c}      {} {} tables:{} recent:{}\n", ' ', config.indent_ + 2, hs.chart_serum->serum_id(), hs.chart_serum->annotations().join(), hs.hidb_serum->number_of_tables(), hs.most_recent_table->name());
+            fmt::format_to(out, "{:{}c}      {} {} tables:{} recent:{}\n", ' ', config.indent_ + 2, hs.chart_serum->serum_id(), fmt::format("{: }", hs.chart_serum->annotations()), hs.hidb_serum->number_of_tables(), hs.most_recent_table->name());
     };
 
     const auto& entry = mEntries[static_cast<size_t>(aPassageType)];
