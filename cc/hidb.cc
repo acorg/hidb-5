@@ -795,7 +795,7 @@ std::vector<std::pair<std::string_view, const hidb::bin::Antigen*>> hidb::Antige
 std::optional<hidb::AntigenPIndex> hidb::Antigens::find(const acmacs::chart::Antigen& aAntigen, passage_strictness aPassageStrictness) const
 {
     if (aAntigen.annotations().distinct()) // distinct antigens are not stored
-        throw not_found(aAntigen.format("{name_full}"));
+        throw not_found(aAntigen.name_full());
     const auto antigen_index_list = find(aAntigen.name(), hidb::fix_location::no);
     const auto ignore_passage = [aPassageStrictness, &aAntigen]() -> bool {
         switch (aPassageStrictness) {
@@ -929,7 +929,7 @@ hidb::SerumPList hidb::Sera::find_homologous(size_t aAntigenIndex, const Antigen
             result.push_back(std::make_shared<hidb::Serum>(mSerum0 + *offset_p, mHiDb));
         }
     }
-    // AD_DEBUG("find_homologous {} \"{}\" {}", aAntigenIndex, aAntigen.format("{name_full}"), result.size());
+    // AD_DEBUG("find_homologous {} \"{}\" {}", aAntigenIndex, aAntigen.name_full(), result.size());
     return result;
 
 } // hidb::Sera::find_homologous

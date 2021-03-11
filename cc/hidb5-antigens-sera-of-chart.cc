@@ -38,7 +38,7 @@ int main(int argc, char* const argv[])
         if (!opt.sera_only) {
             auto antigens = chart->antigens();
             for (auto ag : *antigens) {
-                fmt::print("{}\n", ag->format("{name_full}"));
+                fmt::print("{}\n", ag->name_full());
                 if (const auto found = hidb.antigens()->find(*ag, opt.relaxed_passage ? hidb::passage_strictness::ignore : hidb::passage_strictness::yes); found.has_value())
                     hidb::report_antigen(hidb, *found->first, hidb::report_tables::all, prefix);
                 else
@@ -49,7 +49,7 @@ int main(int argc, char* const argv[])
         if (!opt.antigens_only) {
             auto sera = chart->sera();
             for (auto sr : *sera) {
-                fmt::print("{}\n", sr->format("{name_full}"));
+                fmt::print("{}\n", sr->name_full());
                 if (const auto found = hidb.sera()->find(*sr); found.has_value())
                     hidb::report_serum(hidb, *found->first, hidb::report_tables::all, prefix);
                 else
