@@ -109,6 +109,7 @@ namespace hidb
         acmacs::chart::BLineage lineage() const override;
         acmacs::virus::Reassortant reassortant() const override;
         acmacs::chart::Annotations annotations() const override;
+        acmacs::chart::Clades clades() const override { return {}; }
         acmacs::chart::SerumId serum_id() const override;
         acmacs::chart::SerumSpecies serum_species() const override;
         acmacs::chart::PointIndexList homologous_antigens() const override;
