@@ -690,7 +690,8 @@ hidb::AntigenIndexList hidb::Antigens::find(std::string_view aName, fix_location
                     first_last = find_by<hidb::bin::Antigen>(all_antigens, mAntigen0, parts[1], parts[2], std::string_view{}, fuzzy);
                     break;
                 default: // ?
-                    AD_WARNING("don't know how to split: {}", aName);
+                    if (parts.size() < 2 || parts[1] != "IND") // A(H3N2)/IND/[PM]/(URI|ENC)/[1-4]/2003 - ignore
+                        AD_WARNING("don't know how to split: {}", aName);
                     break;
             }
         }
