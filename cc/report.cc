@@ -78,23 +78,23 @@ std::string hidb::report_tables(const hidb::HiDb& hidb, const TableIndexList& aT
             switch (aReportTables) {
                 case report_tables::all:
                     for (auto entry : by_lab_assay) {
-                        fmt::format_to(out, "{}{}:{} ({})", aPrefix, entry.lab, assay(entry.assay), entry.tables.size());
+                        fmt::format_to_mb(out, "{}{}:{} ({})", aPrefix, entry.lab, assay(entry.assay), entry.tables.size());
                         for (auto table : entry.tables)
-                            fmt::format_to(out, " {}:{}", table->date(), rbc(entry.assay, entry.rbc));
-                        fmt::format_to(out, "\n");
+                            fmt::format_to_mb(out, " {}:{}", table->date(), rbc(entry.assay, entry.rbc));
+                        fmt::format_to_mb(out, "\n");
                     }
                     // if (by_lab_assay.size() > 1)
-                    //     fmt::format_to(out, "{}Total tables: {}\n", aPrefix, tables.size());
+                    //     fmt::format_to_mb(out, "{}Total tables: {}\n", aPrefix, tables.size());
                     break;
                 case report_tables::oldest:
-                    // fmt::format_to(out, "{}Tables:{}\n", aPrefix, tables.size());
+                    // fmt::format_to_mb(out, "{}Tables:{}\n", aPrefix, tables.size());
                     for (auto entry : by_lab_assay)
-                        fmt::format_to(out, "{}{}:{} ({})  oldest:{}", aPrefix, entry.lab, assay(entry.assay), entry.tables.size(), entry.tables.back()->name());
+                        fmt::format_to_mb(out, "{}{}:{} ({})  oldest:{}", aPrefix, entry.lab, assay(entry.assay), entry.tables.size(), entry.tables.back()->name());
                     break;
                 case report_tables::recent:
-                    // fmt::format_to(out, "{}Tables:{}\n", aPrefix, tables.size());
+                    // fmt::format_to_mb(out, "{}Tables:{}\n", aPrefix, tables.size());
                     for (auto entry : by_lab_assay)
-                        fmt::format_to(out, "{}{}:{} ({})  recent:{}", aPrefix, entry.lab, assay(entry.assay), entry.tables.size(), entry.tables.front()->name());
+                        fmt::format_to_mb(out, "{}{}:{} ({})  recent:{}", aPrefix, entry.lab, assay(entry.assay), entry.tables.size(), entry.tables.front()->name());
                     break;
                 case report_tables::none:
                     break;
@@ -114,23 +114,23 @@ std::string hidb::report_tables(const hidb::HiDb& hidb, const TableIndexList& aT
         //     switch (aReportTables) {
         //         case report_tables::all:
         //             for (auto entry : by_lab_assay) {
-        //                 fmt::format_to(out, "{}{}:{} ({})", aPrefix, entry.first.first, assay(entry.first.second), entry.second.size());
+        //                 fmt::format_to_mb(out, "{}{}:{} ({})", aPrefix, entry.first.first, assay(entry.first.second), entry.second.size());
         //                 for (auto table : entry.second)
-        //                     fmt::format_to(out, " {}{}", table->date(), rbc(entry.first.second, table->rbc()));
-        //                 fmt::format_to(out, "\n");
+        //                     fmt::format_to_mb(out, " {}{}", table->date(), rbc(entry.first.second, table->rbc()));
+        //                 fmt::format_to_mb(out, "\n");
         //             }
         //             if (by_lab_assay.size() > 1)
-        //                 fmt::format_to(out, "{}Total tables: {}\n", aPrefix, tables.size());
+        //                 fmt::format_to_mb(out, "{}Total tables: {}\n", aPrefix, tables.size());
         //             break;
         //         case report_tables::oldest:
-        //             fmt::format_to(out, "{}Tables:{}\n", aPrefix, tables.size());
+        //             fmt::format_to_mb(out, "{}Tables:{}\n", aPrefix, tables.size());
         //             for (auto entry : by_lab_assay)
-        //                 fmt::format_to(out, "{}{}:{} ({})  oldest:{}", aPrefix, entry.first.first, assay(entry.first.second), entry.second.size(), entry.second.back()->name());
+        //                 fmt::format_to_mb(out, "{}{}:{} ({})  oldest:{}", aPrefix, entry.first.first, assay(entry.first.second), entry.second.size(), entry.second.back()->name());
         //             break;
         //         case report_tables::recent:
-        //             fmt::format_to(out, "{}Tables:{}\n", aPrefix, tables.size());
+        //             fmt::format_to_mb(out, "{}Tables:{}\n", aPrefix, tables.size());
         //             for (auto entry : by_lab_assay)
-        //                 fmt::format_to(out, "{}{}:{} ({})  recent:{}", aPrefix, entry.first.first, assay(entry.first.second), entry.second.size(), entry.second.front()->name());
+        //                 fmt::format_to_mb(out, "{}{}:{} ({})  recent:{}", aPrefix, entry.first.first, assay(entry.first.second), entry.second.size(), entry.second.front()->name());
         //             break;
         //         case report_tables::none:
         //             break;

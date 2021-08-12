@@ -110,9 +110,9 @@ std::string hidb::Vaccines::report(const Vaccines::ReportConfig& config) const
 {
     fmt::memory_buffer out;
     if (!empty()) {
-        fmt::format_to(out, "{:{}c}Vaccine {} [{}]\n", ' ', config.indent_, type(), mNameType.name);
-        for_each_passage_type([this, &config, &out](PassageType pt) { fmt::format_to(out, "{}", this->report(pt, config)); });
-        fmt::format_to(out, "{}", config.vaccine_sep_);
+        fmt::format_to_mb(out, "{:{}c}Vaccine {} [{}]\n", ' ', config.indent_, type(), mNameType.name);
+        for_each_passage_type([this, &config, &out](PassageType pt) { fmt::format_to_mb(out, "{}", this->report(pt, config)); });
+        fmt::format_to_mb(out, "{}", config.vaccine_sep_);
     }
     return fmt::to_string(out);
 
@@ -124,22 +124,22 @@ std::string hidb::Vaccines::report(PassageType aPassageType, const Vaccines::Rep
 {
     fmt::memory_buffer out;
     auto entry_report = [&](size_t aNo, const auto& entry, bool aMarkIt) {
-        fmt::format_to(out, "{:{}c}{}", ' ', config.indent_ + 2, aMarkIt ? ">>" : "  ");
+        fmt::format_to_mb(out, "{:{}c}{}", ' ', config.indent_ + 2, aMarkIt ? ">>" : "  ");
         if (config.show_no_)
-            fmt::format_to(out, "{:2d} ", aNo);
-        fmt::format_to(out, "{:4d} \"{}\" tables:{} recent:{}\n", entry.chart_antigen_index, entry.chart_antigen->name_full(), entry.hidb_antigen->number_of_tables(), entry.most_recent_table->name());
+            fmt::format_to_mb(out, "{:2d} ", aNo);
+        fmt::format_to_mb(out, "{:4d} \"{}\" tables:{} recent:{}\n", entry.chart_antigen_index, entry.chart_antigen->name_full(), entry.hidb_antigen->number_of_tables(), entry.most_recent_table->name());
         for (const auto& hs: entry.homologous_sera)
-            fmt::format_to(out, "{:{}c}      {} {} tables:{} recent:{}\n", ' ', config.indent_ + 2, hs.chart_serum->serum_id(), fmt::format("{: }", hs.chart_serum->annotations()), hs.hidb_serum->number_of_tables(), hs.most_recent_table->name());
+            fmt::format_to_mb(out, "{:{}c}      {} {} tables:{} recent:{}\n", ' ', config.indent_ + 2, hs.chart_serum->serum_id(), fmt::format("{: }", hs.chart_serum->annotations()), hs.hidb_serum->number_of_tables(), hs.most_recent_table->name());
     };
 
     const auto& entry = mEntries[static_cast<size_t>(aPassageType)];
     if (!entry.empty()) {
-        fmt::format_to(out, "{:{}c}{} ({})\n", ' ', config.indent_ + 2, passage_type_name(aPassageType), entry.size());
+        fmt::format_to_mb(out, "{:{}c}{} ({})\n", ' ', config.indent_ + 2, passage_type_name(aPassageType), entry.size());
         // const auto me = std::max_element(entry.begin(), entry.end(), [](const auto& e1, const auto& e2) { return e1.chart_antigen_index < e2.chart_antigen_index; });
           // const auto num_digits = static_cast<int>(std::log10(me->chart_antigen_index)) + 1;
         for (size_t no = 0; no < entry.size(); ++no)
             entry_report(no, entry[no], aMark == no);
-        fmt::format_to(out, "{}", config.passage_type_sep_);
+        fmt::format_to_mb(out, "{}", config.passage_type_sep_);
     }
     return fmt::to_string(out);
 
