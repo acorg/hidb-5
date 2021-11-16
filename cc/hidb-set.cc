@@ -17,7 +17,7 @@ class HiDbSet;
 #endif
 
 static bool sVerbose = false;
-static std::string sHiDbDir = acmacs::acmacsd_root() + "/data";
+static std::string sHiDbDir = acmacs::hidb_v5_dir();
 static std::unique_ptr<HiDbSet> sHiDbSet;
 
 #pragma GCC diagnostic pop
