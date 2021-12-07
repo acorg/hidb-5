@@ -34,7 +34,7 @@ struct Options : public argv
     option<bool> first_table{*this, "first-table"};
     option<str>  lab{*this, "lab"};
     option<bool> find_by_lab_id{*this, "lab-id", desc{"find by lab id"}};
-    option<str>  db_dir{*this, "db-dir"};
+    // option<str>  db_dir{*this, "db-dir"};
 
     argument<str> virus_type{*this, arg_name{"virus-type: B, H1, H3|hidb-file"}, mandatory};
     argument<str_array> names{*this, arg_name{"name|all"}, mandatory};
@@ -44,9 +44,9 @@ int main(int argc, char* const argv[])
 {
     try {
         Options opt(argc, argv);
-        hidb::setup(opt.db_dir);
+        // hidb::setup(opt.db_dir);
 
-        if (fs::exists(*opt.virus_type))
+        if (fs::is_regular_file(*opt.virus_type))
             find(hidb::HiDb(opt.virus_type), opt);
         else
             find(hidb::get(acmacs::virus::type_subtype_t{string::upper(*opt.virus_type)}, report_time::no), opt);
