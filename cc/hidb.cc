@@ -936,6 +936,3 @@ hidb::SerumPList hidb::Sera::find_homologous(size_t aAntigenIndex, const Antigen
 } // hidb::Sera::find_homologous
 
 // ----------------------------------------------------------------------
-/// Local Variables:
-/// eval: (if (fboundp 'eu-rename-buffer) (eu-rename-buffer))
-/// End:
