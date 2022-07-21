@@ -105,6 +105,7 @@ namespace hidb
         Serum(const char* aSerum, const HiDb& aHiDb) : mSerum(aSerum), mHiDb(aHiDb) {}
 
         acmacs::virus::name_t name() const override;
+        acmacs::virus::name_t name_without_subtype() const;
         acmacs::virus::Passage passage() const override;
         acmacs::chart::BLineage lineage() const override;
         acmacs::virus::Reassortant reassortant() const override;

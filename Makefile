@@ -60,6 +60,3 @@ $(DIST)/%: $(BUILD)/%.o | $(HIDB_LIB) install-headers
 	$(CXX) $(LDFLAGS) -o $@ $^ $(HIDB_LIB) $(LDLIBS) $(AD_RPATH)
 
 # ======================================================================
-### Local Variables:
-### eval: (if (fboundp 'eu-rename-buffer) (eu-rename-buffer))
-### End:

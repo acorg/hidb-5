@@ -144,6 +144,3 @@ std::string hidb::report_tables(const hidb::HiDb& hidb, const TableIndexList& aT
 } // hidb::report_tables
 
 // ----------------------------------------------------------------------
-/// Local Variables:
-/// eval: (if (fboundp 'eu-rename-buffer) (eu-rename-buffer))
-/// End:

@@ -32,6 +32,7 @@ struct Options : public argv
     option<bool> find_sera{*this, 's', desc{"find sera"}};
     option<bool> find_table{*this, 't', desc{"find table"}};
     option<bool> first_table{*this, "first-table"};
+    option<bool> list_names{*this, "list-names", desc{"list only names without subtype"}};
     option<str>  lab{*this, "lab"};
     option<bool> find_by_lab_id{*this, "lab-id", desc{"find by lab id"}};
     // option<str>  db_dir{*this, "db-dir"};
@@ -181,13 +182,14 @@ void list_all_sera(const hidb::HiDb& hidb, const Options& opt)
     fmt::print("Sera: {}\n", sera->size());
     for (auto serum: *sera) {
         const auto& sr = dynamic_cast<const hidb::Serum&>(*serum);
-        if (has_lab(sr))
-            report_serum(hidb, sr, opt.first_table ? hidb::report_tables::oldest : hidb::report_tables::all);
+        if (has_lab(sr)) {
+            if (opt.list_names)
+                fmt::print("{}\n", sr.name_without_subtype());
+            else
+                report_serum(hidb, sr, opt.first_table ? hidb::report_tables::oldest : hidb::report_tables::all);
+        }
     }
 
 } // list_all_sera
 
 // ----------------------------------------------------------------------
-/// Local Variables:
-/// eval: (if (fboundp 'eu-rename-buffer) (eu-rename-buffer))
-/// End:

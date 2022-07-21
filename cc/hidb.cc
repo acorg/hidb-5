@@ -267,6 +267,14 @@ acmacs::virus::name_t hidb::Serum::name() const
 
 // ----------------------------------------------------------------------
 
+acmacs::virus::name_t hidb::Serum::name_without_subtype() const
+{
+    return acmacs::virus::name_t{reinterpret_cast<const hidb::bin::Serum*>(mSerum)->name()};
+
+} // hidb::Serum::name_without_subtype
+
+// ----------------------------------------------------------------------
+
 acmacs::virus::Passage hidb::Serum::passage() const
 {
     return acmacs::virus::Passage{reinterpret_cast<const hidb::bin::Serum*>(mSerum)->passage()};
